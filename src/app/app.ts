@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import router from './router';
 import errorHandler from './errors';
 
+
 class App {
     server: Express;
     // middlewares: Array<any>;
