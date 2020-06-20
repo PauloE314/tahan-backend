@@ -1,11 +1,11 @@
 import express, { Express } from 'express';
 import router from './router';
 import errorHandler from './errors';
+import { get_user } from '../middlewares/auth';
 
 
 class App {
     server: Express;
-    // middlewares: Array<any>;
     constructor(){
         this.server = express();
 
@@ -15,19 +15,11 @@ class App {
     }
 
     middlewares() {
-        this.server.use(express.json())
+        this.server.use(express.json());
     }
 
     routes() {
         this.server.use(router);
-        this.server.get('/', (request, response, next) => {
-            try{
-                throw new Error('Teste')
-            }
-            catch(err){
-                next(err)
-            }
-        })
     }
 
     errors() {
