@@ -1,8 +1,8 @@
 import express, { Express } from 'express';
 import helmet from 'helmet';
+import cors from 'cors';
 import router from './router';
 import errorHandler from './errors';
-import { get_user } from '../middlewares/auth';
 
 import "reflect-metadata";
 
@@ -20,6 +20,7 @@ class App {
     middlewares() {
         this.server.use(express.json());
         this.server.use(helmet());
+        this.server.use(cors())
     }
 
     routes() {
