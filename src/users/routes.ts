@@ -1,15 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { getManager } from 'typeorm';
-import { User } from "../database/models/User";
-
+import { Router } from 'express';
+import UserController from './controllers';
 
 const routes = Router({ mergeParams: true })
+const controller = new UserController();
 
-routes.get('/', async (request: Request, response: Response, next: NextFunction) => {
-
-    const users = await getManager().find(User);
-
-    return response.send(users);
-})
+routes.get('/', controller.list)
 
 export default routes;
