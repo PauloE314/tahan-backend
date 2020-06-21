@@ -1,7 +1,10 @@
 import express, { Express } from 'express';
+import helmet from 'helmet';
 import router from './router';
 import errorHandler from './errors';
 import { get_user } from '../middlewares/auth';
+
+import "reflect-metadata";
 
 
 class App {
@@ -16,6 +19,7 @@ class App {
 
     middlewares() {
         this.server.use(express.json());
+        this.server.use(helmet());
     }
 
     routes() {
