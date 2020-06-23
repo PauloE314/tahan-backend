@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { APIRequest } from 'src/@types/global';
 import { User } from '../database/models/User';
-import { getRepository, Repository, Like } from 'typeorm';
+import { getRepository, Like } from 'typeorm';
  
 export default class UserController{    
     async list(request: APIRequest, response: Response, next: NextFunction) {
