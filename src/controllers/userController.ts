@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { APIRequest } from 'src/@types/global';
-import { Users } from '../models/User';
+import { Users } from '@models/User';
 import { getRepository, Like } from 'typeorm';
  
 export default class UserController{    
@@ -28,7 +28,7 @@ export default class UserController{
 
     async create(request: APIRequest, response: Response, next: NextFunction) {
         const { username, password, email } = request.body;
-        
+
     }
 
     async read(request: APIRequest, response: Response, next: NextFunction) {

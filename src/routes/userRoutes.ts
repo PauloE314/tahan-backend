@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import UserController from '../controllers/userController';
-import UserValidator from '../middlewares/validators/userValitators';
+import UserController from '@controllers/userController';
+import UserValidator from '@middlewares/validators/userValitators';
 
 const routes = Router({ mergeParams: true })
 const controller = new UserController();
