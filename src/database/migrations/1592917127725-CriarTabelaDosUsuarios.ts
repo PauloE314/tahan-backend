@@ -28,6 +28,10 @@ export class CriarTabelaDosUsuarios1592917127725 implements MigrationInterface {
                 {
                     name: "image",
                     type: "varchar"
+                },
+                {
+                    name: "occupation",
+                    type: "varchar"
                 }
             ]
         }))

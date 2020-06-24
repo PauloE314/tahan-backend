@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { APIRequest } from 'src/@types/global';
-import { User } from '../database/models/User';
+import { Users } from '../models/User';
 import { getRepository, Like } from 'typeorm';
  
 export default class UserController{    
@@ -19,15 +19,16 @@ export default class UserController{
             queries[query] = Like("%" + query_params[query] + "%")
         })
 
-        const userRepo = getRepository(User);
+        const userRepo = getRepository(Users);
 
         // Encontra os usuários e os retorna
         const user_list = await userRepo.find(queries);
-        return response.send(user_list)
+        return response.send(user_list);
     }
 
     async create(request: APIRequest, response: Response, next: NextFunction) {
-
+        const { username, password, email } = request.body;
+        
     }
 
     async read(request: APIRequest, response: Response, next: NextFunction) {
