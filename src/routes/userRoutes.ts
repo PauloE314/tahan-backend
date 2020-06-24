@@ -7,6 +7,7 @@ const controller = new UserController();
 const validator = new UserValidator();
 
 
+
 routes.get('/', controller.list)
 routes.post('/', validator.createUser_validation, controller.create)
 

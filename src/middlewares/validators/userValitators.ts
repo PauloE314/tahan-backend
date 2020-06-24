@@ -4,29 +4,36 @@ import { Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';
 
 
-const rules = {
-    password_regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=\S*)[\S]{8,}$/,
-    // password_regex: new RegExp("^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{8,})"),
-    username_regex: /^(\p{L}\w*){5,}$/u,
-    email_regex: /^(\S+)@(\S+)\.(\S+)$/,
-    accepted_occupations: ['student', 'teacher']
-}
-
-
 
 export default class UserValidator{
+    // Modelo de regras
+    rules: {
+        password_regex: RegExp,
+        username_regex: RegExp,
+        email_regex: RegExp,
+        accepted_occupations: string[]
+    }
+
+    constructor(){
+        this.rules = {
+            password_regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=\S*)[\S]{8,}$/,
+            username_regex: /^(\p{L}\w*){5,}$/u,
+            email_regex: /^(\S+)@(\S+)\.(\S+)$/,
+            accepted_occupations: ['student', 'teacher']
+        }
+    }
 
     // Validação de usuário na criação
-    async createUser_validation(request: APIRequest, response: Response, next: NextFunction) {
+    createUser_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
         
         let errors = <any>{};
         const {username, email, password, occupation} = request.body;
-        const { password_regex, username_regex, email_regex, accepted_occupations } = rules;
+        const { password_regex, username_regex, email_regex, accepted_occupations } = this.rules;
         const userRepo = getRepository(Users)
 
         // Validação de senha
         if (!password_regex.test(password) || !password)
-            errors.password = "Envie uma senha válida. Ela deve conter pelo menos 8 dígitos e conter dígitos, letras menúsculas e maiúsculas, e não pode conter espaços";
+            errors.password = "Envie uma senha válida. Ela deve conter pelo menos 8 dígitos e conter dígitos, letras minúsculas e maiúsculas, e não pode conter espaços";
 
         // validação de usuário
         if (username_regex.test(username) && username) 

@@ -4,7 +4,7 @@ import { Users } from '@models/User';
 import { getRepository, Like } from 'typeorm';
  
 export default class UserController{    
-    async list(request: APIRequest, response: Response, next: NextFunction) {
+    async list (request: APIRequest, response: Response, next: NextFunction) {
         const filter_fields = ["username", "email"]
         const query_params = request.query
         const queries = {}
@@ -28,6 +28,8 @@ export default class UserController{
 
     async create(request: APIRequest, response: Response, next: NextFunction) {
         const { username, password, email } = request.body;
+
+        return response.send({message: "Jooj"})
 
     }
 
