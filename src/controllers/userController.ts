@@ -93,7 +93,12 @@ export default class UserController{
     }
 
     async delete (request: APIRequest, response: Response, next: NextFunction) {
+        const userRepo = getRepository(Users);
+        const user = request.user.info;
+        
+        await userRepo.remove(user);
 
+        return response.send({message: "Usuário removido com sucesso"})
     }
 
     // Login
