@@ -76,7 +76,20 @@ export default class UserController{
     }
 
     async update (request: APIRequest, response: Response, next: NextFunction) {
+        const { username, password } = request.body;
+        const user = request.user.info;
+        const userRepo = getRepository(Users);
 
+        if (username)
+            user.username = username;
+        
+        if (password)
+            user.password = crypto.hashSync(password, 10);
+        
+
+
+        const updated_user = await userRepo.save(user)
+        return response.send(updated_user)
     }
 
     async delete (request: APIRequest, response: Response, next: NextFunction) {

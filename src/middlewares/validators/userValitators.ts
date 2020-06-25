@@ -89,36 +89,37 @@ export default class UserValidator{
 
         return next();
     }
+
+    update_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+        const errors = <any>{};
+        const { username, password } = request.body;
+        const { username_regex, password_regex } = this.rules;
+        const user = request.user.info;
+
+        const userRepo = getRepository(Users);
+
+        // Teste de nome de usuário
+        if (username) {
+            if (!username_regex.test(username))
+                    errors.username = "Envie um nome de usuário válido - mínimo de 6 letras e apenas letras ou espaço, mas sem começar ou terminar com espaço"
+
+            else {
+                const same_username_user = await userRepo.findOne({username});
+
+                if (same_username_user)
+                    if (same_username_user.id !== user.id)
+                        errors.username = "Escolha outro nome de usuário, esse nome já foi escolhido anteriormente";
+            }
+        }
+
+        // Teste de password
+        if (password)
+            if (!password_regex.test(password))
+                errors.password = "Envie uma senha válida. Ela deve conter pelo menos 8 dígitos e conter dígitos, letras menúsculas e maiúsculas, e não pode conter espaços";
+
+        if (Object.keys(errors).length)
+            return response.status(400).send({message: errors})
+        
+        return next();
+    }
 }
-
-
-
-
-// export async function update_validator(data) {
-//     const errors = <any>{};
-//     const { username, password, user_id } = data;
-//     const { username_regex, password_regex } = rules;
-
-//     // Teste de nome de usuário
-//     if (username) {
-//         if (!username_regex.test(username))
-//                 errors.username = "Envie um nome de usuário válido - mínimo de 6 letras e apenas letras ou espaço, mas sem começar ou terminar com espaço"
-
-//         else {
-//             const same_username_user = await db('users')
-//                 .select('*')
-//                 .where('username', String(username))
-//                 .first()
-
-//             if (same_username_user)
-//                 if (same_username_user.id !== user_id)
-//                     errors.username = "Escolha outro nome de usuário, esse nome já foi escolhido anteriormente";
-//         }
-//     }
-
-//     // Teste de password
-//     if (password)
-//         if (!password_regex.test(password))
-//             errors.password = "Envie uma senha válida. Ela deve conter pelo menos 8 dígitos e conter dígitos, letras menúsculas e maiúsculas, e não pode conter espaços";
-
-// }

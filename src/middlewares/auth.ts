@@ -52,7 +52,6 @@ export async function auth_require(request: APIRequest, response: Response, next
     // to do
     const { secret_key } = configs;
     const auth_header = request.headers.authorization;
-
     // Checa se existe um header de autenticação
     
     if (!auth_header)
@@ -80,6 +79,8 @@ export async function auth_require(request: APIRequest, response: Response, next
             return next();
         }
         catch(err) {
+            if (err.name == "TokenExpiredError")
+                return response.status(401).send({message: "Token expirou ou não existe"})
             return response.status(500).send({error: { name: err.name, message: err.message }})
         }
     }

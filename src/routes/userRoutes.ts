@@ -17,5 +17,6 @@ routes.post('/', multer().any(), validator.createUser_validation, controller.cre
 routes.post('/login/', validator.login_validation, controller.login);
 routes.get('/:id/', validator.read_validation, controller.read)
 routes.get('/self/', auth_require, controller.read_self);
+routes.put('/self/', auth_require, validator.update_validation, controller.update);
 
 export default routes;
