@@ -10,8 +10,10 @@ export class CriarTabelaDosUsuarios1592917127725 implements MigrationInterface {
             columns: [
                 {
                     name: "id",
-                    type: "int",
-                    isPrimary: true
+                    type: "integer",
+                    isPrimary: true,
+                    isGenerated: true,
+                    generationStrategy: 'increment'
                 },
                 {
                     name: "username",
@@ -27,7 +29,8 @@ export class CriarTabelaDosUsuarios1592917127725 implements MigrationInterface {
                 },
                 {
                     name: "image",
-                    type: "varchar"
+                    type: "varchar",
+                    isNullable: true
                 },
                 {
                     name: "occupation",

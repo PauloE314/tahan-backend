@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, IsNull } from "typeorm";
 
 @Entity()
 @Unique(['username'])
@@ -18,4 +18,7 @@ export class Users {
 
     @Column()
     image: string;
+
+    @Column()
+    occupation: string;
 }

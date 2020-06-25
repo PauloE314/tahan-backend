@@ -1,10 +1,14 @@
 import {Request, Response} from 'express';
+import { Users } from '@models/User'
 
 // modelo de usuário
 export interface user_interface {
-    id: number,
-    username: string,
-    email: string
+    info: Users;
+    date: {
+        expires: string;
+        starts: string;
+    }
+
 }
 
 // Modelo de Request
