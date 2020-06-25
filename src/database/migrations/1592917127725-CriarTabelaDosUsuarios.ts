@@ -17,11 +17,13 @@ export class CriarTabelaDosUsuarios1592917127725 implements MigrationInterface {
                 },
                 {
                     name: "username",
-                    type: "varchar"
+                    type: "varchar",
+                    isUnique: true
                 },
                 {
                     name: "email",
-                    type: "varchar"
+                    type: "varchar",
+                    isUnique: true
                 },
                 {
                     name: "password",

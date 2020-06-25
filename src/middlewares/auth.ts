@@ -42,14 +42,13 @@ export async function get_user(request: APIRequest, response: Response, next: Ne
             console.log({auth: err.message})
         }
     }
-
     return next();
 }
 
 
 // Checa se usuário está logado e retorna suas informações
 export async function auth_require(request: APIRequest, response: Response, next: NextFunction){
-    // to do
+    console.log('aaaaaaaaaaaaaaaaaaaaaaaaa')
     const { secret_key } = configs;
     const auth_header = request.headers.authorization;
     // Checa se existe um header de autenticação

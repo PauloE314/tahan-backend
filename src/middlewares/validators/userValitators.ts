@@ -48,7 +48,12 @@ export default class UserValidator{
             
 
         // validação básica de email
-        if (!(email_regex.test(email) && email))
+        if (email_regex.test(email && email)) {
+            const same_email_user = await userRepo.findOne({email});
+            if (same_email_user)
+                errors.email = "Escolha outro email, esse já está sendo usado";
+        }
+        else
             errors.email = "Envie um email válido";
 
 
@@ -65,11 +70,11 @@ export default class UserValidator{
     }
 
     login_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
-        const { username, password } = request.body; 
+        const { email, password } = request.body; 
         const errors = <any>{};
 
-        if (!username)
-            errors.username = "Envie um nome de usuário";
+        if (!email)
+            errors.email = "Envie o email";
 
         if(!password)
             errors.password = "Envie uma senha";
@@ -81,11 +86,16 @@ export default class UserValidator{
 
     read_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
         const id = Number(request.params.id);
-        const userRepo = getRepository(Users);
-        const user = await userRepo.findOne({id});
-        if (!user) {
-            return response.status(401).send({message: "Usuário não encontrado"})
-        }        
+
+        if (!isNaN(id)) {
+            const userRepo = getRepository(Users);
+            const user = await userRepo.findOne({id});
+            if (!user) {
+                return response.status(401).send({message: "Usuário não encontrado"})
+            }        
+
+            return next();
+        }
 
         return next();
     }

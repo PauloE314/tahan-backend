@@ -61,10 +61,13 @@ export default class UserController{
     // Retorna as informações de um usuário
     async read (request: APIRequest, response: Response, next: NextFunction) {
         const id = Number(request.params.id);
-        const userRepo = getRepository(Users);
-        const user = await userRepo.findOne({id})
-        
-        return response.send(user);
+        if (!isNaN(id)) {
+            const userRepo = getRepository(Users);
+            const user = await userRepo.findOne({id})
+            
+            return response.send(user);
+        }
+        return next();
     }
 
     // Retorna as informações do usuário logado
@@ -72,7 +75,7 @@ export default class UserController{
         // Retorna as informações do usuário
         const user = request.user;
 
-        return response.send(user.info)
+        return response.send(user)
     }
 
     async update (request: APIRequest, response: Response, next: NextFunction) {
@@ -104,14 +107,14 @@ export default class UserController{
     // Login
     async login (request: APIRequest, response: Response, next: NextFunction) {
         const {secret_key, jwtTime} = configs;
-        const { username, password } = request.body;
+        const { email, password } = request.body;
 
         const userRepo = getRepository(Users);
-        const user = await userRepo.findOne({username});
+        const user = await userRepo.findOne({email});
 
         // Caso não exista um usuário com esse username
         if (!user)
-            return response.status(400).send({username: "Nome de usuário inválido"})
+            return response.status(400).send({email: "Email inválido"})
 
         // Caso exista, compara a senha enviada e a do usuário
         const rightPassword = crypto.compareSync(password, user.password);
