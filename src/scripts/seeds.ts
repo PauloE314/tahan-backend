@@ -11,6 +11,7 @@ const params = ['run', 'create', '-h']
 async function main () {
     const command_params = argv.splice(2)
     const command_length = command_params.length
+    console.log('\n')
 
     // Checa a formatação dos parâmetros
     if (params.includes(command_params[0])) {
@@ -31,14 +32,13 @@ async function main () {
     }
 
     // Caso não chegue a nenhuma das funções core, retorna um erro
-    console.log("ERRO: Se estiver com dúvida quanto ao uso no comando, digite 'seed -h'")
-    process.exit(-1)
+    ERROR("Se estiver com dúvida quanto ao uso no comando, digite 'seed -h'")
 }
 
-
+// Cria uma seed com configurações básicas
 async function createSeed(name: string) {
-    const timestamp = Date.now()
-    const seedName = name + 'Seed - ' + timestamp + '.ts';
+    const seedName = name + 'Seed.ts';
+    const seedPath = path.resolve('src', 'database', 'seeds', seedName)
     const data = `import { Seed } from 'src/@types/global'
 
 export default class ${name + 'Seed'} extends Seed {
@@ -48,24 +48,38 @@ export default class ${name + 'Seed'} extends Seed {
 }
     `;
 
+    if (fs.existsSync(seedPath)) {
+        ERROR("Um arquivo com esse nome já existe")
+    }
+
+    RUNNING(`Criando arquivo ${seedName}`)
     fs.writeFileSync(path.resolve('src', 'database', 'seeds', seedName), data)
 
-    process.exit(0)
+    SUCCESS("Seed criada com sucesso")
 }
 
 
+// Executa uma seed específica
 async function runSeed(name: string) {
     await executeSeed(name)
-    process.exit(0)
+
+    SUCCESS(`Seed '${name}' executada com sucesso`)
 }
 
-
+// Executa todas as seeds na pasta de seeds
 async function runAllSeeds() {
-    
-    process.exit(0)
+    const seedFolder = path.resolve(__dirname, '..', 'database', 'seeds')
+    const seeds = fs.readdirSync(seedFolder)
+
+    for (let seed of seeds) {
+        await executeSeed(seed)
+    }
+
+
+    SUCCESS(`Todas as seeds foram executadas com sucesso`)
 }
 
-
+// Explica as funcionalidades do programa
 async function help() {
     console.log('seeds -h')
     console.log(' *  Retorna informações sobre o script.\n')
@@ -83,28 +97,55 @@ async function help() {
 }
 
 
-
+// Executa a seed propriamente dita
 async function executeSeed(filename: string) {
     const filepath = path.resolve('src', 'database', 'seeds', filename);
 
     if (fs.existsSync(filepath)) {
+        
         try {
-            const seed: Seed = new (await import('../database/seeds/' + filename)).default();
-            
-            await seed.execute();
-            process.exit(0)
+            const seed_default = (await import('../database/seeds/' + filename)).default;
+            if (!seed_default) {
+                ERROR(`A exportação 'default' do módulo '${filename}' não existe`, false)
+            }
+
+            if (!(seed_default.prototype instanceof Seed)) {
+                ERROR(`A exportação 'default' do módulo '${filename}' não herda a classe Seed`, false)
+            }
+            else {
+                const seed: Seed = new seed_default();
+                RUNNING(filename + "\x1b[36m")
+                await seed.execute();
+                console.log()
+            }
         }
         catch(err) {
-            console.log('Error:' + err.message)
-            process.exit(-1)
-            
+            ERROR(err.message, false)    
         }
     }
 
     else 
-        console.log('Nomde de arquivo inválido')
+        ERROR('Nome de arquivo inválido')
+}
 
-    process.exit(-1)
+// Erro
+function ERROR(message: string, end?: Boolean) {
+    console.log("\x1b[31m" + "ERROR:" + "\x1b[0m", message)
+    if (end !== false) {
+        console.log('\n')
+        process.exit(-1)
+    }
+}
+
+// Sucesso
+function SUCCESS(message: string) {
+    console.log("\x1b[32m" + "SUCCESS:" + "\x1b[0m", message)
+    console.log('\n')
+    process.exit(0)
+}
+
+function RUNNING(message: string) {
+    console.log("\x1b[33m" + "RUNNING:" + "\x1b[1m\x1b[0m", message)
 }
 
 
