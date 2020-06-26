@@ -9,11 +9,16 @@ import { getRepository } from 'typeorm';
 export default class SectionController{
 
     async list(request: APIRequest, response: Response, next: NextFunction) {
-        const sectionsRepo = getRepository(Sections);
-        
-        const sections = await sectionsRepo.find();
+        try {
+            const sectionsRepo = getRepository(Sections);
+            
+            const sections = await sectionsRepo.find();
 
-        return response.send(sections);
+            return response.send(sections);
+        }
+        catch(err) {
+            next(err)
+        }
     }
 
     async create(request: APIRequest, response: Response, next: NextFunction) {

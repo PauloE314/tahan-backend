@@ -12,7 +12,8 @@ const colors = {
     red: "\x1b[31m",
     yellow: "\x1b[33m",
     green: "\x1b[32m",
-    blue: "\x1b[36m"
+    blue: "\x1b[36m",
+    bold: "\x1b[1m"
 }
 
 
@@ -157,7 +158,7 @@ async function executeSeed(filename: string): Promise<void | string[]> {
             }
             else {
                 const seed: Seed = new seed_default();
-                RUNNING(filename + colors.blue);
+                RUNNING(filename + colors.bold + colors.blue);
                 await seed.execute();
                 console.log(colors.default)
             }
@@ -190,7 +191,7 @@ function SUCCESS(message: string) {
 }
 
 function RUNNING(message: string) {
-    console.log(colors.yellow + "RUNNING:" + "\x1b[1m" + colors.default, message)
+    console.log(colors.yellow + "RUNNING:" + colors.bold + colors.default, message)
 }
 
 

@@ -1,4 +1,5 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany } from "typeorm";
+import { Topics } from './Topics';
 
 @Entity()
 @Unique(['email', 'username'])
@@ -21,4 +22,7 @@ export class Users {
 
     @Column()
     occupation: string;
+
+    @OneToMany(type => Topics, writenTopics => writenTopics.author)
+    writenTopics: Topics[];
 }
