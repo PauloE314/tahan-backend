@@ -7,14 +7,14 @@
       "src/models**/*.ts"
    ],
    "migrations": [
-      "src/database/migrations/**/*.ts"
+      "database/migrations/**/*.ts"
    ],
    "subscribers": [
-      "src/database/subscriber/**/*.ts"
+      "database/subscriber/**/*.ts"
    ],
    "cli": {
       "entitiesDir": "src/models",
-      "migrationsDir": "src/database/migrations",
-      "subscribersDir": "src/database/subscriber"
+      "migrationsDir": "database/migrations",
+      "subscribersDir": "database/subscriber"
    }
 }
