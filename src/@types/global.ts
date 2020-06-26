@@ -1,4 +1,5 @@
-import {Request, Response} from 'express';
+import { Request, Response } from 'express';
+import { Repository, getRepository, EntitySchema, ObjectLiteral } from 'typeorm';
 import { Users } from '@models/User'
 
 // modelo de usuário
@@ -19,7 +20,6 @@ export interface APIRequest extends Request{
 
 // Classe de seeds
 export class Seed {
-
     public async execute(){
 
     }
