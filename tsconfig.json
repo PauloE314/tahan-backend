@@ -7,7 +7,8 @@
         "@controllers/*": ["./src/controllers/*"],
         "@models/*": ["./src/models/*"],
         "@middlewares/*": ["./src/middlewares/*"],
-        "@routes/*": ["./src/routes/*"]
+        "@routes/*": ["./src/routes/*"],
+        "@database/*": ["./src/database/*"]
      },
      /* Basic Options */
      // "incremental": true,                   /* Enable incremental compilation */

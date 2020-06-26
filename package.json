@@ -5,11 +5,10 @@
    "license": "MIT",
    "scripts": {
       "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpileOnly --ignore-watch node_modules src/server.ts",
-      "start": "ts-node src/index.ts",
       "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
       "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert",
       "migration:create": "ts-node ./node_modules/typeorm/cli.js migration:create",
-      "connect": "ts-node src/database/connection.ts"
+      "seed": "ts-node -r tsconfig-paths/register src/scripts/seeds.ts"
    },
    "devDependencies": {
       "@types/bcrypt": "^3.0.0",

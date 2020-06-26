@@ -15,3 +15,12 @@ export interface user_interface {
 export interface APIRequest extends Request{
     user?: user_interface
 }
+
+
+// Classe de seeds
+export class Seed {
+
+    public async execute(){
+
+    }
+}

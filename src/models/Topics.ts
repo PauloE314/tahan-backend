@@ -9,6 +9,8 @@ export class Topics {
 
     @ManyToOne(type => Sections, section => section.id)
     section: Sections;
+
+    // @
 }
 
 

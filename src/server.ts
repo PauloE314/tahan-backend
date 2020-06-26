@@ -6,6 +6,7 @@ const { port } = configs;
 
 
 createConnection().then(connection => {
+    // connection.connect();
     server.listen(port);
 })
 .catch(e => console.log(e.message))
