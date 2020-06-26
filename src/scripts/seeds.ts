@@ -1,11 +1,19 @@
 import fs from "fs";
 import path from 'path';
 
-import { Seed } from 'src/@types/global'
+import { Seed } from 'src/@types/global';
+import { createConnection } from 'typeorm';
 
 const argv = process.argv;
-const argv_length = argv.length
-const params = ['run', 'create', '-h']
+const argv_length = argv.length;
+const params = ['run', 'create', '-h'];
+const colors = {
+    default : "\x1b[0m",
+    red: "\x1b[31m",
+    yellow: "\x1b[33m",
+    green: "\x1b[32m",
+    blue: "\x1b[36m"
+}
 
 
 async function main () {
@@ -22,8 +30,10 @@ async function main () {
             await createSeed(command_params[1])
 
         if (command_params[0] == 'run' && command_length == 2) {
-            if (command_params[1] == '--all')
+            if (command_params[1] == '--all') {
                 await runAllSeeds()
+            }
+        
             
             else
                 await runSeed(command_params[1])
@@ -61,22 +71,52 @@ export default class ${name + 'Seed'} extends Seed {
 
 // Executa uma seed específica
 async function runSeed(name: string) {
-    await executeSeed(name)
+    try {
+        const connection = await createConnection()
+        
+        const errors = await executeSeed(name)
 
-    SUCCESS(`Seed '${name}' executada com sucesso`)
+        if (errors)
+            if (errors.length) {
+                console.log()
+                process.exit(0)
+            }
+
+        await connection.close()
+        SUCCESS(`Seed '${name}' executada com sucesso`)
+    }
+
+    catch (err) {
+        ERROR(`Erro na database '${err.message}'`);
+    }
 }
 
 // Executa todas as seeds na pasta de seeds
 async function runAllSeeds() {
     const seedFolder = path.resolve(__dirname, '..', 'database', 'seeds')
     const seeds = fs.readdirSync(seedFolder)
+    const errors = []
 
-    for (let seed of seeds) {
-        await executeSeed(seed)
+    try {
+        const connection = await createConnection()
+        
+        for (let seed of seeds) {
+            const error = await executeSeed(seed)
+            if (error)
+                errors.push(error)
+        }
+        if (errors.length) {
+            console.log()
+            process.exit(0)
+        }
+
+        await connection.close()
+        SUCCESS(`Todas as seeds foram executadas com sucesso`)
     }
-
-
-    SUCCESS(`Todas as seeds foram executadas com sucesso`)
+   
+    catch(err){
+         ERROR(`Erro na database '${err.name}'`)
+    }
 }
 
 // Explica as funcionalidades do programa
@@ -98,8 +138,9 @@ async function help() {
 
 
 // Executa a seed propriamente dita
-async function executeSeed(filename: string) {
+async function executeSeed(filename: string): Promise<void | string[]> {
     const filepath = path.resolve('src', 'database', 'seeds', filename);
+    const errors: string[] = Array();
 
     if (fs.existsSync(filepath)) {
         
@@ -107,21 +148,25 @@ async function executeSeed(filename: string) {
             const seed_default = (await import('../database/seeds/' + filename)).default;
             if (!seed_default) {
                 ERROR(`A exportação 'default' do módulo '${filename}' não existe`, false)
+                errors.push(filename)
             }
 
             if (!(seed_default.prototype instanceof Seed)) {
-                ERROR(`A exportação 'default' do módulo '${filename}' não herda a classe Seed`, false)
+                ERROR(`A exportação 'default' do módulo '${filename}' não herda a classe Seed`, false);
+                errors.push(filename)
             }
             else {
                 const seed: Seed = new seed_default();
-                RUNNING(filename + "\x1b[36m")
+                RUNNING(filename + colors.blue);
                 await seed.execute();
-                console.log()
+                console.log(colors.default)
             }
         }
         catch(err) {
-            ERROR(err.message, false)    
+            ERROR(err.message, false) 
+            errors.push(filename)   
         }
+        return errors;
     }
 
     else 
@@ -130,7 +175,7 @@ async function executeSeed(filename: string) {
 
 // Erro
 function ERROR(message: string, end?: Boolean) {
-    console.log("\x1b[31m" + "ERROR:" + "\x1b[0m", message)
+    console.log(colors.red + "ERROR:" + colors.default, message)
     if (end !== false) {
         console.log('\n')
         process.exit(-1)
@@ -139,13 +184,13 @@ function ERROR(message: string, end?: Boolean) {
 
 // Sucesso
 function SUCCESS(message: string) {
-    console.log("\x1b[32m" + "SUCCESS:" + "\x1b[0m", message)
+    console.log(colors.green + "SUCCESS:" + colors.default, message)
     console.log('\n')
     process.exit(0)
 }
 
 function RUNNING(message: string) {
-    console.log("\x1b[33m" + "RUNNING:" + "\x1b[1m\x1b[0m", message)
+    console.log(colors.yellow + "RUNNING:" + "\x1b[1m" + colors.default, message)
 }
 
 

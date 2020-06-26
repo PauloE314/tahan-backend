@@ -1,4 +1,5 @@
-import { QueryRunner, getRepository } from "typeorm"
+import { getRepository } from "typeorm"
+import { Sections } from '@models/Sections';
 import { Seed } from 'src/@types/global';
 
 interface section {
@@ -17,18 +18,22 @@ const sections: section[] = [
     }
 ]
 
-
-// export default async function (queryRunner: QueryRunner) {
-//     console.log('======= Salvando Instâncias =========')
-//     const sectionRepo = getRepository('section')
-//     const savedSections = await sectionRepo.save(sections)
-
-    
-// }
-
 export default class SectionSeed extends Seed {
     public async execute() {
-        console.log('SEEEEED')
+        const sectionRepo = getRepository(Sections);
+
+        for( let raw_section of sections) {
+            try {
+                const new_section = new Sections()
+                new_section.name = raw_section.name
+
+                const saved_section = await sectionRepo.save(new_section)
+                console.log('Seção salva', new_section)
+            }
+            catch(e) {
+                console.log('Erro:', e.message)
+            }
+        }
     }
 }
     
