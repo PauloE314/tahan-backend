@@ -73,19 +73,23 @@ export default class UserController {
     return response.send(user);
   }
 
+  // Update de informações do usuário
   async update(request: APIRequest, response: Response, next: NextFunction) {
     const { username, password } = request.body;
     const user = request.user.info;
     const userRepo = getRepository(Users);
 
-    if (username) { user.username = username; }
+    if (username)
+        user.username = username;
 
-    if (password) { user.password = crypto.hashSync(password, 10); }
+    if (password)
+      user.password = crypto.hashSync(password, 10);
 
     const updated_user = await userRepo.save(user);
     return response.send(updated_user);
   }
 
+  // Deleta o usuário
   async delete(request: APIRequest, response: Response, next: NextFunction) {
     const userRepo = getRepository(Users);
     const user = request.user.info;
