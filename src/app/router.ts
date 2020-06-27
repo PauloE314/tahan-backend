@@ -8,6 +8,7 @@ const router = Router();
 
 router.use('/users/', userRouter);
 router.use('/sections/', sectionRouter);
-router.use('/sections/:section_id/', topicRouter);
+
+router.use('/sections/:section_id/topics/', topicRouter);
 
 export default router;

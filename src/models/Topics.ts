@@ -18,6 +18,9 @@ export class Topics {
     author: Users;
 
     @Column()
+    title: string;
+
+    @Column()
     order: Number;
 
     @Column()
