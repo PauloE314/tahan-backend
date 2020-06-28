@@ -39,7 +39,7 @@ export async function get_user(request: APIRequest, response: Response, next: Ne
             }
         }
         catch(err) {
-            console.log({auth: err.message})
+            console.log({auth: err.message});
         }
     }
     return next();
@@ -80,6 +80,9 @@ export async function auth_require(request: APIRequest, response: Response, next
         catch(err) {
             if (err.name == "TokenExpiredError")
                 return response.status(401).send({message: "Token expirou ou não existe"})
+
+            if (err.name == "JsonWebTokenError")
+                return response.status(400).send({message: "Erro no token JWt", original_message: err.message})
             return response.status(500).send({error: { name: err.name, message: err.message }})
         }
     }

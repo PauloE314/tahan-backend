@@ -1,9 +1,9 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn} from "typeorm";
 import { Sections } from './Sections';
 import { Users } from './User';
 
 @Entity()
-@Unique(['id', 'order'])
+@Unique(['id', "title"])
 export class Topics {
 
     @PrimaryGeneratedColumn()
@@ -21,10 +21,10 @@ export class Topics {
     title: string;
 
     @Column()
-    order: Number;
-
-    @Column()
     content: String;
+
+    @CreateDateColumn()
+    created_at: Date;
 }
 
 

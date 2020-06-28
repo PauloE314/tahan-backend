@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateColumn } from "typeorm";
 import { Topics } from './Topics';
 
 @Entity()
@@ -22,6 +22,9 @@ export class Users {
 
     @Column()
     occupation: string;
+
+    @CreateDateColumn()
+    created_at: Date;
 
     @OneToMany(type => Topics, writenTopics => writenTopics.author)
     writenTopics: Topics[];
