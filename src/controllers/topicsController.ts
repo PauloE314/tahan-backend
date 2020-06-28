@@ -9,7 +9,7 @@ import { Sections } from '@models/Sections';
 export default class TopicController {
     // Lista os tópicos da seção existente
     // Pesquisar por: username do author e titulo
-    async list(request: APIRequest, response: Response, next: NextFunction) {
+    async list (request: APIRequest, response: Response, next: NextFunction) {
         const topics = await getRepository(Topics)
             .find({
                 relations: ["author", "section"],
@@ -20,7 +20,7 @@ export default class TopicController {
     }
 
     // Cria um tópico para a seção
-    async create(request: APIRequest, response: Response, next: NextFunction) {
+    async create (request: APIRequest, response: Response, next: NextFunction) {
         const new_topic = new Topics();
 
         const { title, content } = request.body;
@@ -36,14 +36,20 @@ export default class TopicController {
     }
 
     // Ver um tópico específico
-    async read(request: APIRequest, response: Response, next: NextFunction) {
+    async read (request: APIRequest, response: Response, next: NextFunction) {
         const { topic } = request;
+        const full_topic = await getRepository(Topics).findOne({
+            relations: ["author"],
+            where: {
+                id: topic.id
+            }
+        })
 
-        return response.send(topic);
+        return response.send(full_topic);
     }
 
     // Dá update no tópico (título e conteúdo)
-    async update(request: APIRequest, response: Response, next: NextFunction) {
+    async update (request: APIRequest, response: Response, next: NextFunction) {
         const { topic } = request;
         const { title, content } = request.body;
 
@@ -62,5 +68,14 @@ export default class TopicController {
         catch(err) {
             return response.send(err.message)
         }
+    }
+
+    // Deleta o tópico
+    async delete (request: APIRequest, response: Response, next: NextFunction) {
+        const { topic } = request;
+
+        await getRepository(Topics).remove(topic);
+
+        return response.send({ message: "Tópico deletado com sucesso" });
     }
 }

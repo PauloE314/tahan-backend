@@ -17,6 +17,7 @@ routes.get('/', controller.list);
 routes.post('/', auth_require, validator.create_validation, controller.create);
 routes.get('/:id', getTopic, controller.read)
 routes.put('/:id', auth_require, getTopic, validator.update_validation, controller.update)
+routes.delete('/:id', auth_require, getTopic, validator.delete_validation, controller.delete)
 
 // Criar
 // routes.post('/', controller.create);

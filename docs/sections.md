@@ -102,3 +102,10 @@ Permite criar um tópico na seção selecionada na URL.
 Retorna as informações de um tópico específico ou uma mensagem de erro (caso o tópico não exista). O tópico é retornado no mesmo modelo da listagem.
 
 #### PUT (Autenticação necessária):
+Permite dar update no conteúdo e título do tópico.
+
+**Detalhes:**
+- O usuário precisa ser um professor
+- O usuário precisa ser o autor do tópico
+- O título precisa ter mais que 5 caracteres
+- O título precisa ser único

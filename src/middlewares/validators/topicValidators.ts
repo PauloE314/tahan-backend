@@ -3,6 +3,7 @@ import { Response, NextFunction } from "express";
 
 import { Topics } from '@models/Topics';
 import { getRepository } from "typeorm";
+import { Users } from "@models/User";
 
 
 const rules = {
@@ -16,6 +17,7 @@ interface field_validator {
 
 export default class TopicValidator {
 
+    // Validators de rota
     public create_validation = async (request: APIRequest, response: Response, next: NextFunction) =>  {
         const { title, content } = request.body;
         const user = request.user.info;
@@ -23,12 +25,12 @@ export default class TopicValidator {
 
         const title_validation = await this.validate_title(title);
         const content_validation = await this.validate_content(content);
+        const user_validation = await this.validate_user(user);
+        
 
         // Validação de usuário
-        if (user.occupation !== "teacher")
-            return response.status(400).send({
-                user: "O usuário não pode criar um tópico. É necessário ser um professor para tal"
-            });
+        if (!user_validation.isValid)
+            return response.status(401).send({ user: user_validation.message });
 
         // Validação de título
         if (!title_validation.isValid)
@@ -46,25 +48,20 @@ export default class TopicValidator {
     }
 
 
-    public update_validation =  async (request: APIRequest, response: Response, next: NextFunction) => {
+    public update_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
         const { title, content } = request.body;
         const { topic, user } = request;
         const errors: {title?: string, content?: string} = {};
 
-        if (user.info.occupation !== "teacher") {
-            return response.status(401).send({user: "O usuário não pode alterar um tópico. É necessário ser um professor para tal"})
-        }
-        else {
-            const topicAuthorId = (await getRepository(Topics).findOne({
-                relations: ["author"],
-                where: { id: topic.id }
-            })).author.id;
-            if (topicAuthorId !== user.info.id)
-                return response.status(401).send({user: "O usuário não tem permissão para alterar o tópico. Apenas seu autor pode"});
-        }
+        const user_validation = await this.validate_user(user.info, { topic, isAuthor: true });
 
-        const title_validation = await this.validate_title(title, topic.id);
+        // Validação de usuário
+        if (!user_validation.isValid)
+            return response.status(401).send({ user: user_validation.message});
+
+            
         const content_validation = await this.validate_content(content);
+        const title_validation = await this.validate_title(title, topic.id);
 
         // Caso exista um título, checa se é válido
         if (title)
@@ -81,7 +78,19 @@ export default class TopicValidator {
             return response.status(400).send(errors);
 
         return next();
-        }
+    }
+
+    
+    public delete_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+        const { user, topic } = request;
+
+        const user_validation = await this.validate_user(user.info, { topic, isAuthor: true });
+
+        if (!user_validation.isValid)
+            return response.status(401).send({ user: user_validation.message});
+
+        return next();
+    }
     
 
 
@@ -120,6 +129,32 @@ export default class TopicValidator {
             response.isValid = false;
             response.message = "Envie conteúdo para o tópico";
         }
+
+        return response;
+    }
+
+    private async validate_user (user: Users, options?: { topic: Topics, isAuthor: boolean }) : Promise<field_validator> {
+        const response : field_validator = {
+            isValid: true
+        };
+
+        if (user.occupation !== "teacher") {
+            response.isValid = false;
+            response.message =  "O usuário não pode criar um tópico. É necessário ser um professor para tal";
+        }
+
+        if (options) 
+            if (options.isAuthor) {
+                const topicAuthorId = (await getRepository(Topics).findOne({
+                    relations: ["author"],
+                    where: { id: options.topic.id }
+                })).author.id;
+
+                if (topicAuthorId !== user.id) {
+                    response.isValid = false;
+                    response.message = "O usuário não tem permissão para essa ação; apenas o autor possui";
+                }
+            }
 
         return response;
     }
