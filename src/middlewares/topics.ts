@@ -28,7 +28,7 @@ export async function getTopic(request: APIRequest, response: Response, next: Ne
         const topic = await getRepository(Topics).findOne({ id });
 
         if (!topic)
-            return response.send({message: "Tópico não encontrado"})
+            return response.send({message: "Tópico não encontrado"});
 
         request.topic = topic;
     }

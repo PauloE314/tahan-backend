@@ -1,8 +1,9 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { Repository, getRepository, EntitySchema, ObjectLiteral } from 'typeorm';
 import { Users } from '@models/User';
 import { Sections } from '@models/Sections';
 import { Topics } from '@models/Topics';
+import { PlainObjectToNewEntityTransformer } from 'typeorm/query-builder/transformer/PlainObjectToNewEntityTransformer';
 
 // modelo de usuário
 export interface user_interface {
@@ -14,7 +15,6 @@ export interface user_interface {
 
 }
 
-
 // Modelo de Request
 export interface APIRequest extends Request{
     user?: user_interface,
@@ -22,10 +22,35 @@ export interface APIRequest extends Request{
     topic?: Topics
 }
 
+
 // Interface de validator
-export interface FieldValidator {
-    isValid: boolean,
-    message?: string,
+export class FieldValidator {
+    private isFieldValid: boolean = true;
+    private errorMessage?: string;
+
+    setInvalid(message: string) {
+        this.isFieldValid = false;
+        this.errorMessage = message;
+    }
+
+    get isValid() {
+        return this.isFieldValid;
+    }
+
+    get message() {
+        return this.errorMessage;
+    }
+}
+
+
+export class Validator {
+
+    handle_errors_or_next(errors: object, request: APIRequest, response: Response, next: NextFunction) {
+        if (Object.keys(errors).length !== 0)
+            return response.status(400).send(errors);
+
+        return next();
+    }
 }
 
 

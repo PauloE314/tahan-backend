@@ -1,4 +1,4 @@
-import { APIRequest } from "src/@types/global";
+import { APIRequest, Validator } from "src/@types/global";
 import { Response, NextFunction } from "express";
 
 import { Topics } from '@models/Topics';
@@ -13,7 +13,7 @@ const rules = {
 
 
 
-export default class TopicValidator {
+export default class TopicValidator extends Validator{
 
     // Validators de rota
     public create_validation = async (request: APIRequest, response: Response, next: NextFunction) =>  {
@@ -40,9 +40,7 @@ export default class TopicValidator {
 
     
         // Retornando erros ou não
-        if (Object.keys(errors).length)
-            return response.status(400).send(errors);
-        next();
+        return this.handle_errors_or_next(errors, request, response, next);
     }
 
 
@@ -72,10 +70,7 @@ export default class TopicValidator {
                 errors.content = content_validation.message;
 
         // Retornando erros ou não
-        if (Object.keys(errors).length)
-            return response.status(400).send(errors);
-
-        return next();
+        return this.handle_errors_or_next(errors, request, response, next);
     }
 
     
@@ -97,52 +92,39 @@ export default class TopicValidator {
     // Validators de campos
     // Validator de título
     private async validate_title (title: string | undefined, existent_topicId?: number) : Promise<FieldValidator> {
-        const response : FieldValidator = {
-            isValid: true
-        };
+        const response = new FieldValidator();
         // Validação de título
         if (title && rules.title.test(title)) {
             const same_title_topic = await getRepository(Topics).findOne({title});
             // Checa se o título já não existe
-            if (same_title_topic) {
-                if (same_title_topic.id !== existent_topicId) {
-                    response.isValid = false
-                    response.message = "Esse título já foi escolhido para outro tópico";
-                }
-            }
+            if (same_title_topic) 
+                if (same_title_topic.id !== existent_topicId)
+                    response.setInvalid("Esse título já foi escolhido para outro tópico");
+            
         }
-        else {
-            response.isValid = false;
-            response.message = "Envie um título válido - maior que 5 caracteres";
-        }
+        else 
+            response.setInvalid("Envie um título válido - maior que 5 caracteres");
+        
         return response;
     }
 
     // Validator de conteúdo
     private async validate_content (content: string | undefined) : Promise<FieldValidator> {
-        const response : FieldValidator = {
-            isValid: true
-        };
+        const response = new FieldValidator();
 
         // Validação de conteúdo
-        if (!content) {
-            response.isValid = false;
-            response.message = "Envie conteúdo para o tópico";
-        }
+        if (!content) 
+            response.setInvalid("Envie conteúdo para o tópico");
 
         return response;
     }
 
     // Validator de user
     private async validate_user (user: Users, options?: { topic: Topics, isAuthor: boolean }) : Promise<FieldValidator> {
-        const response : FieldValidator = {
-            isValid: true
-        };
+        const response = new FieldValidator();
 
-        if (user.occupation !== "teacher") {
-            response.isValid = false;
-            response.message =  "O usuário não pode criar um tópico. É necessário ser um professor para tal";
-        }
+        if (user.occupation !== "teacher") 
+            response.setInvalid("O usuário não pode criar um tópico. É necessário ser um professor para tal");
 
         if (options) 
             if (options.isAuthor) {
@@ -151,10 +133,8 @@ export default class TopicValidator {
                     where: { id: options.topic.id }
                 })).author.id;
 
-                if (topicAuthorId !== user.id) {
-                    response.isValid = false;
-                    response.message = "O usuário não tem permissão para essa ação; apenas o autor possui";
-                }
+                if (topicAuthorId !== user.id) 
+                    response.setInvalid("O usuário não tem permissão para essa ação; apenas o autor possui");
             }
 
         return response;
