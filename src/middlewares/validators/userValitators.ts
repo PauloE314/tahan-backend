@@ -1,9 +1,9 @@
 import { Users } from '../../models/User';
-import { APIRequest, FieldValidator, Validator } from 'src/@types/global';
+import { APIRequest } from 'src/@types/global';
+import {  FieldValidator, Validator } from 'src/@types/classes';
 import { Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';
 
-import { remove_file } from '@config/multer';
 
 const rules = {
     password_regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=\S*)[\S]{8,}$/,

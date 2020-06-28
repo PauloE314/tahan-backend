@@ -1,10 +1,10 @@
-import { APIRequest, Validator } from "src/@types/global";
+import { APIRequest } from "src/@types/global";
 import { Response, NextFunction } from "express";
 
 import { Topics } from '@models/Topics';
 import { getRepository } from "typeorm";
 import { Users } from "@models/User";
-import { FieldValidator } from "src/@types/global";
+import { Validator, FieldValidator } from "src/@types/classes";
 
 
 const rules = {
