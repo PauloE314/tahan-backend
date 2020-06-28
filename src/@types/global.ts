@@ -22,6 +22,12 @@ export interface APIRequest extends Request{
     topic?: Topics
 }
 
+// Interface de validator
+export interface FieldValidator {
+    isValid: boolean,
+    message?: string,
+}
+
 
 // Classe de seeds
 export class Seed {

@@ -109,3 +109,9 @@ Permite dar update no conteúdo e título do tópico.
 - O usuário precisa ser o autor do tópico
 - O título precisa ter mais que 5 caracteres
 - O título precisa ser único
+
+#### DELETE (Autenticação necessária):
+Permite deletar um tópico.
+
+**Detalhes:**
+- O usuário precisa ser o autor do tópico

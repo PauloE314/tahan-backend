@@ -4,16 +4,14 @@ import { Response, NextFunction } from "express";
 import { Topics } from '@models/Topics';
 import { getRepository } from "typeorm";
 import { Users } from "@models/User";
+import { FieldValidator } from "src/@types/global";
 
 
 const rules = {
     title: /.{5,}/
 }
 
-interface field_validator {
-    isValid: boolean,
-    message?: string,
-}
+
 
 export default class TopicValidator {
 
@@ -97,8 +95,9 @@ export default class TopicValidator {
 
 
     // Validators de campos
-    private async validate_title (title: string | undefined, existent_topicId?: number) : Promise<field_validator>{
-        const response : field_validator = {
+    // Validator de título
+    private async validate_title (title: string | undefined, existent_topicId?: number) : Promise<FieldValidator> {
+        const response : FieldValidator = {
             isValid: true
         };
         // Validação de título
@@ -119,8 +118,9 @@ export default class TopicValidator {
         return response;
     }
 
-    private async validate_content (content: string | undefined) : Promise<field_validator> {
-        const response : field_validator = {
+    // Validator de conteúdo
+    private async validate_content (content: string | undefined) : Promise<FieldValidator> {
+        const response : FieldValidator = {
             isValid: true
         };
 
@@ -133,8 +133,9 @@ export default class TopicValidator {
         return response;
     }
 
-    private async validate_user (user: Users, options?: { topic: Topics, isAuthor: boolean }) : Promise<field_validator> {
-        const response : field_validator = {
+    // Validator de user
+    private async validate_user (user: Users, options?: { topic: Topics, isAuthor: boolean }) : Promise<FieldValidator> {
+        const response : FieldValidator = {
             isValid: true
         };
 
