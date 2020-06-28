@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Repository, getRepository, EntitySchema, ObjectLiteral } from 'typeorm';
 import { Users } from '@models/User';
 import { Sections } from '@models/Sections';
+import { Topics } from '@models/Topics';
 
 // modelo de usuário
 export interface user_interface {
@@ -17,7 +18,8 @@ export interface user_interface {
 // Modelo de Request
 export interface APIRequest extends Request{
     user?: user_interface,
-    section?: Sections
+    section?: Sections,
+    topic?: Topics
 }
 
 

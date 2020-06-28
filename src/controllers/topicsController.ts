@@ -1,4 +1,4 @@
-import { Response, NextFunction } from 'express';
+import { Response, NextFunction, Request } from 'express';
 import { Topics } from '@models/Topics';
 
 import { APIRequest } from 'src/@types/global';
@@ -33,5 +33,12 @@ export default class TopicController {
         const saved_topic = await topicRepo.save(new_topic);
         
         return response.send(saved_topic);
+    }
+
+    // Ver um tópico específico
+    async read(request: APIRequest, response: Response, next: NextFunction) {
+        const { topic } = request;
+
+        return response.send(topic);
     }
 }

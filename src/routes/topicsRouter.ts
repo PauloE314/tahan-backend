@@ -15,6 +15,7 @@ routes.use(getSection);
 // Leitura
 routes.get('/', controller.list);
 routes.post('/', auth_require, validator.create_validation, controller.create);
+routes.get('/:id', validator.read_validation, controller.read)
 
 // Criar
 // routes.post('/', controller.create);

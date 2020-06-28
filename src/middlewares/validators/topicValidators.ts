@@ -43,4 +43,19 @@ export default class TopicValidator {
             return response.status(400).send(errors);
         next();
     }
+
+    async read_validation (request: APIRequest, response: Response, next: NextFunction) {
+        const id = Number(request.params.id);
+
+        if (!isNaN(id)) {
+            const topic = await getRepository(Topics).findOne({ id });
+
+            if (!topic)
+                return response.send({message: "Tópico não encontrado"})
+
+            request.topic = topic;
+        }
+
+        return next();
+    }
 }
