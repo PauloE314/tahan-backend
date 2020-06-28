@@ -8,7 +8,6 @@ const validator = new SectionValidator();
 
 // Leitura
 routes.get('/', controller.list);
-routes.get('/:id/', validator.read_validation, controller.read);
 
 // Criar
 // routes.post('/', controller.create);

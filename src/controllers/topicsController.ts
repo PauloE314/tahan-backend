@@ -2,7 +2,7 @@ import { Response, NextFunction, Request } from 'express';
 import { Topics } from '@models/Topics';
 
 import { APIRequest } from 'src/@types/global';
-import { getRepository } from 'typeorm';
+import { getRepository, Like } from 'typeorm';
 import { Sections } from '@models/Sections';
 
 
@@ -10,10 +10,16 @@ export default class TopicController {
     // Lista os tópicos da seção existente
     // Pesquisar por: username do author e titulo
     async list (request: APIRequest, response: Response, next: NextFunction) {
+        const query_params = request.query ? request.query : { title: null };
+        const where = <any>{ section: { id : request.section.id } };
+
+        if (query_params.title)
+            where.title = Like(`%${query_params.title}%`);
+
         const topics = await getRepository(Topics)
             .find({
                 relations: ["author", "section"],
-                where: { section: request.section }
+                where
             })
 
         return response.send(topics);

@@ -24,25 +24,14 @@ Retorna a lista das seções (áreas do conhecimento, tipo matemática, física,
 
 <hr>
 
-## **PATH: /sections/:id - GET**
-
-#### GET (Autenticação não necessária):
-Retorna as informações de uma seção específica, contendo, inclusive, a lista de tópicos da seção
-
-```json
-{
-  "id": 1,
-  "name": "Matemática",
-  "topics": []
-}
-```
 
 <hr>
 
 ## **PATH: /sections/:id/topics - GET, POST**
 
 #### GET (Autenticação não necessária):
-Retorna a lista de tópicos de uma seção.
+Retorna a lista de tópicos de uma seção. Essa URL está sujeita a filtro pelo título do tópico
+- baseurl/section/1/topics/?title="Lorem"
 
 ```json
 [
