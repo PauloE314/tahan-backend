@@ -8,15 +8,15 @@ import { Sections } from '@models/Sections';
 
 export default class TopicController {
     // Lista os tópicos da seção existente
+    // Pesquisar por: username do author e titulo
     async list(request: APIRequest, response: Response, next: NextFunction) {
-        const { id } = request.section;
         const topics = await getRepository(Topics)
             .find({
                 relations: ["author", "section"],
                 where: { section: request.section }
             })
 
-        return response.send(topics)
+        return response.send(topics);
     }
 
     // Cria um tópico para a seção
@@ -32,6 +32,6 @@ export default class TopicController {
         const topicRepo = getRepository(Topics);
         const saved_topic = await topicRepo.save(new_topic);
         
-        return response.send(saved_topic)
+        return response.send(saved_topic);
     }
 }
