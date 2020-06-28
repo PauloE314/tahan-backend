@@ -1,5 +1,5 @@
 import { Router, NextFunction, Response } from 'express';
-import { getSection } from '@middlewares/topics';
+import { getSection, getTopic } from '@middlewares/topics';
 import { auth_require } from "@middlewares/auth"
 import TopicController from '@controllers/topicsController';
 import { APIRequest } from 'src/@types/global';
@@ -15,7 +15,8 @@ routes.use(getSection);
 // Leitura
 routes.get('/', controller.list);
 routes.post('/', auth_require, validator.create_validation, controller.create);
-routes.get('/:id', validator.read_validation, controller.read)
+routes.get('/:id', getTopic, controller.read)
+routes.put('/:id', auth_require, getTopic, validator.update_validation, controller.update)
 
 // Criar
 // routes.post('/', controller.create);

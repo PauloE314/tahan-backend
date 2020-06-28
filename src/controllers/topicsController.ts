@@ -41,4 +41,26 @@ export default class TopicController {
 
         return response.send(topic);
     }
+
+    // Dá update no tópico (título e conteúdo)
+    async update(request: APIRequest, response: Response, next: NextFunction) {
+        const { topic } = request;
+        const { title, content } = request.body;
+
+        if (title)
+            topic.title = title;
+
+        if (content)
+            topic.content = content;
+
+        try {
+            const topicRepo =  getRepository(Topics);
+            const saved_topic = await topicRepo.save(topic);
+
+            return response.send(saved_topic);
+        }
+        catch(err) {
+            return response.send(err.message)
+        }
+    }
 }

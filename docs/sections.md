@@ -95,3 +95,10 @@ Permite criar um tópico na seção selecionada na URL.
 - O título precisa ser único
 
 <hr>
+
+## **PATH: /sections/:sec_id/topics/:id - GET, PUT, DELETE**
+
+#### GET (Autenticação não necessária):
+Retorna as informações de um tópico específico ou uma mensagem de erro (caso o tópico não exista). O tópico é retornado no mesmo modelo da listagem.
+
+#### PUT (Autenticação necessária):
