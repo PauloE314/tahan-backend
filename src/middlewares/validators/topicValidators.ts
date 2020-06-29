@@ -4,7 +4,7 @@ import { Response, NextFunction } from "express";
 import { Topics } from '@models/Topics';
 import { getRepository } from "typeorm";
 import { Users } from "@models/User";
-import { Validator, FieldValidator } from "src/@types/classes";
+import { Validator } from "src/@types/classes";
 
 
 const rules = {
@@ -17,72 +17,71 @@ export default class TopicValidator extends Validator{
 
     // Validators de rota
     public create_validation = async (request: APIRequest, response: Response, next: NextFunction) =>  {
+        this.clear();
         const { title, content } = request.body;
         const user = request.user.info;
-        const errors: {title?: string, content?:string} = {};
-
-        const title_validation = await this.validate_title(title);
-        const content_validation = await this.validate_content(content);
-        const user_validation = await this.validate_user(user);
-        
 
         // Validação de usuário
+        const user_validation = await this.createFieldValidator({
+            name: "user", data: user, validation: this.validate_user
+        });
+
         if (!user_validation.isValid)
             return response.status(401).send({ user: user_validation.message });
 
         // Validação de título
-        if (!title_validation.isValid)
-            errors.title = title_validation.message;
+        const title_validation = await this.createFieldValidator({
+            name: "title", data: title, validation: this.validate_title
+        });
 
         // Validação de conteúdo
-        if (!content_validation.isValid)
-            errors.content = content_validation.message;
-
-    
-        // Retornando erros ou não
-        return this.handle_errors_or_next(errors, request, response, next);
+        const content_validation = await this.createFieldValidator({
+            name: "content", data: content, validation: this.validate_content
+        });
+        
+        // Resposta
+        return this.answer(request, response, next);
     }
 
 
     public update_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+        this.clear();
         const { title, content } = request.body;
         const { topic, user } = request;
-        const errors: {title?: string, content?: string} = {};
 
-        const user_validation = await this.validate_user(user.info, { topic, isAuthor: true });
+        // Validação de usuário
+        const user_validation = await this.createFieldValidator({
+            name: "content", data: user.info, validation:  this.validate_user, options: { topic, isAuthor: true}
+        })
 
         // Validação de usuário
         if (!user_validation.isValid)
             return response.status(401).send({ user: user_validation.message});
 
-            
-        const content_validation = await this.validate_content(content);
-        const title_validation = await this.validate_title(title, topic.id);
-
-        // Caso exista um título, checa se é válido
-        if (title)
-            if (!title_validation.isValid)
-                errors.title = title_validation.message;
+        // Validação de conteúdo
+        const content_validation = await this.createFieldValidator({
+            name: "content", data: content, validation: this.validate_content, options: { optional: true }
+        });
         
-        // Caso exista um conteúdo, checa se é válido
-        if (content)
-            if (!content_validation.isValid)
-                errors.content = content_validation.message;
+
+        const title_validation = await this.createFieldValidator({
+            name: "title", data: title, validation: this.validate_title, options: { optional: true, existent_topicId: topic.id}
+        });
 
         // Retornando erros ou não
-        return this.handle_errors_or_next(errors, request, response, next);
+        return this.answer(request, response, next);
     }
 
     
     public delete_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+        this.clear();
         const { user, topic } = request;
 
-        const user_validation = await this.validate_user(user.info, { topic, isAuthor: true });
+        const user_validation = await this.createFieldValidator({
+            name: "user", data: user.info, validation: this.validate_user, options: { topic, isAuthor: true }
+        })
 
-        if (!user_validation.isValid)
-            return response.status(401).send({ user: user_validation.message});
-
-        return next();
+        return this.answer(request, response, next);
     }
     
 
@@ -91,40 +90,37 @@ export default class TopicValidator extends Validator{
 
     // Validators de campos
     // Validator de título
-    private async validate_title (title: string | undefined, existent_topicId?: number) : Promise<FieldValidator> {
-        const response = new FieldValidator();
+    private async validate_title (title: string | undefined, options?: { optional: boolean, existent_topicId?: number }) {
         // Validação de título
         if (title && rules.title.test(title)) {
             const same_title_topic = await getRepository(Topics).findOne({title});
+            const existent_topicId = options ? options.existent_topicId : null;
             // Checa se o título já não existe
             if (same_title_topic) 
                 if (same_title_topic.id !== existent_topicId)
-                    response.setInvalid("Esse título já foi escolhido para outro tópico");
+                    return "Esse título já foi escolhido para outro tópico";
             
         }
         else 
-            response.setInvalid("Envie um título válido - maior que 5 caracteres");
-        
-        return response;
+            return "Envie um título válido - maior que 5 caracteres";
+    
+        return;
     }
 
     // Validator de conteúdo
-    private async validate_content (content: string | undefined) : Promise<FieldValidator> {
-        const response = new FieldValidator();
-
+    private async validate_content (content: string | undefined, options?: { optional: boolean }){
         // Validação de conteúdo
         if (!content) 
-            response.setInvalid("Envie conteúdo para o tópico");
+            return "Envie conteúdo para o tópico";
 
-        return response;
+        return;
     }
 
     // Validator de user
-    private async validate_user (user: Users, options?: { topic: Topics, isAuthor: boolean }) : Promise<FieldValidator> {
-        const response = new FieldValidator();
-
+    private async validate_user (user: Users, options?: { topic: Topics, isAuthor: boolean }) {
+        let response: string;
         if (user.occupation !== "teacher") 
-            response.setInvalid("O usuário não pode criar um tópico. É necessário ser um professor para tal");
+            response ="O usuário não pode criar um tópico. É necessário ser um professor para tal";
 
         if (options) 
             if (options.isAuthor) {
@@ -134,7 +130,7 @@ export default class TopicValidator extends Validator{
                 })).author.id;
 
                 if (topicAuthorId !== user.id) 
-                    response.setInvalid("O usuário não tem permissão para essa ação; apenas o autor possui");
+                    response = "O usuário não tem permissão para essa ação; apenas o autor possui";
             }
 
         return response;

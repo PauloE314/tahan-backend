@@ -1,18 +1,17 @@
 import { APIRequest } from "src/@types/global";
 import { NextFunction, Response } from "express";
-import { NewFieldValidator, Validator } from "./classes";
-import { FieldValidator } from "src/@types/classes";
+import { Validator } from "./classes";
 
 export default class TestValidator extends Validator {
     public test = async (request: APIRequest, response: Response, next: NextFunction) => {
         
+        
         try {
             const { name } = request.body;
-            const fieldValidator = new NewFieldValidator("name", name);
+            const fieldValidator = await this.createFieldValidator("name", name, this.name_validate);
             // fieldValidator.setInvalid("Testando");
 
-
-            this.checkFields([fieldValidator]);
+            
             return this.answer(request, response, next);
         }
         catch (err) {
@@ -20,7 +19,9 @@ export default class TestValidator extends Validator {
         }
     }
 
-    private async name_validate (name: string) {
-        console.log('VALIDANDO...')
+    private name_validate (name: string) : string | void {
+        console.log('VALIDANDO...');
+
+        return "Errado"
     } 
 }
