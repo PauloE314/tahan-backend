@@ -7,5 +7,5 @@ export default {
     image_host: `http://localhost:3000/uploads/`,
     image_path,
     secret_key: "zKRk85IqOdErrmR4",
-    jwtTime: "1d"
+    jwtTime: "3d"
 }

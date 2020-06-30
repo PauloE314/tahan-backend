@@ -124,4 +124,10 @@ export default class UserController {
         // Retorna as informações do usuário
         return response.send({ user, token: login_token });
     }
+
+//     async check_JWT(request: APIRequest, response: Response) {
+//       const user = request.user;
+
+//       return response.send(user);
+//     }
 }

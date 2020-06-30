@@ -52,10 +52,10 @@ export async function auth_user(input: { token: string, method: string, raiseErr
             }
             catch(err) {
                 if (err.name == "TokenExpiredError")
-                    err.message = "Token expirou ou não existe";
+                    err.message = "Token expirou";
 
                 if (err.name == "JsonWebTokenError") {
-                    err.message = "Erro no token JWt";
+                    err.message = "Erro no token JWt - inválido";
                 }
 
                 throw err;

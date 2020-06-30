@@ -15,7 +15,10 @@ export async function auth_require(request: APIRequest, response: Response, next
             next();
     }
     catch(err) {
-        if (valid_error_names.includes(err.name))
+        if (err.name == "TokenExpiredError")
+            return response.status(406).send({message: err.message});
+            
+        else if (valid_error_names.includes(err.name))
             return response.status(401).send({message: err.message});
 
         return response.status(500).send({name: err.name, message: err.message});
