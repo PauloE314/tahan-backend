@@ -24,9 +24,6 @@ Retorna a lista das seções (áreas do conhecimento, tipo matemática, física,
 
 <hr>
 
-
-<hr>
-
 ## **PATH: /sections/:id/topics - GET, POST**
 
 #### GET (Autenticação não necessária):
@@ -104,3 +101,44 @@ Permite deletar um tópico.
 
 **Detalhes:**
 - O usuário precisa ser o autor do tópico
+
+
+<hr>
+
+
+## **PATH: /sections/:id/quizzes - GET, POST**
+
+#### GET: (Autenticação não necessária)
+Lista os quizzes dessa seção. Cada quizz possui os dados do autor e a seção que se encontra.
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Primeiro quizz",
+    "author": {
+      "id": 4,
+      "username": "ProfessorTrês",
+      "email": "professor3@gmail.com",
+      "password": "$2b$10$o4kpIiQpwqcdloREc/gDM.bdQ2M5qjp1PjSL6cuI8e4W/ZVytuQUe",
+      "occupation": "teacher",
+      "created_at": "2020-06-28T13:47:54.000Z"
+    },
+    "section": {
+      "id": 1,
+      "name": "Matemática"
+    }
+  }
+]
+```
+
+
+#### POST: (Autenticação necessária)
+
+Permite os professores criarem quizzes enviando, até o momento, apenas o nome do quizz
+
+```json
+{
+  "name": "Foo"
+}
+```
