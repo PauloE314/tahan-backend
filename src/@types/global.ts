@@ -23,5 +23,16 @@ export interface APIRequest extends Request{
 }
 
 
+// Modelo de SOCKET
+interface CLientSocket extends SocketIO.Client {
+    data: user_interface
+}
+// Modelo cliente
+export interface APISocket extends SocketIO.Socket{
+    client: CLientSocket
+}
+
+
+
 
 

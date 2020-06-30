@@ -4,6 +4,7 @@ import { Response, NextFunction } from "express";
 import { getRepository } from "typeorm";
 import { Sections } from "@models/Sections";
 import { Topics } from "@models/Topics";
+import { auth_user } from 'src/utils';
 
 // Tenta encontrar a seção
 export async function getSection(request: APIRequest, response: Response, next: NextFunction) {
@@ -34,4 +35,20 @@ export async function getTopic(request: APIRequest, response: Response, next: Ne
     }
 
     return next();
+}
+
+// Tenta encontrar o usuário
+export async function get_user(request: APIRequest, response: Response, next: NextFunction) {
+    const token = request.headers.authorization;
+    try {
+        const user = await auth_user({ token, method: 'JWT', raiseError: true});
+        if (user) 
+            request.user = user;
+
+        next();
+    }
+    catch(err) {
+        console.log(err.message);
+        next();
+    }
 }

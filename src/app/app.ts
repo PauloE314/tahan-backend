@@ -4,11 +4,12 @@ import cors from 'cors';
 import http, { Server } from 'http';
 import router from './router';
 import errorHandler from './errors';
-import socketRouter from "./socket_router";
-import {get_user} from '@middlewares/auth';
+import useSocket from "./io";
+import {get_user} from '@middlewares/index';
 
 import "reflect-metadata";
 import socket, { Server as socketServer } from 'socket.io';
+import io from '@routes/socket/connect';
 
 
 class App {
@@ -24,27 +25,31 @@ class App {
         this.errors();
         
         this.server = http.createServer(this.app);
-        this.io = socket().listen(this.server);
-        // this.io.set()
-        // this.io.on('connect', (data) => console.log(data.id))
-        socketRouter(this.io);
+        
+    }
+
+    public activeSocket() {
+        this.io = socket();
+        
+        this.io.listen(this.server, { path: '/socket'});
+        useSocket(this.io).then();
     }
 
 
-    middlewares() {
+    private middlewares() {
         this.app.use(express.json());
         this.app.use(helmet());
         this.app.use(cors());
         this.app.use(get_user);
     }
 
-    routes() {
+    private routes() {
         this.app.use(router);
     }
 
-    errors() {
+    private errors() {
         this.app.use(errorHandler);
     }
 }
 
-export default (new App).server;
+export default new App();

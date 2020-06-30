@@ -133,29 +133,29 @@ export class FieldValidator {
 }
 
 export class SocketRouter {
-    public paths: Array<{
-        path: string,
+    public namespaces: Array<{
+        namespace: string,
         event: string,
         action: (data: any) => any
     }>
 
     constructor() {
-        this.paths = []
+        this.namespaces = []
     }
 
-    on(path: string, event: string, action: (data: any) => any) {
-        this.paths.push({ path, event, action })
+    on(namespace: string, event: string, action: (data: any) => any) {
+        this.namespaces.push({ namespace, event, action })
     }
 
     concat(subRouter: SocketRouter) {
-        subRouter.paths.forEach(path => {
-            this.paths.push(path);
+        subRouter.namespaces.forEach(path => {
+            this.namespaces.push(path);
         });
     }
 
     applie(socket: Server) {
-        this.paths.forEach(path => {
-            socket.of(path.path).on(path.event, path.action);
+        this.namespaces.forEach(path => {
+            socket.of(path.namespace).on(path.event, path.action);
         })
     }
 }

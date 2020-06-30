@@ -1,5 +1,6 @@
 import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateColumn } from "typeorm";
 import { Topics } from './Topics';
+import { Quizzes } from "./quiz/Quizzes";
 
 @Entity()
 @Unique(['email', 'username'])
@@ -28,4 +29,7 @@ export class Users {
 
     @OneToMany(type => Topics, writenTopics => writenTopics.author)
     writenTopics: Topics[];
+
+    @OneToMany(type => Quizzes, quiz => quiz.author)
+    writenQuizzes: Quizzes[];
 }

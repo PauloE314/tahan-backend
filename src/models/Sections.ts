@@ -1,5 +1,6 @@
 import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne } from "typeorm";
 import { Topics } from "./Topics";
+import { Quizzes } from './quiz/Quizzes';
 
 
 
@@ -15,4 +16,8 @@ export class Sections {
 
     @OneToMany(type => Topics, topic => topic.section)
     topics: Topics[];
+
+    @OneToMany(type => Quizzes, quiz => quiz.section)
+    quizzes: Quizzes[];
+
 }
