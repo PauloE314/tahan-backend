@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import userRouter from '@routes/userRoutes';
-import sectionRouter from '@routes/sectionRoutes';
-import topicRouter from '@routes/topicsRouter';
+import userRouter from '@routes/http/userRoutes';
+import sectionRouter from '@routes/http/sectionRoutes';
+import topicRouter from '@routes/http/topicsRouter';
 import testRouter from "src/test/router";
+
 
 const router = Router();
 

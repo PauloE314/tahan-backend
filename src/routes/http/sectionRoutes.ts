@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import sectionController from '@controllers/sectionsController';
+import sectionController from '@controllers/http/sectionsController';
 import SectionValidator from '@middlewares/validators/sectionValidators';
 
 const routes = Router({ mergeParams: true });

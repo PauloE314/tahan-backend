@@ -1,7 +1,7 @@
 import { Router, NextFunction, Response } from 'express';
 import { getSection, getTopic } from '@middlewares/topics';
 import { auth_require } from "@middlewares/auth"
-import TopicController from '@controllers/topicsController';
+import TopicController from '@controllers/http/topicsController';
 import { APIRequest } from 'src/@types/global';
 import TopicValidator from '@middlewares/validators/topicValidators';
 

@@ -1,5 +1,6 @@
 import { APIRequest } from "./global";
-import { Response, NextFunction } from "express";
+import { Response, NextFunction, Router, RouterOptions } from "express";
+import { Server } from "socket.io";
 
 // Classe de seeds
 export class Seed {
@@ -8,6 +9,7 @@ export class Seed {
     }
 }
 
+// Classe de validator
 export class Validator {
     private errors: any;
     // public FieldValidator: FieldValidatorType;
@@ -15,9 +17,7 @@ export class Validator {
 
     // Configurações iniciais do validator
     constructor() {
-        this.errors = {};
-        this.fieldValidators = [];
-
+        this.clear();
     }
 
     public clear() {
@@ -83,8 +83,7 @@ export class Validator {
     }
 }
 
-
-
+// Validator de campo
 export class FieldValidator {
     private isFieldValid: boolean = true;
     private errorMessage?: string;
@@ -133,4 +132,30 @@ export class FieldValidator {
     }
 }
 
+export class SocketRouter {
+    public paths: Array<{
+        path: string,
+        event: string,
+        action: (data: any) => any
+    }>
 
+    constructor() {
+        this.paths = []
+    }
+
+    on(path: string, event: string, action: (data: any) => any) {
+        this.paths.push({ path, event, action })
+    }
+
+    concat(subRouter: SocketRouter) {
+        subRouter.paths.forEach(path => {
+            this.paths.push(path);
+        });
+    }
+
+    applie(socket: Server) {
+        this.paths.forEach(path => {
+            socket.of(path.path).on(path.event, path.action);
+        })
+    }
+}

@@ -13,7 +13,7 @@ const rules = {
 
 
 
-export default class TopicValidator extends Validator{
+export default class TopicValidator extends Validator {
 
     // Validators de rota
     public create_validation = async (request: APIRequest, response: Response, next: NextFunction) =>  {
