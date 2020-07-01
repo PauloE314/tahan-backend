@@ -9,6 +9,7 @@ export class Seed {
     }
 }
 
+
 // Classe de validator
 export class Validator {
     private errors: any;
@@ -30,7 +31,7 @@ export class Validator {
         input: {
                 name: string,
                 data: any,
-                validation: (data: any, options?: any) => void | string | Promise<void> | Promise<string>,
+                validation: (data: any, options?: any) => String | Object | void | Promise<string | void | Object>,
                 options?: any
             }
         ) : Promise<FieldValidator> {
@@ -73,7 +74,7 @@ export class Validator {
                 this.errors[validator.fieldName] =  validator.message;
         })
 
-        console.log("Inválidos:", this.errors);
+        // console.log("Inválidos:", this.errors);
         // // Caso o "tamanho do objeto" seja maior que 0, retorna erro
         if (Object.keys(this.errors).length !== 0)
             return response.status(400).send({message: this.errors});
@@ -99,7 +100,7 @@ export class FieldValidator {
 
 
     public async validate(
-        callback: (data: any, options?: any) => string | void | Promise<string> | Promise<void>,
+        callback: (data: any, options?: any) => String | Object | void | Promise<string | void | Object>,
         options: any
     ) {
         const optional = options ? options.optional : false;

@@ -1,5 +1,6 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, OneToOne, JoinColumn } from "typeorm";
 import { Quizzes } from './Quizzes';
+import { Alternatives } from './Alternatives';
 
 
 @Entity()
@@ -14,4 +15,11 @@ export class Questions {
 
     @ManyToOne(type => Quizzes, quiz => quiz.id)
     quiz: Quizzes;
+
+    @OneToMany(type => Alternatives, alternative => alternative.question)
+    alternatives: Questions[];
+
+    @OneToOne(type => Alternatives)
+    @JoinColumn()
+    rightAnswer: Alternatives;
 }
