@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn } from "typeorm";
 import { Questions } from './Questions';
 import { Users } from "@models/User";
 import { Sections } from "@models/Sections";
@@ -19,6 +19,9 @@ export class Quizzes {
 
     @ManyToOne(type => Sections, section => section.id)
     section: Sections;
+
+    @CreateDateColumn()
+    created_at: Date;
 
     @ManyToOne(type => Users, user => user.id)
     author: Users;

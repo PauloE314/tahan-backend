@@ -1,4 +1,4 @@
-import { APIRequest } from "./global";
+import { APIRequest } from "../@types/global";
 import { Response, NextFunction, Router, RouterOptions } from "express";
 import { Server } from "socket.io";
 

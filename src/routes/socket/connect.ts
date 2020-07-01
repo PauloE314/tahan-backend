@@ -1,4 +1,4 @@
-import { SocketRouter } from "src/@types/classes";
+import { SocketRouter } from "src/utils/classes";
 
 
 const io = new SocketRouter();

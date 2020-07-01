@@ -34,16 +34,18 @@ export default class UserController {
         const {
           username, password, email, occupation,
         } = request.body;
-        const image = request.file;
+        // const image = request.file;
         const userRepo = getRepository(Users);
 
+        // Adiciona os dados do usuário
         const user = new Users();
         user.username = username;
         user.email = email;
         user.password = crypto.hashSync(password, 10);
         user.occupation = occupation;
 
-        if (image) { user.image = image.filename; }
+        // if (image) 
+        //   user.image = image.filename;
 
         try {
           const new_user = await userRepo.save(user);
@@ -56,6 +58,7 @@ export default class UserController {
   // Retorna as informações de um usuário
     async read(request: APIRequest, response: Response, next: NextFunction) {
         const id = Number(request.params.id);
+        // Caso esteja sendo passado um ID na URL, tenta encontrá-lo, se não, passa para a próxima URL
         if (!isNaN(id)) {
             const userRepo = getRepository(Users);
             const user = await userRepo.findOne({ id });
@@ -79,9 +82,11 @@ export default class UserController {
         const user = request.user.info;
         const userRepo = getRepository(Users);
 
+        // Se o username estiver sendo atualizado
         if (username)
             user.username = username;
 
+        // Se a senha estiver sendo atualizada
         if (password)
           user.password = crypto.hashSync(password, 10);
 
@@ -105,7 +110,12 @@ export default class UserController {
         const { email, password } = request.body;
 
         const userRepo = getRepository(Users);
-        const user = await userRepo.findOne({ email });
+        const user = await userRepo
+          .createQueryBuilder("users")
+          .addSelect("users.password")
+          .where('users.email = :email', { email })
+          .getOne();
+
 
         // Caso não exista um usuário com esse username
         if (!user) 
@@ -122,6 +132,8 @@ export default class UserController {
         const login_token = jwt.sign({ id: user.id }, secret_key, { expiresIn: jwtTime });
 
         // Retorna as informações do usuário
+        delete user.password;
+
         return response.send({ user, token: login_token });
     }
 

@@ -2,7 +2,7 @@ import { Server } from 'socket.io';
 import { SinglePlayerController } from "@controllers/socket";
 import { auth_user } from "src/utils";
 import connect from "@routes/socket/connect";
-import { SocketRouter } from 'src/@types/classes';
+import { SocketRouter } from 'src/utils/classes';
 import { APISocket } from 'src/@types/global';
 
 

@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from 'path';
 
-import { Seed } from 'src/@types/classes';
+import { Seed } from 'src/utils/classes';
 import { createConnection } from 'typeorm';
 
 const argv = process.argv;

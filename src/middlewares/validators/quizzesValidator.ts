@@ -4,7 +4,7 @@ import { Response, NextFunction } from "express";
 import { Topics } from '@models/Topics';
 import { getRepository } from "typeorm";
 import { Users } from "@models/User";
-import { Validator } from "src/@types/classes";
+import { Validator } from "src/utils/classes";
 
 
 const rules = {
