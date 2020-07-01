@@ -14,7 +14,7 @@ export class Alternatives {
     text: string;
 
     @ManyToOne(type => Questions, question => question.id)
-    question: Questions[];
+    question: Questions;
 
     @OneToOne(type => Questions, question => question.rightAnswer )
     rightAnswerQuestion: Questions;

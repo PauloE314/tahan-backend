@@ -3,7 +3,6 @@ import { Response, NextFunction } from "express";
 
 import { Topics } from '@models/Topics';
 import { getRepository } from "typeorm";
-import { Users } from "@models/User";
 import { Validator } from "src/utils/classes";
 import { Quizzes } from "@models/quiz/Quizzes";
 
@@ -117,7 +116,6 @@ export default class QuizValidator extends Validator {
             
             // Checa se o dado é um objeto
             else {
-                console.log(alt)
                 if (typeof alt == 'object' && !Array.isArray(alt)) {
                     if (!alt.hasOwnProperty('text'))
                         errors[index] = "Envie alternativas válidas - propriedade 'text' está faltando";

@@ -17,7 +17,7 @@ export class Questions {
     quiz: Quizzes;
 
     @OneToMany(type => Alternatives, alternative => alternative.question)
-    alternatives: Questions[];
+    alternatives: Alternatives[];
 
     @OneToOne(type => Alternatives)
     @JoinColumn()

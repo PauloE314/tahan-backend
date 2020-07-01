@@ -4,6 +4,7 @@ import { Users } from '@models/User';
 import { Sections } from '@models/Sections';
 import { Topics } from '@models/Topics';
 import { PlainObjectToNewEntityTransformer } from 'typeorm/query-builder/transformer/PlainObjectToNewEntityTransformer';
+import { Quizzes } from '@models/quiz/Quizzes';
 
 // modelo de usuário
 export interface user_interface {
@@ -19,7 +20,8 @@ export interface user_interface {
 export interface APIRequest extends Request{
     user?: user_interface,
     section?: Sections,
-    topic?: Topics
+    topic?: Topics,
+    quiz?: Quizzes
 }
 
 

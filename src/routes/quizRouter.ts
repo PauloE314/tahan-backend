@@ -1,5 +1,5 @@
 import { Router, NextFunction, Response } from 'express';
-import { getSection } from '@middlewares/index';
+import { getSection, getQuiz } from '@middlewares/index';
 import { auth_require, is_teacher } from "@middlewares/auth"
 import QuizzesController from '@controllers/http/quizzesController';
 import QuizzesValidator from '@middlewares/validators/quizzesValidator';
@@ -14,6 +14,8 @@ routes.use(getSection);
 // Leitura
 routes.get('/', controller.list);
 routes.post('/', auth_require, is_teacher, validator.create_validation, controller.create);
+
+routes.get('/:id', auth_require, is_teacher, getQuiz,controller.read);
 
 // routes.get('/self/', auth_require, is_teacher, controller.list_self);
 
