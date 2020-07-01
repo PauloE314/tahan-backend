@@ -109,13 +109,13 @@ Permite deletar um tópico.
 ## **PATH: /sections/:id/quizzes - GET, POST**
 
 #### GET: (Autenticação não necessária)
-Lista os quizzes dessa seção. Cada quizz possui os dados do autor e a seção que se encontra.
+Lista os quizzes dessa seção. Cada quiz possui os dados do autor e a seção que se encontra.
 
 ```json
 [
   {
     "id": 1,
-    "name": "Primeiro quizz",
+    "name": "Primeiro quiz",
     "author": {
       "id": 4,
       "username": "ProfessorTrês",
@@ -135,10 +135,119 @@ Lista os quizzes dessa seção. Cada quizz possui os dados do autor e a seção 
 
 #### POST: (Autenticação necessária)
 
-Permite os professores criarem quizzes enviando, até o momento, apenas o nome do quizz
+Permite os professores criarem quizzes.
 
 ```json
 {
-  "name": "Foo"
+	"name": "Foo",
+	"questions": [
+		{
+			"question": "Quanto é 1 + 1?",
+			"alternatives": [
+				{ "text": "3" },
+				{ "text": "Óbviamente 4" },
+				{ "text": "2", "right": true }
+			]
+		},
+		{
+			"question": "Quanto é 2 * 2?",
+			"alternatives": [
+				{ "text": "8" },
+				{ "text": "45" },
+				{ "text": "4", "right": true }
+			]
+		},
+				{
+			"question": "Quanto é 6 * 6?",
+			"alternatives": [
+				{ "text": "22" },
+				{ "text": "11" },
+				{ "text": "36", "right": true }
+			]
+		}
+	]
+}
+```
+
+
+## **PATH: /sections/:section_id/quizzes/:id - GET, POST**
+
+#### GET: (Autenticação necessária)
+
+Retorna as informações de um quiz.
+
+```json
+{
+  "id": 11,
+  "name": "Foo",
+  "created_at": "2020-07-01T13:48:42.000Z",
+  "questions": [
+    {
+      "id": 11,
+      "question": "Quanto é 1 + 1?",
+      "alternatives": [
+        {
+          "id": 33,
+          "text": "2"
+        },
+        {
+          "id": 32,
+          "text": "3"
+        },
+        {
+          "id": 31,
+          "text": "Óbviamente 4"
+        }
+      ],
+      "rightAnswer": {
+        "id": 33,
+        "text": "2"
+      }
+    },
+    {
+      "id": 12,
+      "question": "Quanto é 2 * 2?",
+      "alternatives": [
+        {
+          "id": 36,
+          "text": "4"
+        },
+        {
+          "id": 35,
+          "text": "45"
+        },
+        {
+          "id": 34,
+          "text": "8"
+        }
+      ],
+      "rightAnswer": {
+        "id": 36,
+        "text": "4"
+      }
+    },
+    {
+      "id": 13,
+      "question": "Quanto é 6 * 6?",
+      "alternatives": [
+        {
+          "id": 39,
+          "text": "36"
+        },
+        {
+          "id": 38,
+          "text": "22"
+        },
+        {
+          "id": 37,
+          "text": "11"
+        }
+      ],
+      "rightAnswer": {
+        "id": 39,
+        "text": "36"
+      }
+    }
+  ]
 }
 ```
