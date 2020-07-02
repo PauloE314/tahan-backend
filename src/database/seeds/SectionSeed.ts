@@ -1,6 +1,6 @@
 import { getRepository } from "typeorm"
 import { Sections } from '@models/Sections';
-import { Seed } from 'src/@types/global';
+import { Seed } from 'src/utils/classes';
 
 interface section {
     name: string
