@@ -15,8 +15,8 @@ routes.post('/', validator.createUser_validation, controller.create);
 // Leitura
 routes.get('/', controller.list);
 routes.get('/self/', auth_require, controller.read_self);
-routes.get('/:id/', validator.read_validation, controller.read)
-
+// routes.get('/:id([0-9]+)/', validator.read_validation, controller.read)
+routes.get('/:id([0-9]+)/', controller.read);
 
 // Update
 routes.put('/self/', auth_require, validator.update_validation, controller.update);

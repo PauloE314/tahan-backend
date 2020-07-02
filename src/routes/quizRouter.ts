@@ -14,8 +14,13 @@ routes.use(getSection);
 // Leitura
 routes.get('/', controller.list);
 routes.post('/', auth_require, is_teacher, validator.create_validation, controller.create);
-
 routes.get('/:id', auth_require, getQuiz,controller.read);
+
+// Update
+routes.put('/:id', auth_require, is_teacher, getQuiz, validator.update_validation, controller.update);
+
+// Delete
+routes.delete('/:id', auth_require, is_teacher, getQuiz, validator.delete_validation, controller.delete);
 
 // routes.get('/self/', auth_require, is_teacher, controller.list_self);
 

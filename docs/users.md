@@ -13,7 +13,6 @@ Retorna a lista de usuários e suas informações. Permite a busca por usuários
     "id": 1,
     "username": "Paulo Lourenço",
     "email": "email@gmail.com",
-    "password": "$2b$10$OAO9GjI1lzlZJjoi5Wv3f.11Ipq081qkk6Qh26QyGbvjvwbhRD5gC",
     "occupation": "student"
   }
 ]
@@ -55,7 +54,6 @@ Resposta:
     "id": 1,
     "username": "Paulo Lourenço",
     "email": "email@gmail.com",
-    "password": "$2b$10$OAO9GjI1lzlZJjoi5Wv3f.11Ipq081qkk6Qh26QyGbvjvwbhRD5gC",
     "occupation": "student"
   },
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTkzMDkxODc4LCJleHAiOjE1OTMxNzgyNzh9.UctR_2MStYdjWO5fNA8E-bUr7rq4AM6A8ezs7zaqksY"
@@ -75,7 +73,6 @@ Retorna as informações de um usuário específico.
   "id": 1,
   "username": "Paulo Lourenço",
   "email": "email@gmail.com",
-  "password": "$2b$10$Mi5GcmGAe3f/i3GTWYloz.tU5dEpkEUAR3iw0IVXWtYg8nG.ZUFxy",
   "image": null,
   "occupation": "student"
 }
@@ -95,7 +92,6 @@ Retorna as informações do usuário logado.
     "id": 1,
     "username": "Paulo Lourenço",
     "email": "email@gmail.com",
-    "password": "$2b$10$Mi5GcmGAe3f/i3GTWYloz.tU5dEpkEUAR3iw0IVXWtYg8nG.ZUFxy",
     "image": null,
     "occupation": "student"
   },

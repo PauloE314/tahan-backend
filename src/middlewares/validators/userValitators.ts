@@ -63,22 +63,6 @@ export default class UserValidator extends Validator{
         // return response.send('teste')
     }
 
-    public read_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
-        this.clear();
-        const id = Number(request.params.id);
-
-        if (!isNaN(id)) {
-            const userRepo = getRepository(Users);
-            const user = await userRepo.findOne({id});
-            if (!user) {
-                return response.status(401).send({message: "Usuário não encontrado"})
-            }        
-
-            return next();
-        }
-
-        return next();
-    }
 
     public update_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
         this.clear();

@@ -14,7 +14,7 @@ export class Quizzes {
     @Column()
     name: string;
 
-    @OneToMany(type => Questions, question => question.quiz)
+    @OneToMany(type => Questions, question => question.quiz, { cascade: true })
     questions: Questions[];
 
     @ManyToOne(type => Sections, section => section.id)

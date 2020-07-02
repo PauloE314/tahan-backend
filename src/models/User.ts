@@ -18,9 +18,6 @@ export class Users {
     @Column({ select: false })
     password: string;
 
-    @Column({ nullable: true })
-    image: string;
-
     @Column()
     occupation: string;
 

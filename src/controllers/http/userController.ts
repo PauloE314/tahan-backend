@@ -59,13 +59,12 @@ export default class UserController {
     async read(request: APIRequest, response: Response, next: NextFunction) {
         const id = Number(request.params.id);
         // Caso esteja sendo passado um ID na URL, tenta encontrá-lo, se não, passa para a próxima URL
-        if (!isNaN(id)) {
-            const userRepo = getRepository(Users);
-            const user = await userRepo.findOne({ id });
+        const user = await getRepository(Users).findOne({ id });
 
-            return response.send(user);
-        }
-        return next();
+        if (!user)
+            return response.status(401).send({message: "Usuário não encontrado"})
+
+        return response.send(user);
     }
 
   // Retorna as informações do usuário logado

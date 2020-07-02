@@ -44,14 +44,8 @@ export default class TopicController {
     // Ver um tópico específico
     async read (request: APIRequest, response: Response, next: NextFunction) {
         const { topic } = request;
-        const full_topic = await getRepository(Topics).findOne({
-            relations: ["author"],
-            where: {
-                id: topic.id
-            }
-        })
-
-        return response.send(full_topic);
+    
+        return response.send(topic);
     }
 
     // Dá update no tópico (título e conteúdo)

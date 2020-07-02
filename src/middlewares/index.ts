@@ -9,15 +9,14 @@ import { Quizzes } from "@models/quiz/Quizzes";
 
 // Tenta encontrar a seção
 export async function getSection(request: APIRequest, response: Response, next: NextFunction) {
-    const { section_id } = request.params;
+    const section_id = Number(request.params.section_id)
 
-    const sectionsRepo = getRepository(Sections);
-
-    const section = await sectionsRepo.findOne({ id: Number(section_id)});
+    const section = await getRepository(Sections).findOne({ id: section_id});
 
     if (!section) {
         return response.status(401).send({message: "Seção não encontrada"});
     }
+
     request.section = section;
     return next();
 }
@@ -26,14 +25,16 @@ export async function getSection(request: APIRequest, response: Response, next: 
 export async function getTopic(request: APIRequest, response: Response, next: NextFunction) {
     const id = Number(request.params.id);
 
-    if (!isNaN(id)) {
-        const topic = await getRepository(Topics).findOne({ id });
+    const topic = await getRepository(Topics).findOne({ 
+        relations: ["author"],
+        where: { id }
+    });
 
-        if (!topic)
-            return response.send({message: "Tópico não encontrado"});
+    if (!topic)
+        return response.send({message: "Tópico não encontrado"});
 
-        request.topic = topic;
-    }
+    request.topic = topic;
+    
 
     return next();
 }
@@ -44,7 +45,7 @@ export async function getQuiz(request: APIRequest, response: Response, next: Nex
 
     if (!isNaN(id)) {
         const quiz = await getRepository(Quizzes).findOne({
-            relations: ["questions", 'questions.alternatives', "questions.rightAnswer"],
+            relations: ["questions", 'questions.alternatives', "questions.rightAnswer", "author"],
             where: { id }
         });
 
@@ -68,7 +69,6 @@ export async function get_user(request: APIRequest, response: Response, next: Ne
         next();
     }
     catch(err) {
-        console.log(err.message);
         next();
     }
 }

@@ -2,7 +2,6 @@ import { Router, NextFunction, Response } from 'express';
 import { getSection, getTopic } from '@middlewares/index';
 import { auth_require } from "@middlewares/auth"
 import TopicController from '@controllers/http/topicsController';
-import { APIRequest } from 'src/@types/global';
 import TopicValidator from '@middlewares/validators/topicValidators';
 
 const routes = Router({ mergeParams: true });
@@ -15,9 +14,9 @@ routes.use(getSection);
 // Leitura
 routes.get('/', controller.list);
 routes.post('/', auth_require, validator.create_validation, controller.create);
-routes.get('/:id', getTopic, controller.read);
-routes.put('/:id', auth_require, getTopic, validator.update_validation, controller.update);
-routes.delete('/:id', auth_require, getTopic, validator.delete_validation, controller.delete);
+routes.get('/:id([0-9]+)/', getTopic, controller.read);
+routes.put('/:id([0-9]+)/', auth_require, getTopic, validator.update_validation, controller.update);
+routes.delete('/:id([0-9]+)/', auth_require, getTopic, validator.delete_validation, controller.delete);
 
 // Criar
 // routes.post('/', controller.create);
