@@ -13,7 +13,7 @@ export default async function useSocket (io: Server) {
         const { method, token } = socket.request._query;
         
         try {
-            const user = await auth_user({ method: String(method), token: String(token), raiseError: true, bearer: false});
+            const user = await auth_user({ token: String(token), raiseError: true, bearer: false});
             if (!user) 
                 return next(new Error("Permissão negada"));
 

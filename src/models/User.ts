@@ -3,7 +3,7 @@ import { Topics } from './Topics';
 import { Quizzes } from "./quiz/Quizzes";
 
 @Entity()
-@Unique(['email', 'username'])
+@Unique(['email', 'googleID'])
 export class Users {
 
     @PrimaryGeneratedColumn()
@@ -17,6 +17,9 @@ export class Users {
 
     @Column({ select: false })
     password: string;
+
+    @Column({ select: false, nullable: true })
+    googleID?: string;
 
     @Column()
     occupation: string;

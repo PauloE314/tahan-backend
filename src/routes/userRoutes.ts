@@ -3,7 +3,6 @@ import UserController from '@controllers/http/userController';
 import UserValidator from '@middlewares/validators/userValitators';
 import { auth_require } from '@middlewares/auth';
 
-
 const routes = Router({ mergeParams: true })
 const controller = new UserController();
 const validator = new UserValidator();

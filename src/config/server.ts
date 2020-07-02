@@ -13,6 +13,7 @@ export default {
         max_alternatives: 6,
     },
 
+
     secret_key: "zKRk85IqOdErrmR4",
     jwtTime: "3d"
 }

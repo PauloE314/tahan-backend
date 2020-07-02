@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { getRepository, Like } from 'typeorm';
 import jwt from 'jsonwebtoken';
+import { get_google_user_data } from 'src/utils/index';
 import crypto from 'bcrypt';
 
 import { APIRequest } from 'src/@types/global';
@@ -31,27 +32,29 @@ export default class UserController {
 
   // Cria um usuário
     async create(request: APIRequest, response: Response, next: NextFunction) {
-        const {
-          username, password, email, occupation,
-        } = request.body;
-        // const image = request.file;
+        const { method, username, email, password, occupation, access_token } = request.body;
         const userRepo = getRepository(Users);
 
-        // Adiciona os dados do usuário
-        const user = new Users();
-        user.username = username;
-        user.email = email;
-        user.password = crypto.hashSync(password, 10);
-        user.occupation = occupation;
-
-        // if (image) 
-        //   user.image = image.filename;
-
         try {
-          const new_user = await userRepo.save(user);
-          return response.send(new_user);
+            const user = new Users();
+            user.password = crypto.hashSync(password, 10);
+            user.occupation = occupation;
+
+            if (method == 'google') {
+                const { displayName, email, id } = await get_google_user_data(access_token);
+                user.username = displayName;
+                user.email = email;
+                user.googleID = id;
+            }
+            else {
+                user.username = username;
+                user.email = email;
+            }
+                
+            const new_user = await userRepo.save(user);
+            return response.send(new_user);
         } catch (err) {
-          response.status(500).send({ message: err.message, name: err.name });
+            response.status(500).send({ message: err.message, name: err.name });
         }
     }
 
@@ -106,15 +109,20 @@ export default class UserController {
     // Login
     async login(request: APIRequest, response: Response, next: NextFunction) {
         const { secret_key, jwtTime } = configs;
-        const { email, password } = request.body;
+        const { email, password, method, access_token} = request.body;
 
         const userRepo = getRepository(Users);
+
+        const user_email = method == 'google' ? (await get_google_user_data(access_token)).email : email;
+        console.log(user_email)
+
         const user = await userRepo
           .createQueryBuilder("users")
           .addSelect("users.password")
-          .where('users.email = :email', { email })
+          .where('users.email = :email', { email: user_email })
           .getOne();
 
+        
 
         // Caso não exista um usuário com esse username
         if (!user) 
@@ -122,6 +130,7 @@ export default class UserController {
 
         // Caso exista, compara a senha enviada e a do usuário
         const rightPassword = crypto.compareSync(password, user.password);
+
 
         // Caso não forem iguais, retorna erro
         if (!rightPassword) 

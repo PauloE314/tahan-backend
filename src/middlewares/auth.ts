@@ -10,7 +10,7 @@ export async function auth_require(request: APIRequest, response: Response, next
     const valid_error_names = ['TokenExpiredError', "JsonWebTokenError", "Error"];
 
     try {
-        const user = await auth_user({ token, method: 'JWT', raiseError: true});
+        const user = await auth_user({ token, raiseError: true});
         if (user)
             next();
     }
