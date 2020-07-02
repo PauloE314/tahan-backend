@@ -3,6 +3,7 @@ import { APIRequest } from 'src/@types/global';
 import { Validator } from 'src/utils/classes';
 import { Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';
+import { get_google_user_data } from 'src/utils';
 
 
 const rules = {
@@ -20,13 +21,16 @@ export default class UserValidator extends Validator{
 
         const valid_methods = ['google', 'manual'];
 
+        // Certifica o método
         if (!valid_methods.includes(method))
             return response.status(400).send({message: "Envie o método válido"});
 
+        // Escolhe o método de criação
         else {
+            // Manual
             if (method == 'manual')
                 return this.create_manual_user_validation(request, response, next);
-
+            // Google
             else
                 return this.create_google_user_validation(request, response, next);
         }
@@ -38,30 +42,27 @@ export default class UserValidator extends Validator{
         const { email, password, method, access_token } = request.body;
         const valid_methods = ['google', 'manual'];
 
+        // Certifica que um dos métodos tenha sido escolhido
         if (!valid_methods.includes(method))
             return response.status(400).send({method: "Envie um método válido"})
 
-
+        // Valida o campo de senha
         await this.createFieldValidator({
             name: "password", data: password, validation: (password) => {
                 if (!password)
                     return "Envie uma senha";
             }
         });
-
-        
+        // Valida o email
         await this.createFieldValidator({
             name: "email", data: email, validation: (email) => {
                 if (method == 'manual' && !email)
                     return "Envie um email";
-                
                 return;
             }
         })
 
         return this.answer(request, response, next);
-
-        // return response.send('teste')
     }
 
 
@@ -117,7 +118,38 @@ export default class UserValidator extends Validator{
         if (!access_token)
             return response.status(400).send({message: "Envie um token OAuth"});
 
-        return this.answer(request, response, next);
+        try {
+            // Pega os dados google
+            const google_data = await get_google_user_data(access_token);
+
+            // Caso os dados sejam nulos, reporta o erro
+            if(!google_data)
+                return response.status(400).send({message: "Algum erro ocorreu e não foi possível pegar os dados do usuário google, talvez o token enviado não seja válido"});
+
+            // Validação do email
+            const email_validator = await this.createFieldValidator({
+                name: "email", data: google_data.email, validation: this.validate_email
+            });
+
+            // Validação de usuário com mesmo googleID
+            const same_user_validation = await this.createFieldValidator({
+                name: "user", data: google_data.id, validation: async (id: string) => {
+                    const same_id_user = await getRepository(Users).findOne({googleID: google_data.id});
+                    if (same_id_user)
+                        return "Já existe um usuário com essa conta google em nosso sistema";
+                }
+            });
+
+            request.google_data = google_data;
+
+            // Retorna a resposta
+            return this.answer(request, response, next);
+        }
+        catch(err) {
+            // Caso ocorra um erro desconhecido, retorna-o
+            const {name, message} = err;
+            return response.status(500).send({name, message});
+        }        
     }
 
 

@@ -13,12 +13,19 @@ export interface user_interface {
         expires: string;
         starts: string;
     }
+}
 
+// Dados retornados pelo google
+export interface google_data {
+    email: string,
+    id: string,
+    displayName: string
 }
 
 // Modelo de Request
 export interface APIRequest extends Request{
     user?: user_interface,
+    google_data?: google_data,
     section?: Sections,
     topic?: Topics,
     quiz?: Quizzes

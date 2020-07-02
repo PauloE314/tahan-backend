@@ -33,6 +33,7 @@ export default class UserController {
   // Cria um usuário
     async create(request: APIRequest, response: Response, next: NextFunction) {
         const { method, username, email, password, occupation, access_token } = request.body;
+        const { google_data } = request;
         const userRepo = getRepository(Users);
 
         try {
@@ -41,7 +42,7 @@ export default class UserController {
             user.occupation = occupation;
 
             if (method == 'google') {
-                const { displayName, email, id } = await get_google_user_data(access_token);
+                const { displayName, email, id } = google_data;
                 user.username = displayName;
                 user.email = email;
                 user.googleID = id;

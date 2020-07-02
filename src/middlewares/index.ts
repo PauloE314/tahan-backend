@@ -61,9 +61,14 @@ export async function getQuiz(request: APIRequest, response: Response, next: Nex
 // Tenta encontrar o usuário
 export async function getUser(request: APIRequest, response: Response, next: NextFunction) {
     const token = request.headers.authorization;
-    const user = await auth_user({ token, raiseError: false});
-    if (user) 
-        request.user = user;
+    try {
+        const user = await auth_user({ token, raiseError: false});
+        if (user) 
+            request.user = user;
 
-    next();
+        next();
+    }
+    catch(err) {
+        return response.send({name: err.name, message: err.message})
+    }
 }

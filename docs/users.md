@@ -20,7 +20,9 @@ Retorna a lista de usuários e suas informações. Permite a busca por usuários
 
 #### POST (Autenticação não necessária):
 
-Cria um usuário. Os dados devem ser enviados no seguinte formato:
+Cria um usuário. É possível criar o usuário com um token OAuth recebido do login google; para isso, basta especificar o método de criação e o token de acesso Os dados devem ser enviados no seguinte formato:
+
+- Manual
 ```json
 {
 	"username": "Paulo Lourenço",
@@ -29,7 +31,18 @@ Cria um usuário. Os dados devem ser enviados no seguinte formato:
 	"occupation": "student"
 }
 ```
-Os dados tem validação um pouco mais rígida que antes, principalmente quanto a senha (Maiúsculo e menúsculo, números e, no mínimo, 6 caracteres)
+
+- Google
+```json
+{
+  "method": "google",
+  "access_token": "<token>",
+  "password": "Senha1234",
+  "occupation": "teacher"
+}
+```
+
+No caso do login com o google, o password serve como uma senha interna para login. Assim, é OAuth serve para automatizar o username e validar automaticamente o email do usuário.
 
 <hr>
 
@@ -39,15 +52,27 @@ Os dados tem validação um pouco mais rígida que antes, principalmente quanto 
 
 Permite logar com suas credenciais. Retorna as informações do usuário e um token JWT - que é o padrão utilizado aqui.
 
-Envio:
+- Envio - manual:
 ```json
 {
-	"email": "email@gmail.com",
-	"password": "Senha1234"
+  "method": "manual",
+  "email": "email@gmail.com",
+  "password": "Senha1234"
 }
 ```
 
-Resposta:
+- Envio - google:
+```json
+{
+  "method": "google",
+  "access_token": "<token>",
+  "password": "Senha1234"
+}
+```
+
+
+
+- Resposta:
 ```json
 {
   "user": {
