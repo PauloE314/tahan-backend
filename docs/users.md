@@ -25,10 +25,11 @@ Cria um usuário. É possível criar o usuário com um token OAuth recebido do l
 - Manual
 ```json
 {
-	"username": "Paulo Lourenço",
-	"password": "Senha1234",
-	"email": "email@gmail.com",
-	"occupation": "student"
+  "method": "manual",
+  "username": "Paulo Lourenço",
+  "password": "Senha1234",
+  "email": "email@gmail.com",
+  "occupation": "student"
 }
 ```
 
@@ -37,7 +38,6 @@ Cria um usuário. É possível criar o usuário com um token OAuth recebido do l
 {
   "method": "google",
   "access_token": "<token>",
-  "password": "Senha1234",
   "occupation": "teacher"
 }
 ```
@@ -65,8 +65,7 @@ Permite logar com suas credenciais. Retorna as informações do usuário e um to
 ```json
 {
   "method": "google",
-  "access_token": "<token>",
-  "password": "Senha1234"
+  "access_token": "<token>"
 }
 ```
 
@@ -98,8 +97,8 @@ Retorna as informações de um usuário específico.
   "id": 1,
   "username": "Paulo Lourenço",
   "email": "email@gmail.com",
-  "image": null,
-  "occupation": "student"
+  "occupation": "student",
+  "created_at": "2020-07-02T16:10:20.000Z"
 }
 ```
 

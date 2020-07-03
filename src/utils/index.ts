@@ -85,7 +85,7 @@ export async function get_google_user_data(access_token: string, options?: { rai
         };
     }
     catch(err) {
-        console.log(err)
+        console.log(err.response)
         if (raise_error)
             throw err;
         

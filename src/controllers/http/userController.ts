@@ -1,12 +1,37 @@
 import { Response, NextFunction } from 'express';
 import { getRepository, Like } from 'typeorm';
 import jwt from 'jsonwebtoken';
-import { get_google_user_data } from 'src/utils/index';
 import crypto from 'bcrypt';
 
 import { APIRequest } from 'src/@types/global';
 import { Users } from '@models/User';
 import configs from '@config/server';
+
+async function create_user(input: { username: string, email: string, occupation: string, password?: string, googleID?: string}) {
+  const { username, email, occupation, password, googleID } = input;
+  const user = new Users();
+  user.username = username;
+  user.email = email;
+  user.occupation = occupation;
+  
+  // Se tiver senha, salva-a
+  if (password)
+    user.password = password;
+
+  // Se tiver um ID do google, salva-a
+  if (googleID)
+    user.googleID = googleID;
+
+  const saved_user = await getRepository(Users).save(user);
+  // deleta senha
+  delete saved_user.password;
+
+  return saved_user;
+}
+
+async function get_occupation(email: string) {
+  // TODO
+}
 
 export default class UserController {
   // Lista todos os usuários com pesquisa
@@ -31,33 +56,26 @@ export default class UserController {
     }
 
   // Cria um usuário
-    async create(request: APIRequest, response: Response, next: NextFunction) {
-        const { method, username, email, password, occupation, access_token } = request.body;
-        const { google_data } = request;
-        const userRepo = getRepository(Users);
+    create = async (request: APIRequest, response: Response, next: NextFunction) => {
+      const { method, username, email, password } = request.body;
+      const { google_data } = request;
 
-        try {
-            const user = new Users();
-            user.password = crypto.hashSync(password, 10);
-            user.occupation = occupation;
-
-            if (method == 'google') {
-                const { displayName, email, id } = google_data;
-                user.username = displayName;
-                user.email = email;
-                user.googleID = id;
-            }
-            else {
-                user.username = username;
-                user.email = email;
-            }
-                
-            const new_user = await userRepo.save(user);
-            return response.send(new_user);
-        } catch (err) {
-            response.status(500).send({ message: err.message, name: err.name });
-        }
+      // temporário
+      const { occupation } = request.body;
+      
+      // Criando usuário com google
+      if (method == 'google') {        
+        const user = await create_user({username: google_data.displayName, email: google_data.email, occupation, googleID: google_data.id });
+        return response.send(user);
+      }
+      // Criando manualmente
+      else {
+        const user = await create_user({username, email, occupation, password});
+        return response.send(user);
+      }
     }
+
+
 
   // Retorna as informações de um usuário
     async read(request: APIRequest, response: Response, next: NextFunction) {
@@ -108,47 +126,63 @@ export default class UserController {
     }
 
     // Login
-    async login(request: APIRequest, response: Response, next: NextFunction) {
-        const { secret_key, jwtTime } = configs;
-        const { email, password, method, access_token} = request.body;
+    login = async (request: APIRequest, response: Response, next: NextFunction) => {
+      const { method } = request.body;
+      const { secret_key, jwtTime } = configs;
 
+      // Sistema de login com o google
+      async function google_login(request: APIRequest, response: Response) : Promise<Users|object> {
         const userRepo = getRepository(Users);
+        
+        const { google_data } = request;
 
-        const user_email = method == 'google' ? (await get_google_user_data(access_token)).email : email;
-        console.log(user_email)
+        const user = await userRepo.findOne({googleID: google_data.id});
 
+        // Caso não exista um usuário cadastrado com esse googleID
+        if (!user) 
+          return { googleId: "Não existe nenhum usuário cadastrado com esse ID" };
+
+        return user;
+      }
+      // Sistema de login manual
+      async function manual_login(request: APIRequest, response: Response) : Promise<Users|object> {
+        const userRepo = getRepository(Users);
+        const { email, password} = request.body;
+
+        // Login manual
         const user = await userRepo
           .createQueryBuilder("users")
           .addSelect("users.password")
-          .where('users.email = :email', { email: user_email })
+          .where('users.email = :email', { email })
           .getOne();
-
-        
 
         // Caso não exista um usuário com esse username
         if (!user) 
-          return response.status(400).send({ email: 'Email inválido' });
+          return { email: 'Email inválido' }
 
         // Caso exista, compara a senha enviada e a do usuário
         const rightPassword = crypto.compareSync(password, user.password);
 
-
         // Caso não forem iguais, retorna erro
         if (!rightPassword) 
-           return response.status(400).send({ password: 'Senha inválida' }); 
+          return { password: 'Senha inválida' };
 
-        // Se forem iguais, autializa o JWT
-        const login_token = jwt.sign({ id: user.id }, secret_key, { expiresIn: jwtTime });
-
-        // Retorna as informações do usuário
+        // Deleta a senha
         delete user.password;
 
-        return response.send({ user, token: login_token });
+        return user;
+      }
+
+      const user_or_error = method == 'google' ? await google_login(request, response) : await manual_login(request, response);
+
+      if (!(user_or_error instanceof Users))
+        return response.status(400).send(user_or_error);
+
+  
+      // Armazena os dados do usuário
+      const login_token = jwt.sign({ id: user_or_error.id }, secret_key, { expiresIn: jwtTime });
+
+      // Retorna os dados
+      return response.send({user: user_or_error, token: login_token})  
     }
-
-//     async check_JWT(request: APIRequest, response: Response) {
-//       const user = request.user;
-
-//       return response.send(user);
-//     }
 }

@@ -15,8 +15,8 @@ export class Users {
     @Column()
     email: string;
 
-    @Column({ select: false })
-    password: string;
+    @Column({ select: false, nullable: true })
+    password?: string;
 
     @Column({ select: false, nullable: true })
     googleID?: string;
