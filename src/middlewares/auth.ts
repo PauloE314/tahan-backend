@@ -1,6 +1,6 @@
 import { Response, NextFunction } from "express";
 import { auth_user } from 'src/utils';
-import { APIRequest } from "src/@types/global";
+import { APIRequest } from "src/@types";
 
 
 

@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { Sections } from '@models/Sections';
 
-import { APIRequest } from 'src/@types/global';
+import { APIRequest } from 'src/@types';
 import { getRepository, getConnection, Like } from 'typeorm';
 import { Quizzes } from '@models/quiz/Quizzes';
 import { Alternatives } from '@models/quiz/Alternatives';

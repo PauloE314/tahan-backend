@@ -3,7 +3,7 @@ import { getRepository, Like } from 'typeorm';
 import jwt from 'jsonwebtoken';
 import crypto from 'bcrypt';
 
-import { APIRequest } from 'src/@types/global';
+import { APIRequest } from 'src/@types';
 import { Users } from '@models/User';
 import configs from '@config/server';
 

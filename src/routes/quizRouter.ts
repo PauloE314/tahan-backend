@@ -1,7 +1,7 @@
 import { Router, NextFunction, Response } from 'express';
 import { getSection, getQuiz } from '@middlewares/index';
 import { auth_require, is_teacher } from "@middlewares/auth"
-import QuizzesController from '@controllers/http/quizzesController';
+import QuizzesController from '@controllers/quizzesController';
 import QuizzesValidator from '@middlewares/validators/quizzesValidator';
 
 const routes = Router({ mergeParams: true });

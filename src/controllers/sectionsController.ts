@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { Sections } from '@models/Sections';
 
-import { APIRequest } from 'src/@types/global';
+import { APIRequest } from 'src/@types';
 import { getRepository } from 'typeorm';
 
 export default class SectionController {

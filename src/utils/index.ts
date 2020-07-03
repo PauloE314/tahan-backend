@@ -1,9 +1,9 @@
 import { Response, NextFunction } from "express";
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
-import { google_data } from "src/@types/global"
+import { google_data } from "src/@types"
 
-import { APIRequest, user_interface } from "src/@types/global";
+import { APIRequest, user_interface } from "src/@types";
 import configs from '@config/server';
 import { Users } from '@models/User';
 import { getRepository } from "typeorm";

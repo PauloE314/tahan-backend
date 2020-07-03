@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import UserController from '@controllers/http/userController';
+import UserController from '@controllers/userController';
 import UserValidator from '@middlewares/validators/userValitators';
 import { auth_require } from '@middlewares/auth';
 

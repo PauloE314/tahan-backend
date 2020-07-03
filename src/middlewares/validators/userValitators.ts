@@ -1,5 +1,5 @@
 import { Users } from '../../models/User';
-import { APIRequest } from 'src/@types/global';
+import { APIRequest } from 'src/@types';
 import { Validator } from 'src/utils/classes';
 import { Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';

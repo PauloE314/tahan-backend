@@ -1,7 +1,7 @@
 import { Router, NextFunction, Response } from 'express';
 import { getSection, getTopic } from '@middlewares/index';
 import { auth_require } from "@middlewares/auth"
-import TopicController from '@controllers/http/topicsController';
+import TopicController from '@controllers/topicsController';
 import TopicValidator from '@middlewares/validators/topicValidators';
 
 const routes = Router({ mergeParams: true });
