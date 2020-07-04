@@ -7,6 +7,8 @@ import { APIRequest, user_interface } from "src/@types";
 import configs from '@config/server';
 import { Users } from '@models/User';
 import { getRepository } from "typeorm";
+import { Quizzes } from "@models/quiz/Quizzes";
+import { Questions } from "@models/quiz/Questions";
 
 
 interface jwt_decoded {
@@ -91,4 +93,20 @@ export async function get_google_user_data(access_token: string, options?: { rai
         
         return null;
     }
+}
+
+    
+
+export function get_question(quiz: Quizzes, answered_questions: Array<{question_id: number}>) : Questions | null {
+    const answered_question_list = answered_questions ? answered_questions : [];
+    for (let question of quiz.questions) {
+        if (!answered_question_list.includes({ question_id: question.id })) {
+            const returning_question = Object.assign({}, question);
+            delete returning_question.rightAnswer;
+            return returning_question;
+        }
+    }
+        
+    
+    return null;
 }

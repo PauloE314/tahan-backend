@@ -5,6 +5,7 @@ import { Sections } from '@models/Sections';
 import { Topics } from '@models/Topics';
 import { PlainObjectToNewEntityTransformer } from 'typeorm/query-builder/transformer/PlainObjectToNewEntityTransformer';
 import { Quizzes } from '@models/quiz/Quizzes';
+import { Questions } from '@models/quiz/Questions';
 
 // modelo de usuário
 export interface user_interface {
@@ -32,13 +33,20 @@ export interface APIRequest extends Request{
 }
 
 
+
 // Modelo de SOCKET
 interface CLientSocket extends SocketIO.Client {
-    data: user_interface
+    data: user_interface,
+    quiz: Quizzes,
+    answered_questions: Array<{question_id: number, right_answered: boolean}>,
+    question: Questions,
+    gameMode: 'single' | 'multi',
+    time: boolean
 }
 // Modelo cliente
 export interface APISocket extends SocketIO.Socket{
-    client: CLientSocket
+    client: CLientSocket,
+    
 }
 
 

@@ -1,6 +1,8 @@
 import { APIRequest } from "../@types";
-import { Response, NextFunction, Router, RouterOptions } from "express";
-import { Server } from "socket.io";
+import { Response, NextFunction } from "express";
+import { SocketEvents } from '@config/socket';
+import { APISocket } from 'src/@types';
+import { Server, Socket } from "socket.io";
 
 // Classe de seeds
 export class Seed {
@@ -133,30 +135,20 @@ export class FieldValidator {
     }
 }
 
-export class SocketRouter {
-    public namespaces: Array<{
-        namespace: string,
-        event: string,
-        action: (data: any) => any
-    }>
+interface SocketInitialConfigs {
+    global_middlewares?: Array<(socket: APISocket, next:(err?: any) => any) => any>
+}
 
-    constructor() {
-        this.namespaces = []
-    }
 
-    on(namespace: string, event: string, action: (data: any) => any) {
-        this.namespaces.push({ namespace, event, action })
-    }
-
-    concat(subRouter: SocketRouter) {
-        subRouter.namespaces.forEach(path => {
-            this.namespaces.push(path);
-        });
-    }
-
-    applie(socket: Server) {
-        this.namespaces.forEach(path => {
-            socket.of(path.namespace).on(path.event, path.action);
-        })
+// Error
+export class Err extends Error {
+    data: any;
+    
+    constructor(name: string, data: any) {
+        super();
+        this.data = {
+            name,
+            data
+        }
     }
 }

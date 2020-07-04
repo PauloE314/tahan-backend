@@ -4,12 +4,11 @@ import cors from 'cors';
 import http, { Server } from 'http';
 import router from './router';
 import errorHandler from './errors';
-import useSocket from "./io";
+import useSocket from "../socket";
 import {getUser} from '@middlewares/index';
 
 import "reflect-metadata";
 import socket, { Server as socketServer } from 'socket.io';
-import io from '@routes/socket/connect';
 
 
 class App {
@@ -32,7 +31,7 @@ class App {
         this.io = socket();
         
         this.io.listen(this.server, { path: '/socket'});
-        useSocket(this.io).then();
+        useSocket(this.io);
     }
 
 
