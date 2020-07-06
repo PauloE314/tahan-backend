@@ -22,5 +22,6 @@ export const SocketEvents = {
 export const SocketErrors = {
     BaseErrorName: 'APIError',
     PermissionDenied: 'permission-denied',
-    QuizNotFound: 'quiz-not-found'
+    InvalidData: 'invalid-data',
+    AssertData: 'assert-data'
 }

@@ -22,7 +22,19 @@ export default async function LoadGame (socket: APISocket, data: StartGameInput)
         });
         // Se o quiz não existir, reporta isso
         if (!quiz)
-            return socket.emit(SocketErrors.QuizNotFound);
+            return socket.emit(SocketErrors.InvalidData, { name: 'quiz', message: 'Esse quiz não existe' });
+
+        // Checa se o modo de jogo é válido
+        if (gameMode !== 'multi' && gameMode !== 'single')
+            return socket.emit(SocketErrors.InvalidData, { name: 'gameMode', message: 'O modo de jogo deve ser "single" ou "multi"' });
+
+        // Checa se o tempo é válido
+        if (time == undefined)
+            return socket.emit(SocketErrors.InvalidData, { name: 'time', message: 'Envie um "time" válido' });
+
+        // Checa se o tempo é válido
+        if (timeToNextQuestion == undefined)
+            return socket.emit(SocketErrors.InvalidData, { name: 'timeToNextQuestion', message: 'Envie um "timeToNextQuestion" válido' });
 
         // Salva dados de modo de jogo
         socket.client.quiz = Object.assign({}, quiz);

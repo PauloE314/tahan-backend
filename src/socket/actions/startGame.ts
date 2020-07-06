@@ -10,9 +10,11 @@ import { nextQuestion } from './handleAnswer';
 
 export default async function StartGame (socket: APISocket, data: any) {
     // const {  }
+    console.log('start game')
     try {
         // Envia os dados da questão para o cliente
         if (socket.client.gameMode == 'single') {
+            
             socket.client.answered_questions = [];
             return nextQuestion(socket, true);
         }
