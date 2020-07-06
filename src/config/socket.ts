@@ -13,7 +13,9 @@ export const SocketEvents = {
     RightAnswer: 'right-answer',
     WrongAnswer: 'wrong-answer',
     Exception: "error",
-    TimeCount: 'time-count',
+    TimerToNextQuestion: 'timer-to-next-question',
+    TimerToAnswer: 'timer-to-answer',
+    TimeOut: 'time-out',
     EndGame: 'end-game'
 };
 

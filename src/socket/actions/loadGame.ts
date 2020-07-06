@@ -24,14 +24,14 @@ export default async function LoadGame (socket: APISocket, data: StartGameInput)
         if (!quiz)
             return socket.emit(SocketErrors.QuizNotFound);
 
-        // Envia os dados do quiz
+        // Salva dados de modo de jogo
         socket.client.quiz = Object.assign({}, quiz);
         socket.client.gameMode = gameMode;
         socket.client.time = time;
         socket.client.timeToNextQuestion = timeToNextQuestion;
         
         delete quiz.questions;
-
+        // Envia os dados do quiz
         socket.emit(SocketEvents.QuizData, quiz);
     }
     catch(err) {

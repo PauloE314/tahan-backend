@@ -11,7 +11,9 @@ export default {
         max_questions: Infinity,
         min_alternatives: 2,
         max_alternatives: 6,
-        time_to_next_question: 5
+        // Socket
+        time_to_next_question: 5,
+        time_to_answer: 30
     },
 
 

@@ -12,9 +12,9 @@ export default async function StartGame (socket: APISocket, data: any) {
     // const {  }
     try {
         // Envia os dados da questão para o cliente
-        if (socket.client.gameMode == 'single' && !socket.client.time) {
+        if (socket.client.gameMode == 'single') {
             socket.client.answered_questions = [];
-            return nextQuestion(socket);
+            return nextQuestion(socket, true);
         }
     }
     catch(err) {
