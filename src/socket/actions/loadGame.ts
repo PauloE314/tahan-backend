@@ -9,11 +9,11 @@ interface StartGameInput {
     quizId: number,
     gameMode: 'single' | 'multi',
     time: boolean,
-    timeOnAsnwer: boolean
+    timeToNextQuestion: boolean
 };
 
 export default async function LoadGame (socket: APISocket, data: StartGameInput){
-    const { quizId, gameMode, time, timeOnAsnwer } = data;
+    const { quizId, gameMode, time, timeToNextQuestion } = data;
     try {
         // Tenta pegar o quiz
         const quiz = await getRepository(Quizzes).findOne({
@@ -28,7 +28,7 @@ export default async function LoadGame (socket: APISocket, data: StartGameInput)
         socket.client.quiz = Object.assign({}, quiz);
         socket.client.gameMode = gameMode;
         socket.client.time = time;
-        socket.client.timeOnAnswer = timeOnAsnwer;
+        socket.client.timeToNextQuestion = timeToNextQuestion;
         
         delete quiz.questions;
 

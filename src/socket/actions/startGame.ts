@@ -5,6 +5,7 @@ import { Socket } from 'socket.io';
 import { Err } from 'src/utils/classes';
 import { APISocket } from 'src/@types';
 import { get_question } from 'src/utils';
+import { nextQuestion } from './handleAnswer';
 
 
 export default async function StartGame (socket: APISocket, data: any) {
@@ -13,12 +14,7 @@ export default async function StartGame (socket: APISocket, data: any) {
         // Envia os dados da questão para o cliente
         if (socket.client.gameMode == 'single' && !socket.client.time) {
             socket.client.answered_questions = [];
-
-            const { quiz } = socket.client;
-            const { question, returning_question} = get_question(quiz, []);
-            
-            socket.client.question = question;
-            socket.emit(SocketEvents.NextQuestion, returning_question);
+            return nextQuestion(socket);
         }
     }
     catch(err) {

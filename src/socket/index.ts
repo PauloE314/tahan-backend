@@ -14,7 +14,7 @@ export default function useSocket(io: Server) {
 
     // Inicia a connexão
     io.on(SocketEvents.ClientConnect, (socket: APISocket) => {
-        console.log(socket.id);
+        console.log(socket.id);        
         
         // Retorna dados de um quiz
         socket.on(SocketEvents.LoadGame, (data) => actions.LoadGame(socket, data));
