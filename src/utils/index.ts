@@ -95,18 +95,25 @@ export async function get_google_user_data(access_token: string, options?: { rai
     }
 }
 
+interface GetQuizResponse {
+    returning_question: Questions,
+    question: Questions
+}
     
 
-export function get_question(quiz: Quizzes, answered_questions: Array<{question_id: number}>) : Questions | null {
-    const answered_question_list = answered_questions ? answered_questions : [];
-    for (let question of quiz.questions) {
-        if (!answered_question_list.includes({ question_id: question.id })) {
-            const returning_question = Object.assign({}, question);
-            delete returning_question.rightAnswer;
-            return returning_question;
-        }
-    }
-        
-    
-    return null;
+export function get_question(quiz: Quizzes, answered_questions: Array<{question_id: number}>) : GetQuizResponse | null {
+    const answer_list = answered_questions ? answered_questions : [];
+    const answer_id_list = answer_list.map(answer => answer.question_id);
+    // Lista das questões não respondidas ainda
+    const not_answered_list = quiz.questions.filter(question => !answer_id_list.includes(question.id));
+    // Caso todas as questões tenham sido respondidas
+    if (not_answered_list.length === 0)
+        return null;
+
+    // Pega um elemento aleatório
+    const question = not_answered_list[Math.floor(Math.random() * not_answered_list.length)];
+    const returning_question = Object.assign({}, question);
+    delete returning_question.rightAnswer;
+    // retorna o elemento
+    return { question, returning_question };
 }

@@ -12,7 +12,9 @@ export const SocketEvents = {
     NextQuestion: 'next-question',
     RightAnswer: 'right-answer',
     WrongAnswer: 'wrong-answer',
-    Exception: "error"
+    Exception: "error",
+    TimeCount: 'time-count',
+    EndGame: 'end-game'
 };
 
 export const SocketErrors = {

@@ -1,6 +1,5 @@
 import { Server, Socket } from 'socket.io';
 
-
 import { SocketEvents } from '@config/socket';
 import { useMiddlewares } from "./middlewares";
 import actions from "./actions";
@@ -24,6 +23,6 @@ export default function useSocket(io: Server) {
         socket.on(SocketEvents.StartGame, (data) => actions.StartGame(socket, data))
 
         // Quando o usuário responder
-        socket.on(SocketEvents.Answer, (data) => actions.handleAnswer(socket, data))
+        socket.on(SocketEvents.Answer, (data) => actions.HandleAnswer(socket, data))
     })
 }

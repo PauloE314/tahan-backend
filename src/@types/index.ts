@@ -41,7 +41,8 @@ interface CLientSocket extends SocketIO.Client {
     answered_questions: Array<{question_id: number, right_answered: boolean}>,
     question: Questions,
     gameMode: 'single' | 'multi',
-    time: boolean
+    time: boolean,
+    timeOnAnswer: boolean
 }
 // Modelo cliente
 export interface APISocket extends SocketIO.Socket{

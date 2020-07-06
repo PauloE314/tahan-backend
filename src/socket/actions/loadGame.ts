@@ -8,11 +8,12 @@ import { APISocket } from 'src/@types';
 interface StartGameInput {
     quizId: number,
     gameMode: 'single' | 'multi',
-    time: boolean
+    time: boolean,
+    timeOnAsnwer: boolean
 };
 
 export default async function LoadGame (socket: APISocket, data: StartGameInput){
-    const { quizId, gameMode, time } = data;
+    const { quizId, gameMode, time, timeOnAsnwer } = data;
     try {
         // Tenta pegar o quiz
         const quiz = await getRepository(Quizzes).findOne({
@@ -27,6 +28,8 @@ export default async function LoadGame (socket: APISocket, data: StartGameInput)
         socket.client.quiz = Object.assign({}, quiz);
         socket.client.gameMode = gameMode;
         socket.client.time = time;
+        socket.client.timeOnAnswer = timeOnAsnwer;
+        
         delete quiz.questions;
 
         socket.emit(SocketEvents.QuizData, quiz);
