@@ -2,6 +2,9 @@ export const SocketEvents = {
     // Eventos do cliente
     ClientConnect: 'connect',
     LoadGame: 'load-game',
+    Creategame: 'create-game',
+    JoinGame: 'join-game',
+    Ready: 'ready',
     StartGame: 'start-game',
     GetQuestion: 'get-question',
     Answer: 'answer',

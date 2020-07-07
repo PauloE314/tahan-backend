@@ -22,7 +22,7 @@ async function Auth(socket: APISocket, next: (err?: any) => any) {
         if (!user) 
             return next(new Err(SocketErrors.PermissionDenied, "Permissão negada"));
 
-        socket.client.data = user;
+        socket.client.user = user;
         return next();
     }
     catch(err) {

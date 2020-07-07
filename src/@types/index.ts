@@ -3,9 +3,9 @@ import { Repository, getRepository, EntitySchema, ObjectLiteral } from 'typeorm'
 import { Users } from '@models/User';
 import { Sections } from '@models/Sections';
 import { Topics } from '@models/Topics';
-import { PlainObjectToNewEntityTransformer } from 'typeorm/query-builder/transformer/PlainObjectToNewEntityTransformer';
 import { Quizzes } from '@models/quiz/Quizzes';
 import { Questions } from '@models/quiz/Questions';
+import { Games } from '@models/games/Games';
 
 // modelo de usuário
 export interface user_interface {
@@ -36,13 +36,15 @@ export interface APIRequest extends Request{
 
 // Modelo de SOCKET
 interface CLientSocket extends SocketIO.Client {
-    data: user_interface,
+    user: user_interface,
     quiz: Quizzes,
     answered_questions: Array<{question_id: number, right_answered: boolean}>,
     question: Questions,
     gameMode: 'single' | 'multi',
     time: boolean,
-    timeToNextQuestion: boolean
+    timeToNextQuestion: boolean,
+    // Experimental
+    game: Games
 }
 // Modelo cliente
 export interface APISocket extends SocketIO.Socket{
