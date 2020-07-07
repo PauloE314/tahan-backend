@@ -2,6 +2,7 @@ import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, Cr
 import { Questions } from './Questions';
 import { Users } from "@models/User";
 import { Sections } from "@models/Sections";
+import { Games } from '@models/games/Games';
 
 
 @Entity()
@@ -16,6 +17,9 @@ export class Quizzes {
 
     @OneToMany(type => Questions, question => question.quiz, { cascade: true })
     questions: Questions[];
+
+    @OneToMany(type => Games, game => game.quiz, { cascade: true })
+    games: Games[];
 
     @ManyToOne(type => Sections, section => section.id)
     section: Sections;

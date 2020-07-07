@@ -1,6 +1,7 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateColumn } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateColumn, ManyToMany } from "typeorm";
 import { Topics } from './Topics';
 import { Quizzes } from "./quiz/Quizzes";
+import { Games } from "@models/games/Games";
 
 @Entity()
 @Unique(['email', 'googleID'])
@@ -27,9 +28,17 @@ export class Users {
     @CreateDateColumn()
     created_at: Date;
 
+    // Quizzes
     @OneToMany(type => Topics, writenTopics => writenTopics.author)
     writenTopics: Topics[];
 
     @OneToMany(type => Quizzes, quiz => quiz.author)
     writenQuizzes: Quizzes[];
+
+    // Games
+    // @ManyToMany(type => Games, game => game.players)
+    // games: Games[];
+
+    // @ManyToMany(type => Games, game => game.players)
+    // games: Games[]; 
 }

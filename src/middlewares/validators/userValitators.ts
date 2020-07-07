@@ -1,4 +1,4 @@
-import { Users } from '../../models/User';
+import { Users } from '@models/User';
 import { APIRequest } from 'src/@types';
 import { Validator } from 'src/utils/classes';
 import { Response, NextFunction } from 'express';
