@@ -1,6 +1,8 @@
 import { Server } from "socket.io";
 import { APISocket } from "src/@types";
 import { Users } from "@models/User";
+import { GameError } from './game';
+import { GameErrorModel, GameErrors } from '@config/socket'
 
 // Armazena as conexões
 const connections: Client[] = [];
@@ -9,7 +11,7 @@ const connections: Client[] = [];
 export default class Client {
     public socket: APISocket;
     public io: Server;
-    public room_code: string | null;
+    public room_code: string | null = null;
     public user: Users;
     
     // Cria um novo cliente
@@ -69,6 +71,12 @@ export default class Client {
     // Emite para o cliente
     public emit(event_name: string, event_data?: any) {
         this.socket.emit(event_name, event_data ? event_data : null);
+    }
+
+    // Emite erro
+    public emitError(err: GameErrorModel) {
+        const new_error = new GameError(err.code);
+        new_error.sendToClient(this);
     }
 
     // Permite lidar com eventos

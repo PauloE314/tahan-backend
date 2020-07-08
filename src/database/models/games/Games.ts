@@ -1,8 +1,9 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, ManyToMany, JoinTable, CreateDateColumn } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, ManyToMany, JoinTable, CreateDateColumn, OneToOne } from "typeorm";
 import { Topics } from "../Topics";
 import { Quizzes } from '../quiz/Quizzes';
 import { Users } from '../User';
 import { GameAnswers } from "./GameAnswers";
+import { Match } from "./Match";
 
 
 
@@ -12,23 +13,17 @@ export class Games {
 
     @PrimaryGeneratedColumn()
     id: number;
-
     
 	@CreateDateColumn()
     created_at: Date;
 
-    @ManyToOne(type => Users, player => player.id)
-    player1: Users
-
-    @ManyToOne(type => Users, player => player.id, { nullable: true })
-    player2: Users
-
+    @OneToOne(type => Match, { cascade: true })
+    @JoinTable()
+    match: Match
 
     @ManyToOne(type => Quizzes, quiz => quiz.id, { onDelete: 'NO ACTION' })
     quiz: Quizzes;
 
-    @OneToMany(type => GameAnswers, gameAnwer => gameAnwer.game)
-    answers: GameAnswers[];
 
     @ManyToOne(type => Users, user => user.id, { nullable: true })
     winner: Users
@@ -37,5 +32,6 @@ export class Games {
     draw: Boolean
     
     @Column()
-	gameState: string
+    gameState: string
+    
 }

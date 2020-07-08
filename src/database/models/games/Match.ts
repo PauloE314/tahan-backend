@@ -3,6 +3,7 @@ import { Topics } from "../Topics";
 import { Quizzes } from '../quiz/Quizzes';
 import { Users } from '../User';
 import { GameAnswers } from "./GameAnswers";
+import { Questions } from "@models/quiz/Questions";
 
 
 
@@ -20,11 +21,22 @@ export class Match {
     player2: Users
 
     @Column()
-    room_code: String
+    room_code: string
 
     @Column({ default: false })
     player1_ready: Boolean
 
     @Column({ default: false })
     player2_ready: Boolean
+
+    @ManyToOne(type => Questions, question => question.id, { nullable: true })
+    currentQuestion: Questions;
+
+    @ManyToMany(type => Questions, { cascade: true })
+    @JoinTable()
+    answered_questions: Questions[];
+
+    @OneToMany(type => GameAnswers, gameAnwer => gameAnwer.match)
+    answers: GameAnswers[];
+    
 }

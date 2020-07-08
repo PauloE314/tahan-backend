@@ -4,6 +4,8 @@ import { SocketEvents } from '@config/socket';
 import { useMiddlewares } from "./middlewares";
 import actions from "./actions";
 import { APISocket } from 'src/@types';
+import Client from './helpers/client';
+import { Test } from './helpers/game'
 
 const room_name = 'sala-teste';
 
@@ -14,23 +16,23 @@ export default function useSocket(io: Server) {
 
     // Inicia a connexão
     io.on(SocketEvents.ClientConnect, (socket: APISocket) => {
-        // console.log(socket.id);
-        // socket.join(room_name);
-        // const room = io.sockets.adapter.rooms[room_name];
-        // //@ts-ignore
-        // room.data = 'lorem';
-        // //@ts-ignore
-        // socket.emit('new-member', room.data);
+        const test = new Test();
+        test.addPlayer1(socket.id);
+        test.addPlayer2('sua mãe');
+        test.save();
 
+        console.log(test.getAllGames());
+        // Cria um cliente
+        // const client = new Client(io, socket, socket.client.user.info);
 
         // Cria jogo
-        socket.on(SocketEvents.Creategame, (data) => actions.CreateGame(io, socket, data));
+        // socket.on(SocketEvents.Creategame, (data) => actions.CreateGame(io, client, data));
 
-        // Entra em sala para jogar
-        socket.on(SocketEvents.JoinGame, (data) => actions.JoinGame(io, socket, data));
+        // // Entra em sala para jogar
+        // socket.on(SocketEvents.JoinGame, (data) => actions.JoinGame(io, client, data));
 
-        // Põe o jogador como pronto
-        socket.on(SocketEvents.Ready, (data) => actions.Ready(io, socket, data));
+        // // Põe o jogador como pronto
+        // socket.on(SocketEvents.Ready, (data) => actions.Ready(io, client, data));
 
 
         // Lida com a desconexão de um dos jogadores

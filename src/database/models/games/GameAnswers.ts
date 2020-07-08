@@ -4,6 +4,7 @@ import { Quizzes } from '../quiz/Quizzes';
 import { Users } from '../User';
 import { Questions } from "@models/quiz/Questions";
 import { Games } from "./Games";
+import { Match } from "./Match";
 
 
 
@@ -23,6 +24,6 @@ export class GameAnswers {
     @Column()
     isRight: Boolean
     
-    @ManyToMany(type => Games, game => game.id)
-    game: Games;
+    @ManyToOne(type => Match, match => match.id)
+    match: Match;
 }
