@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { Repository, getRepository, EntitySchema, ObjectLiteral } from 'typeorm';
 import { Users } from '@models/User';
 import { Sections } from '@models/Sections';
 import { Topics } from '@models/Topics';
@@ -44,8 +43,20 @@ interface CLientSocket extends SocketIO.Client {
     time: boolean,
     timeToNextQuestion: boolean,
     // Experimental
-    game: Games
+    game: Games,
+    isPlaying: Boolean,
+    room: string
 }
+
+
+export interface Room extends SocketIO.Room {
+    game: Games,
+    players: { id: number, isReady: boolean }[],
+    quiz: Quizzes
+}
+
+
+
 // Modelo cliente
 export interface APISocket extends SocketIO.Socket{
     client: CLientSocket,

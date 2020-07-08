@@ -1,9 +1,14 @@
 import { Quizzes } from '@models/quiz/Quizzes';
-import { getRepository } from 'typeorm';
+import { getRepository, getCustomRepository } from 'typeorm';
 import { SocketEvents, SocketErrors } from "@config/socket";
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import { Err } from 'src/utils/classes';
-import { APISocket } from 'src/@types';
+import { APISocket, Room } from 'src/@types';
+import JoinGame from './joinGame';
+import { Games } from '@models/games/Games';
+import GamesRepository from '@database/repositories/GamesRepo';
+import joinGame from './joinGame';
+
 
 interface StartGameInput {
     quizId: number,
@@ -12,7 +17,7 @@ interface StartGameInput {
     timeToNextQuestion: boolean
 };
 
-export default async function LoadGame (socket: APISocket, data: StartGameInput){
+export default async function createGame (io: Server, socket: APISocket, data: StartGameInput){
     const { quizId, gameMode, time, timeToNextQuestion } = data;
     try {
         // Tenta pegar o quiz
@@ -36,15 +41,18 @@ export default async function LoadGame (socket: APISocket, data: StartGameInput)
         if (timeToNextQuestion == undefined)
             return socket.emit(SocketErrors.InvalidData, { name: 'timeToNextQuestion', message: 'Envie um "timeToNextQuestion" válido' });
 
-        // Salva dados de modo de jogo
-        socket.client.quiz = Object.assign({}, quiz);
-        socket.client.gameMode = gameMode;
-        socket.client.time = time;
-        socket.client.timeToNextQuestion = timeToNextQuestion;
-        
         delete quiz.questions;
-        // Envia os dados do quiz
-        socket.emit(SocketEvents.GameData, quiz);
+
+        // Cria uma sala
+        const room_name = `quiz-${data.quizId}-${Object.keys(socket.rooms)[0]}`;
+        socket.client.room = room_name;
+        socket.join(room_name);
+        const room = <Room>io.sockets.adapter.rooms[room_name];
+        // Armazena os dados na sala
+        room.quiz = quiz;
+        room.players = [];
+        // Faz o usuário que criou o game dar Join
+        await joinGame(io, socket, room_name);
     }
     catch(err) {
         console.log(err.message);

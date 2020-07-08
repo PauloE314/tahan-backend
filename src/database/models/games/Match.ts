@@ -8,14 +8,10 @@ import { GameAnswers } from "./GameAnswers";
 
 @Entity()
 // @Unique(['name'])
-export class Games {
+export class Match {
 
     @PrimaryGeneratedColumn()
     id: number;
-
-    
-	@CreateDateColumn()
-    created_at: Date;
 
     @ManyToOne(type => Users, player => player.id)
     player1: Users
@@ -23,19 +19,12 @@ export class Games {
     @ManyToOne(type => Users, player => player.id, { nullable: true })
     player2: Users
 
-
-    @ManyToOne(type => Quizzes, quiz => quiz.id, { onDelete: 'NO ACTION' })
-    quiz: Quizzes;
-
-    @OneToMany(type => GameAnswers, gameAnwer => gameAnwer.game)
-    answers: GameAnswers[];
-
-    @ManyToOne(type => Users, user => user.id, { nullable: true })
-    winner: Users
-
     @Column()
-    draw: Boolean
-    
-    @Column()
-	gameState: string
+    room_code: String
+
+    @Column({ default: false })
+    player1_ready: Boolean
+
+    @Column({ default: false })
+    player2_ready: Boolean
 }

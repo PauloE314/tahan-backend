@@ -1,27 +1,21 @@
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import { assertData } from '../middlewares';
 import LoadGame from './loadGame';
+import CreateGame from './createGame';
 import StartGame from './startGame';
 import HandleAnswer from './handleAnswer';
+import JoinGame from './joinGame';
+import Ready from './Ready';
 import { APISocket } from 'src/@types';
+import { SocketErrors } from '@config/socket';
 
 export default {
     LoadGame,
     StartGame,
     HandleAnswer,
 
-    CreateGame: (...i:any) => {},
-    JoinGame: (...i:any) => {},
-    Ready: (...i:any) => {},
-    // StartGame: (socket: APISocket, data: any) => appliedAssertation(socket, data, StartGame),
-    // HandleAnswer: (socket: APISocket, data: any) => appliedAssertation(socket, data, HandleAnswer),
+    CreateGame,
+    JoinGame,
+    
+    Ready
 }
-
-// Aplica assertação de dados
-// async function appliedAssertation(socket: APISocket, data: any, cb: (socket: APISocket, data: any) => any) {
-//     const is_data_right = await assertData(socket);
-//     if (is_data_right)
-//         return cb(socket, data);
-//     else
-//         return (socket: APISocket, data: any) => {};
-// }

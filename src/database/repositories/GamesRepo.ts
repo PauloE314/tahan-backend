@@ -76,7 +76,7 @@ export default class GamesRepository extends Repository<Games> {
     // Termina o jogo
     async endGame(game: Games) {
         const gameData = await this.getGameData(game);
-        if (gameData.isMultiplayer) {
+        if (gameData) {
             // Pega a lista de respostas do jogo
             const game_answers = await getRepository(GameAnswers).find({
                 relations: ['user'],
@@ -97,7 +97,7 @@ export default class GamesRepository extends Repository<Games> {
             else
                 gameData.draw = true;
         }
-        gameData.isGameEnd = true;
+        // gameData.isGameEnd = true;
         await this.save(gameData);
         return null;
     }

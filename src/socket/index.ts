@@ -8,8 +8,6 @@ import { APISocket } from 'src/@types';
 const room_name = 'sala-teste';
 
 
-
-
 export default function useSocket(io: Server) {
     // Aplica middlewares
     useMiddlewares(io);
@@ -23,28 +21,21 @@ export default function useSocket(io: Server) {
         // room.data = 'lorem';
         // //@ts-ignore
         // socket.emit('new-member', room.data);
-        
-        // Retorna dados de um quiz
-        socket.on(SocketEvents.LoadGame, (data) => actions.LoadGame(socket, data));
-        
-        // Começa o jogo
-        socket.on(SocketEvents.StartGame, (data) => actions.StartGame(socket, data));
-
-        // Quando o usuário responder
-        socket.on(SocketEvents.Answer, (data) => actions.HandleAnswer(socket, data));
 
 
         // Cria jogo
-        socket.on(SocketEvents.Creategame, (data) => actions.CreateGame(socket, data));
+        socket.on(SocketEvents.Creategame, (data) => actions.CreateGame(io, socket, data));
 
         // Entra em sala para jogar
-        socket.on(SocketEvents.JoinGame, (data) => actions.JoinGame(socket, data));
+        socket.on(SocketEvents.JoinGame, (data) => actions.JoinGame(io, socket, data));
 
         // Põe o jogador como pronto
-        socket.on(SocketEvents.Ready, (data) => actions.Ready(socket, data));
+        socket.on(SocketEvents.Ready, (data) => actions.Ready(io, socket, data));
 
-        // Quando o usuário responder
-        // socket.on(SocketEvents.Answer, (data) => actions.HandleAnswer(socket, data));
+
+        // Lida com a desconexão de um dos jogadores
+        // socket.on(SocketEvents.ClientDisconnected, (data) => actions.Disconnect(socket, data))
+
 
         /*
             - Cada sala só pode ter um ou dois usuários
