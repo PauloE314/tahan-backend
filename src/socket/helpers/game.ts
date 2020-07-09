@@ -4,31 +4,14 @@ import { GameErrors, GameStates, SocketEvents, GameErrorModel } from "@config/so
 import { Questions } from "@models/quiz/Questions";
 import { Server } from "socket.io";
 import { Games } from "@models/games/Games";
-import { Match } from "@models/games/Match";
 import { getRepository } from "typeorm";
 import { Users } from "@models/User";
-import { GameAnswers } from "@models/games/GameAnswers";
 
-const games: Array<any> = [];
 
-export class Test {
-    player1: string;
-    player2: string;
-
-    addPlayer1(name: string) {
-        this.player1 = name;
-    }
-    addPlayer2(name: string) {
-        this.player2 = name;
-    }
-
-    save() {
-        games.push(this);
-    }
-    getAllGames() {
-        console.log(games);
-    }
-}
+interface Player {
+    client: Client,
+    answers: Array<PlayerAnswer>
+};
 
 interface PlayerAnswer {
     question: Questions,
@@ -36,68 +19,75 @@ interface PlayerAnswer {
 };
 
 interface GameEndStatus {
-    winner?: Users;
+    winner?: Player;
     draw: boolean;
 }
 
 // Modelo de jogo
-export class GameManager {
+export class GameQuiz {
     private io: Server;
+    private player1: Player;
+    private player2?: Player;
     private room_name: string;
-    public game: Games;
+    private answered_questions: Array<Questions>;
+    public gameState: string;
+    public quiz: Quizzes;
+    public currentQuestion: Questions;
+    public player1_ready: boolean;
+    public player2_ready: boolean;
 
 
-    private constructor(io: Server, game: Games) {
+    constructor(io: Server, user: Client, quiz: Quizzes) {
         this.io = io;
-        this.game = game;
-        this.room_name = this.game.match.room_code;            
+        this.player1 = { client: user, answers: [] };
+        this.quiz = quiz;
+        this.gameState = GameStates.Begin;
+        this.answered_questions = [];
+
+
+        this.room_name  = 'game-' + quiz.id + '-' + user.socket.id;
+        // Cria uma nova sala
+        user.joinRoom(this.room_name);
     }
 
 
     // Adiciona um novo jogador
-    public addPlayey2(client: Client, options?: { emit: boolean }) {
+    public addPlayer(user: Client, options?: { emit: boolean }) {
         // Checa se o jogo ainda não começou
-        this.assertGameState(GameStates.Begin, client);
-        // Se já houver um segundo jogador, retorna um erro
-        if (this.game.match.player2) 
-            this.generateError(GameErrors.RoomIsFull.code, { client, raise: true });
+        this.assertGameState(GameStates.Begin, user);
+        // Se já houver um segundo jogador, retorna um erro o jogador inicial
+        if (this.player2) 
+            this.generateError(GameErrors.RoomIsFull.code, { user, raise: true });
 
-        const user_rooms = Object.keys(client.socket.rooms);
+        const user_rooms = Object.keys(user.socket.rooms);
         // Checa que o usuário está em apenas uma sala
         if (user_rooms.length !== 1) 
-            this.generateError(GameErrors.UserAlreadyInGame.code, { client, raise: true });
+            this.generateError(GameErrors.UserAlreadyInGame.code, { user, raise: true });
 
         const emit = options ? options.emit : true;
-        
-        this.game.match.player2 = client.user;
-        client.joinToExistentRoom(this.game.match.room_code);
-        // salva os dados do jogador 2
-        this.saveGame();
+
+        this.player2 = { client: user, answers: [] };
+        user.joinToExistentRoom(this.room_name);
         // Emite para todos da sala
-        if (emit)
-            client.emitRoom(SocketEvents.PlayerJoin);   
+        // if (emit)
+            // user.emitRoom(SocketEvents.PlayerJoin);   
     }
 
-
     // Seta o usuário como pronto
-    public async setReady(client: Client, onAllReady: () => any) {
+    public setReady(user: Client, onAllReady: () => any) {
         // Certifica que o jogo ainda não começou
-        this.assertGameState(GameStates.Begin, client);
-        
+        this.assertGameState(GameStates.Begin, user);
+
         // Checa se o usuário é um jogador
-        if(!this.isPlayer(client.user))
-            this.generateError(GameErrors.UserNotInGame.code, { client, raise: true });
+        if(!this.isPlayer(user))
+            this.generateError(GameErrors.UserNotInGame.code, { user, raise: true });
 
         // Seta o usuário 1 como pronto
-        if(client.user == this.game.match.player1) 
-           this.game.match.player1_ready = true
-        
+        if(user == this.player1.client)
+            this.player1_ready = true;
         // Seta o usuário 2 como pronto
-        else if(client.user == this.game.match.player2) 
-            this.game.match.player2_ready = true;
-
-        await this.saveGame();
-        
+        else if(user == this.player2.client)
+            this.player2_ready = true;
 
         // Se todos estiverem prontos, executa a função
         if (this.allReady)
@@ -105,67 +95,43 @@ export class GameManager {
     }
 
     // Começa o jogo
-    public async startGame() {
-        this.game.gameState = GameStates.Playing;
-        this.game = await this.saveGame();
-        return this.game;
+    public startGame() {
+        this.gameState = GameStates.Playing;
     }
 
     // Retorna uma nova questão
-    public async nextQuestion(onGameEnd?: () => any) {
-        const gameEnd = onGameEnd ? onGameEnd : () => {};
+    public nextQuestion() {
         // Assegura que o jogo está acontecendo
-        this.assertGameState(GameStates.Playing);
+        this.assertGameState(GameStates.Playing)
 
-        const all_questions = this.game.quiz.questions;
-        const no_answered_questions = await Promise.all(all_questions.filter(
-            async question => this.game.match.answered_questions.includes(question)
-        ));
-        // Caso não haja mais questões para responder, termina o jogo
-        if (no_answered_questions.length === 0) {
-            gameEnd();
-            return this.endGame();
-        }
-
+        const all_questions = this.quiz.questions;
+        const no_answered_questions = all_questions.filter(question => this.answered_questions.includes(question));
         // Pega uma questão aleatória
         const random_question = no_answered_questions[Math.floor(Math.random() * no_answered_questions.length)];
-        // Atualiza a lista de questões respondidas e a questão atual
-        this.game.match.answered_questions.push(random_question);
-        this.game.match.currentQuestion = random_question;
-        // Salva o game
-        await this.saveGame();
-        // Retorna a questão
+        this.answered_questions.push(random_question);
+        this.currentQuestion = random_question;
+        // Retorna a qestão
         return random_question;
     }
 
     // Lida com a resposta
-    public async answerQuestion(client: Client, answer_id: number, onBothAnswered?: (data: { player1_answer: PlayerAnswer, player2_answer: PlayerAnswer }) => void) {
+    public answerQuestion(user: Client, answer_id: number, onBothAnswered?: (data: { player1_answer: PlayerAnswer, player2_answer: PlayerAnswer }) => void) {
         // Checa se o jogador está no jogo
-        if (!this.isPlayer(client.user))
-            this.generateError(GameErrors.UserNotInGame.code, { client, raise: true });
+        if (!this.isPlayer(user))
+            this.generateError(GameErrors.UserNotInGame.code, { user, raise: true });
 
         // Assegura que o jogo está ocorrendo
-        this.assertGameState(GameStates.Begin, client);
+        this.assertGameState(GameStates.Begin, user);
         // Checa se ambos estão prontos
         if (!this.allReady)
-            this.generateError(GameErrors.InvalidAction.code, { client, raise: true });
+            this.generateError(GameErrors.InvalidAction.code, { user, raise: true });
 
-        const answer = new GameAnswers();
-        answer.question = this.game.match.currentQuestion;
-        answer.isRight = this.game.match.currentQuestion.rightAnswer.id === answer_id;
-        answer.match = this.game.match;
-        answer.user = client.user;
-        // Salva a resposta
-        this.game.match.answers.push(answer);
-        const game = await this.saveGame();
+        this[user == this.player1.client ? 'player1' : 'player2'].answers.push(
+            { question: this.currentQuestion, isRight: this.currentQuestion.rightAnswer.id === answer_id }
+        );
 
-        // Checa as respostas dos usuários
-        const p1_answer = game.match.answers.filter(answer => (
-            answer.question == game.match.currentQuestion && answer.user == game.match.player1
-        ));
-        const p2_answer = game.match.answers.filter(answer => (
-            answer.question == game.match.currentQuestion && answer.user == game.match.player2
-        ));
+        const p1_answer = this.player1.answers.filter(answer => answer.question === this.currentQuestion);
+        const p2_answer = this.player2.answers.filter(answer => answer.question === this.currentQuestion);
         // Se ambos tiverem respondido
         if (p1_answer.length && p2_answer.length) {
             const cb = onBothAnswered ? onBothAnswered : () => {};
@@ -174,26 +140,16 @@ export class GameManager {
     }
 
     // Termina o jogo
-    public async endGame() : Promise<GameEndStatus> {
+    public endGame() : GameEndStatus {
         // Assegura que o jogo está acontecendo
         this.assertGameState(GameStates.Playing);
         // Pega as respostas corretas e erradas de cada usuário
-        const player1_right_questions = this.game.match.answers.filter(
-            answer => answer.isRight && answer.user == this.game.match.player1
-        ).length;
-        const player2_right_questions = this.game.match.answers.filter(
-            answer => answer.isRight && answer.user == this.game.match.player2
-        ).length;
-        // Termina o jogo
-        this.game.gameState = GameStates.Ended;
-        const game = await this.saveGame();
-        
+        const player1_right_questions = this.player1.answers.filter(answer => answer.isRight).length;
+        const player2_right_questions = this.player2.answers.filter(answer => answer.isRight).length;
+        this.gameState = GameStates.Ended;
         // Retorna o vencedor
         if (player1_right_questions !== player2_right_questions)
-            return {
-                draw: false,
-                winner: player1_right_questions > player2_right_questions ? game.match.player1 : game.match.player2
-            }
+            return { draw: false, winner: player1_right_questions > player2_right_questions ? this.player1 : this.player2 }
         // Retorna empate
         return { draw: true }
     }
@@ -206,71 +162,96 @@ export class GameManager {
     }
 
     // Checa se usuário é um player
-    public isPlayer(user: Users) {
-        const is_player_1 = this.game.match.player1 == user;
-        const is_player_2 = this.game.match.player2 ? this.game.match.player2 == user : false;
+    public isPlayer(user: Client) {
+        const is_player_1 = this.player1.client == user;
+        const is_player_2 = this.player2 ? this.player2.client == user : false;
         return is_player_1 || is_player_2
     }
 
     // Assegura que o jogo tenha um estado específico
-    private assertGameState(state: string, client?: Client) {
-        if (this.game.gameState !== state) {
-            if (client)
-                this.generateError(GameErrors.InvalidAction.code, { client, raise: true });
+    private assertGameState(state: string, user?: Client) {
+        if (this.gameState !== state) {
+            if (user)
+                this.generateError(GameErrors.InvalidAction.code, { user, raise: true });
             else
                 this.generateError(GameErrors.InvalidAction.code, { raise: true });
         }
     }
     // Gera um erro de jogo
-    private generateError(code: number, options: { client?: Client, raise: boolean} = { raise: true }) {
-        const gameError = new GameError(code);
-        if (options.client)
-            gameError.sendToClient(options.client);
-        if (options.raise)
-            gameError.raiseError();
+    private generateError(code: number, options: { user?: Client, raise: boolean} = { raise: true }) {
+        // const gameError = new GameError(code);
+        // if (options.user)
+        //     gameError.sendToClient(options.user);
+        // if (options.raise)
+        //     gameError.raiseError();
     }
 
     // Checa se ambos estão prontos
     get allReady() {
-        if (!this.game.match.player2)
+        if (!this.player2)
             return false;
 
-        return this.game.match.player1_ready && this.game.match.player2_ready && this.game.match.player2;
-    }
-
-    // Retorna as informações do jogo
-    private async getGame() {
-        return await getRepository(Games).findOne({
-            where: { id: this.game.id },
-            relations: ['']
-        })
-    }
-
-    private async saveGame() {
-        return await getRepository(Games).save(this.game);
+        return this.player1_ready && this.player2_ready && this.player2;
     }
 }
 
 
 
 // Erro de jogo
+// export class GameError {
+//     public error_code: number;
+//     public game_error: GameErrorModel; 
+//     private error: Error;
+
+//     constructor(error_code: number) {
+//         // Tenta pegar os dados do erro
+//         const game_error = Object.keys(GameErrors).map(
+//             game_err_name => GameErrors[game_err_name]
+//         ).filter(
+//             game_err => game_err.code === error_code
+//         )
+//         // Caso não exista nenhum erro com esse código, para o código
+//         if (!game_error.length)
+//             throw new Error('Esse código de erro não existe');
+
+//         this.game_error = game_error[0];
+//         // Armazena o erro real do JS
+//         const err = new Error();
+//         err.name = this.game_error.name;
+//         err.message = this.game_error.message;
+//         this.error = err;   
+//     }
+//     // Envia o erro ao cliente
+//     sendToClient(user: Client) {
+//         user.emit('GAME_ERROR', this.game_error);
+//     }
+//     // Ativa o erro real
+//     raiseError() {
+//         throw this.error;
+//     }
+// } 
+
+
+
+
+// Erro de jogo
 export class GameError {
-    public error_code: number;
     public game_error: GameErrorModel; 
     private error: Error;
 
-    constructor(error_code: number) {
+    constructor(game_error: GameErrorModel) {
         // Tenta pegar os dados do erro
-        const game_error = Object.keys(GameErrors).map(
+        const error_exists = Object.keys(GameErrors).map(
             game_err_name => GameErrors[game_err_name]
         ).filter(
-            game_err => game_err.code === error_code
+            game_err => game_err.code == game_error.code
         )
         // Caso não exista nenhum erro com esse código, para o código
-        if (!game_error.length)
+        if (!(error_exists.length))
             throw new Error('Esse código de erro não existe');
 
-        this.game_error = game_error[0];
+        this.game_error = error_exists[0];
+        console.log(this.game_error);
         // Armazena o erro real do JS
         const err = new Error();
         err.name = this.game_error.name;

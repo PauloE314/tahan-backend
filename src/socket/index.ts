@@ -5,7 +5,6 @@ import { useMiddlewares } from "./middlewares";
 import actions from "./actions";
 import { APISocket } from 'src/@types';
 import Client from './helpers/client';
-import { Test } from './helpers/game'
 
 const room_name = 'sala-teste';
 
@@ -16,20 +15,19 @@ export default function useSocket(io: Server) {
 
     // Inicia a connexão
     io.on(SocketEvents.ClientConnect, (socket: APISocket) => {
-        const test = new Test();
-        test.addPlayer1(socket.id);
-        test.addPlayer2('sua mãe');
-        test.save();
-
-        console.log(test.getAllGames());
         // Cria um cliente
-        // const client = new Client(io, socket, socket.client.user.info);
+        const client = new Client(io, socket, socket.client.user.info);
+        console.log(client.user.username + ' connectou - ' + client.socket.id)
 
         // Cria jogo
-        // socket.on(SocketEvents.Creategame, (data) => actions.CreateGame(io, client, data));
+        socket.on(SocketEvents.CreateMatch, (data) => actions.CreateMatch(io, client, data));
 
         // // Entra em sala para jogar
-        // socket.on(SocketEvents.JoinGame, (data) => actions.JoinGame(io, client, data));
+        socket.on(SocketEvents.JoinMatch, (data) => actions.JoinMatch(io, client, data));
+
+        socket.on(SocketEvents.ClientDisconnected, () => {
+            console.log(client.user.username + ' desconectando...');
+        })
 
         // // Põe o jogador como pronto
         // socket.on(SocketEvents.Ready, (data) => actions.Ready(io, client, data));

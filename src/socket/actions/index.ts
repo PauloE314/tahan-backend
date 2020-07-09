@@ -1,13 +1,11 @@
 import { Socket, Server } from 'socket.io';
-import { assertData } from '../middlewares';
-import CreateGame from './createGame';
-import JoinGame from './joinGame';
+import CreateMatch from './createMatch';
+import JoinMatch from './joinMatch';
 import Ready from './Ready';
 import { APISocket } from 'src/@types';
-import { SocketErrors } from '@config/socket';
 
 export default {
-    CreateGame,
-    JoinGame,
+    CreateMatch,
+    JoinMatch,
     Ready
 }
