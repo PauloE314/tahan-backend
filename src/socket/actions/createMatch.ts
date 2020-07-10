@@ -1,13 +1,7 @@
-import { Quizzes } from '@models/quiz/Quizzes';
-import { getRepository, getCustomRepository } from 'typeorm';
 import { SocketEvents, GameErrors } from "@config/socket";
-import { Socket, Server } from 'socket.io';
-import { Err } from 'src/utils/classes';
-import { APISocket, Room } from 'src/@types';
-import { Games } from '@models/games/Games';
-import Client, { handleMatchDisconect } from '../helpers/client';
-import { getFullQuizData } from '../helpers/game';
-import { Match } from '../helpers/match';
+import { Server } from 'socket.io';
+import Client from '../helpers/client';
+import Match from '../helpers/match';
 
 
 
@@ -21,16 +15,19 @@ export default async function createMatch (io: Server, client: Client, data: any
     const match = new Match(io, client);
     // client.joinNewRoom(room_name);
 
-    console.log(`Match ${match.key} está com os players ${match.players.map(player => player.user.username)}`);
+    console.log(`Match ${match.room_key} está com os players ${match.players.map(player => player.user.username)}`);
     
     // Envia os dados do match
-    client.emit(SocketEvents.MatchCreated, { match_code: match.key });
+    client.emit(SocketEvents.MatchCreated, { match_code: match.room_key });
 
     // Caso o usuário se disconecte
     client.on(SocketEvents.ClientDisconnected, async () => {
         const match = Match.get_match(client.match_code);
-        match.emit_to_players(SocketEvents.MainPlayerOut)
+        const oponent = match.players.find(player => player.user.id !== client.user.id);
+        
+        if (oponent)
+            oponent.emit(SocketEvents.MainPlayerOut)
         // Termina o match
-        match.end_match();
+        match.end_match(io);
     });
 }

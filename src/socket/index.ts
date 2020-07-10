@@ -22,9 +22,16 @@ export default function useSocket(io: Server) {
         // Cria jogo
         socket.on(SocketEvents.CreateMatch, (data) => actions.CreateMatch(io, client, data));
 
-        // // Entra em sala para jogar
+        // Entra em sala de jogo
         socket.on(SocketEvents.JoinMatch, (data) => actions.JoinMatch(io, client, data));
 
+        // Afirma estar pronto
+        socket.on(SocketEvents.Ready, (data) => actions.Ready(io, client, data));
+
+        // Começa o jogo
+        socket.on(SocketEvents.StartGame, (data) => actions.StartGame(io, client, data));
+
+        // Quando o jogador for desconectado
         socket.on(SocketEvents.ClientDisconnected, () => {
             console.log(client.user.username + ' desconectando...');
         })

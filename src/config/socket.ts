@@ -12,10 +12,15 @@ export const SocketEvents = {
 
     // Eventos do server
     MatchCreated: 'match-created',
+    MatchJoined: 'match-joined',
     PlayerJoin: 'player-join',
+    OponentReady: 'oponent-ready',
     SecondaryPlayerOut: 'secondary-player-out',
     MainPlayerOut: 'main-player-out',
     GameData: 'game-data',
+    GameStartCounter: 'game-start-counter',
+    
+
     NextQuestion: 'next-question',
     RightAnswer: 'right-answer',
     WrongAnswer: 'wrong-answer',
@@ -51,6 +56,8 @@ export const GameErrors = {
     InvalidAction: { name: 'invalid-action', code: 5, message: 'Ação inválida para esse estágio do jogo' },
     RoomIsFull: { name: 'room-is-full', code: 6, message: 'Esse jogo já possui 2 jogadores' },
     RoomIsEmpty: { name: 'room-is-empty', code: 7, message: 'Esse jogo está vazio' },
-    UserAlreadyInGame: { name: 'user-in-game', code: 8, message: 'O usuário ainda está em jogo' },
-    UserNotInGame: { name: 'user-not-in-game', code: 9, message: 'O usuário não está participando do jogo'}    
+    RoomIncomplete: { name: 'room-incomplete', code: 8, message: 'Esse match não está completo' },
+    UserAlreadyInGame: { name: 'user-in-game', code: 9, message: 'O usuário ainda está em jogo' },
+    UserNotInGame: { name: 'user-not-in-game', code: 10, message: 'O usuário não está participando do jogo'},
+
 }

@@ -1,26 +1,41 @@
 import { Server } from "socket.io";
 import { APISocket } from "src/@types";
 import { Users } from "@models/User";
-import { GameError } from './game';
 import { GameErrorModel, GameErrors, SocketEvents } from '@config/socket'
 import { getRepository } from "typeorm";
 
+
+interface ClientList {
+    [id: number]: Client
+}
+
 // Armazena as conexões
-const connections: Client[] = [];
+const clients: ClientList = {};
 
 // Modelo de um cliente
 export default class Client {
     public socket: APISocket;
-    public io: Server;
+    // public io: Server;
     public user: Users;
     public match_code: string | null;
     
     // Cria um novo cliente
     constructor(io: Server, socket: APISocket, user: Users) {
-        this.io = io;
+        // this.io = io;
         this.socket = socket;
         this.user = user;
-        connections.push(this);
+        clients[this.user.id] = this;
+
+        // Quando o usuário for desconectado, retira-o da lista de clientes
+        this.socket.on(SocketEvents.ClientDisconnected, () => {
+            delete clients[this.user.id];
+            const survived = [];
+            for (let client in clients) {
+                survived.push(clients[client].user.username);
+            }
+            console.log('clientes: ');
+            console.log(survived)
+        })
     }
 
     // Adiciona o usuário a uma sala
@@ -32,8 +47,8 @@ export default class Client {
     }
 
     // Adiciona o usuário a uma nova sala
-    public joinNewRoom(room_id: string) {
-        const all_rooms = this.io.sockets.adapter.rooms;
+    public joinNewRoom(io: Server, room_id: string) {
+        const all_rooms = io.sockets.adapter.rooms;
         const room = all_rooms[room_id];
         // Caso a sala exista, retorna false
         if (room)
@@ -44,8 +59,8 @@ export default class Client {
     }
 
     // Adiciona o cliente a uma sala já existente
-    public joinToExistentRoom(room_id: string) {
-        const all_rooms = this.io.sockets.adapter.rooms;
+    public joinToExistentRoom(io: Server, room_id: string) {
+        const all_rooms = io.sockets.adapter.rooms;
         const room = all_rooms[room_id];
         // Caso a sala não exista, retorna false
         if (!room)
@@ -58,7 +73,7 @@ export default class Client {
 
 
     // Emite evento para todos da sala
-    public emitToMatch(event_name: string, data?: any, options?: { except_sender: boolean }) {
+    public emitToMatch(io: Server, event_name: string, data?: any, options?: { except_sender: boolean }) {
         // Caso o usuário não esteja em uma sala, retorna false
         if (!this.match_code)
             return false;
@@ -70,7 +85,7 @@ export default class Client {
             this.socket.broadcast.to(this.match_code).emit(event_name, event_data);
         // Emite o evento para todos
         else
-            this.io.to(this.match_code).emit(event_name, event_data);
+            io.to(this.match_code).emit(event_name, event_data);
     }
 
     // Emite para o cliente
@@ -85,8 +100,8 @@ export default class Client {
     }
 
     // Permite lidar com eventos
-    public on(event_name: string, cb: (io: Server, socket: APISocket, ...data: any) => any) {
-        this.socket.on(event_name, () => cb(this.io, this.socket))
+    public on(event_name: string, cb: (socket: APISocket, ...data: any) => any) {
+        this.socket.on(event_name, () => cb(this.socket))
     }
 
 
@@ -94,35 +109,43 @@ export default class Client {
         return this.socket.rooms;
     }
 
-
+    public static get_client(id: number ) {
+        return clients[id];
+    }
 }
 
 
-export async function handleMatchDisconect(client: Client) {
-    // caso não exista um match
-    if (!client.match_code)
-        return;
 
-    const { match_code, io } = client;
+// Erro de jogo
+export class GameError {
+    public game_error: GameErrorModel; 
+    private error: Error;
 
-    // Caso seja o jogador que criou o match
-    if (true) {
-        // Avisa que o jogador principal está saindo
-        client.emitToMatch(SocketEvents.MainPlayerOut, client.user, { except_sender: true });
-        // Retira todos os cliente do ROOM
+    constructor(game_error: GameErrorModel) {
+        // Tenta pegar os dados do erro
+        const error_exists = Object.keys(GameErrors).map(
+            game_err_name => GameErrors[game_err_name]
+        ).filter(
+            game_err => game_err.code == game_error.code
+        )
+        // Caso não exista nenhum erro com esse código, para o código
+        if (!(error_exists.length))
+            throw new Error('Esse código de erro não existe');
 
-        io.in(match_code).clients((err, socket_ids: Array<string>) => {
-            socket_ids.forEach((id: string) => {
-                const sockets = io.of('/').connected;
-                if (sockets[id])
-                    sockets[id].leave(match_code);
-            });
-        })
+        this.game_error = error_exists[0];
+        console.log(this.game_error);
+        // Armazena o erro real do JS
+        const err = new Error();
+        err.name = this.game_error.name;
+        err.message = this.game_error.message;
+        this.error = err;   
     }
-    // Caso não seja
-    else {
-        // Avisa que está saindo do match
-        client.emitToMatch(SocketEvents.SecondaryPlayerOut, client.user, { except_sender: true });
-        client.socket.leave(client.match_code);
+    // Envia o erro ao cliente
+    sendToClient(user: Client) {
+        user.emit('GAME_ERROR', this.game_error);
+    }
+    // Ativa o erro real
+    raiseError() {
+        throw this.error;
     }
 }

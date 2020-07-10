@@ -1,11 +1,11 @@
-import { Socket, Server } from 'socket.io';
 import CreateMatch from './createMatch';
 import JoinMatch from './joinMatch';
-import Ready from './Ready';
-import { APISocket } from 'src/@types';
+import Ready from './ready';
+import StartGame from './startGame';
 
 export default {
     CreateMatch,
     JoinMatch,
-    Ready
+    Ready,
+    StartGame
 }

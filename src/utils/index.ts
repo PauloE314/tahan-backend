@@ -101,29 +101,9 @@ interface GetQuizResponse {
 }
     
 
-export function get_question(quiz: Quizzes, answered_questions: Array<{question_id: number}>) : GetQuizResponse | null {
-    const answer_list = answered_questions ? answered_questions : [];
-    const answer_id_list = answer_list.map(answer => answer.question_id);
-    // Lista das questões não respondidas ainda
-    const not_answered_list = quiz.questions.filter(question => !answer_id_list.includes(question.id));
-    // Caso todas as questões tenham sido respondidas
-    if (not_answered_list.length === 0)
-        return null;
-
-    // Pega um elemento aleatório
-    const question = not_answered_list[Math.floor(Math.random() * not_answered_list.length)];
-    const returning_question = Object.assign({}, question);
-    delete returning_question.rightAnswer;
-    // retorna o elemento
-    return { question, returning_question };
-}
-
-
-import crypto from 'crypto';
-
 // Executa um método um dado número de vezes
-export async function CountRunner (
-    times: number, cb: (stopTimmer: () => void,  ...data: any) => any, onTimeOver: (...data: any) => any
+export async function count_runner (
+    times: number, cb: (stopTimmer: () => void, counter: number) => any, onTimeOver: () => any
 ) {
     let counter = times;
     // Cria o contador
@@ -134,7 +114,7 @@ export async function CountRunner (
             onTimeOver();
         }
 
-        cb(stopTimmer);
+        cb(stopTimmer, counter);
 
         counter--;
     }, 1000);
@@ -155,4 +135,14 @@ export function get_random_value(length: number, list?: Array<string>) {
         return get_random_value(length, value_list);
     
     return result;
- }
+}
+
+export function random_array(array: Array<any>) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;   
+}

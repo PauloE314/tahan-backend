@@ -1,84 +1,100 @@
 import Client from "./client";
-import { get_random_value } from '../../utils'
+import { get_random_value } from '../../utils';
 import { Server } from "socket.io";
-
-interface MatchList {
-    [key: string]: Match
-}
-
-const match_list: MatchList = {};
+import rooms_manager from './rooms';
 
 
-export class Match {
-    public key: string;
-    public io: Server;
+export default class Match {
+    public room_key: string;
     public player_1: Client;
     public player_2?: Client;
 
     // Cria um novo match
     constructor(io: Server, player_1: Client) {
-        const match_list_ids = Object.keys(match_list);
-        this.key = `game-${get_random_value(4, match_list_ids)}`;
-        this.io = io;
+        const match_list_ids = Object.keys(rooms_manager.all_rooms());
+        this.room_key = `game-${get_random_value(4, match_list_ids)}`;
         this.player_1 = player_1;
-        this.player_1.match_code = this.key;
+        this.player_1.match_code = this.room_key;
         // Adiciona o jogador um ao Match
-        this.player_1.joinNewRoom(this.key);
+        this.player_1.joinNewRoom(io, this.room_key);
         // Salva as alterações
-        this.update_match_list();
+        // this.update_match_list();
+        rooms_manager.set_room(this.room_key, { match: this });
     }
     // Adiciona o jogador 2
-    public add_player_2(player_2: Client) {
+    public add_player_2(io: Server, player_2: Client) {
         // Salva o usuário
         this.player_2 = player_2;
-        this.player_2.match_code = this.key;
+        this.player_2.match_code = this.room_key;
         // Entra na sala
-        this.player_2.joinToExistentRoom(this.key);
+        this.player_2.joinToExistentRoom(io, this.room_key);
 
         return this.player_2;
     }
     // Remove o jogador 2
     public remove_player_2() {
         // Sai da sala
-        this.player_2.socket.leave(this.key);
+        this.player_2.socket.leave(this.room_key);
         // Zera o código
         this.player_2.match_code = null;
         // Remove o player
         this.player_2 = null;
     }
-    // Atualiza o match na lista de matchs
-    private update_match_list() {
-        match_list[this.key] = this;
-    }
     // Termina o match
-    public end_match() {
+    public end_match(io: Server) {
         // Retira todos os membros do match da sala
-        const sockets = this.io.of('/').connected;
+        const sockets = io.of('/').connected;
         this.players.forEach(player => {
             player.match_code = undefined;
             if (sockets[player.socket.id])
-                sockets[player.socket.id].leave(this.key);
+                sockets[player.socket.id].leave(this.room_key);
         })
 
         // Deleta a sala da listagem
-        delete match_list[this.key];
+        rooms_manager.delete_room(this.room_key);
+
+        const survived = [];
+        const all_rooms = rooms_manager.all_rooms();
+        for (let room in all_rooms) {
+            survived.push('match: ' + all_rooms[room].match.room_key);
+        }
+        console.log('clientes:')
+        console.log(survived);
     }
     // Emite um evento para ambos os players
-    public emit_to_players(event: string, data?: any, options?: { player_1: boolean, player_2: boolean }) {
-        const to_player_1 = options ? options.player_1 : true;
-        const to_player_2 = (options ? options.player_2 : true) && this.player_2;
-        // Envia para ambos da sala
-        if (to_player_1 && to_player_2) {
-            return this.io.to(this.key).emit(event, data);
-        }
-        // Envia apenas para um dos players
+
+    // Checa se um dado cliente é um player. Também pode checar se é o player 1 ou o 2
+    public is_player(client: Client, specific?: 'player_1' | 'player_2') {
+        const player_id_list = this.players.map(player => player.user.id);
+
+        if (!specific)
+            return player_id_list.includes(client.user.id);
+
+        else if (specific === 'player_1')
+            return this.player_1.user.id == client.user.id;
+
+        else if (specific === 'player_2')
+            return this.player_2.user.id == client.user.id;
+    }
+
+    // Checa se os jogadores estão hábeis para jogar
+    public all_ready(io: Server) {
+        const { players } = this;
+        if (players.length !== 2)
+            return false;
+        
         else {
-            if (to_player_1)
-                return this.io.to(this.player_1.socket.id).emit(event, data);
-            if (to_player_2)
-                return this.io.to(this.player_2.socket.id).emit(event, data);
+            const { connected } = io.of('/');
+            if (connected[this.player_1.socket.id] && connected[this.player_2.socket.id])
+                return true
         }
     }
+
+    get room() {
+        return rooms_manager.get_room(this.room_key);
+    }
+
+    
     // Listagem de jogadores
     get players() {
         const players = [this.player_1];
@@ -88,20 +104,10 @@ export class Match {
         return players;
     }
 
-    get all_ready() {
-        const { players } = this;
-        if (players.length !== 2)
-            return false;
-        
-        else {
-            const { connected } = this.io.of('/'); 
-            return connected[this.player_1.socket.id] && connected[this.player_2.socket.id]
-        }
-    }
-
     // Pega um match
     public static get_match(id: string): null | Match {
-        const match = match_list[id];
+        const room = rooms_manager.get_room(id) || { match: null};
+        const { match } = room;
         return match ? match : null
     }
 }
