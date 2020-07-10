@@ -14,7 +14,6 @@ import { count_runner } from '../../utils';
 
 // Adiciona o usuário à sala passada como parâmetro
 export default async function StartGame (io: Server, client: Client, data: { quiz_id: number }) {
-    try{
     // Checa se o usuário está em um jogo
     if (!client.match_code)
         return client.emitError(GameErrors.UserNotInGame)
@@ -48,12 +47,12 @@ export default async function StartGame (io: Server, client: Client, data: { qui
 
     // Contagem para iniciar o jogo
     count_runner(5, (stopTimmer, counter) => {
-        io.to(game.room_key).emit(SocketEvents.GameStartCounter, counter);
-    }, () => {
-        console.log('COMEÇOU MULEKE')
-    });
-    }
-    catch(err) {
-        console.log(err.message);
-    }
+            io.to(game.room_key).emit(SocketEvents.GameStartCounter, counter);
+        },
+        () => {
+            // Manda envia os dados da primeira questão
+            const next_question_data = game.nextQuestion();
+            io.to(game.room_key).emit(SocketEvents.NextQuestion, next_question_data);
+        }
+    );
 }

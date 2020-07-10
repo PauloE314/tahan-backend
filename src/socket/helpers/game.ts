@@ -29,7 +29,7 @@ export default class GameQuiz {
     public game_state: string;
     public quiz: Quizzes;
     public game_questions: Array<GameQuestions>;
-    public current_question_index: number;
+    public current_question_index: number = 0;
 
 
     constructor(match: Match, quiz: Quizzes) {
@@ -52,13 +52,15 @@ export default class GameQuiz {
     }
 
     // Retorna uma nova questão
-    public nextQuestion(onEnd: () => any): Questions | GameEndStatus{
+    public nextQuestion(onEnd?: () => any): Questions | GameEndStatus {
+        const cb = onEnd ? onEnd : () => {};
+        
         // assegura que o jogo está ocorrendo
         if (this.game_state !== GameStates.Playing)
             return;
         // Checa se ainda há questões para responder
-        if (this.current_question_index === this.game_questions.length) {
-            onEnd();
+        if (this.current_question_index + 1 === this.game_questions.length) {
+            cb();
             return this.endGame();
         }
 
@@ -66,7 +68,9 @@ export default class GameQuiz {
         this.current_question_index++;
 
         // Retorna a qestão
-        return this.game_questions[this.current_question_index].question;
+        const question = Object.assign({}, this.game_questions[this.current_question_index].question);
+        delete question.rightAnswer;
+        return question
     }
 
     // Lida com a resposta
