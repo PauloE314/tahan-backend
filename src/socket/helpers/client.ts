@@ -13,6 +13,7 @@ export default class Client {
     public socket: APISocket;
     public io: Server;
     public user: Users;
+    public match_code: string | null;
     
     // Cria um novo cliente
     constructor(io: Server, socket: APISocket, user: Users) {
@@ -24,8 +25,8 @@ export default class Client {
 
     // Adiciona o usuário a uma sala
     public joinRoom(room_id: string) {
-        if (this.match_room)
-            this.socket.leave(this.match_room);
+        if (this.match_code)
+            this.socket.leave(this.match_code);
 
         this.socket.join(room_id);
     }
@@ -59,17 +60,17 @@ export default class Client {
     // Emite evento para todos da sala
     public emitToMatch(event_name: string, data?: any, options?: { except_sender: boolean }) {
         // Caso o usuário não esteja em uma sala, retorna false
-        if (!this.match_room)
+        if (!this.match_code)
             return false;
 
         const except_sender = options ? options.except_sender : false;
         const event_data = data ? data : null;
         // Emite o evento para todos exceto o usuário
         if (except_sender)
-            this.socket.broadcast.to(this.match_room).emit(event_name, event_data);
+            this.socket.broadcast.to(this.match_code).emit(event_name, event_data);
         // Emite o evento para todos
         else
-            this.io.to(this.match_room).emit(event_name, event_data);
+            this.io.to(this.match_code).emit(event_name, event_data);
     }
 
     // Emite para o cliente
@@ -93,40 +94,28 @@ export default class Client {
         return this.socket.rooms;
     }
 
-    get match_room() {
-        const room = Object.keys(this.socket.rooms).filter(key => key !== this.socket.id);
-        // console.log(Object.keys(this.socket.rooms));
-        if (!room.length)
-            return undefined;
-        
-        else 
-            return room[0];
-    }
 
-    public isOwnerMatch(match_code: string) {
-        return match_code === 'game-' + this.socket.id;
-    }
 }
 
 
 export async function handleMatchDisconect(client: Client) {
     // caso não exista um match
-    if (!client.match_room)
+    if (!client.match_code)
         return;
 
-    const { match_room, io } = client;
+    const { match_code, io } = client;
 
     // Caso seja o jogador que criou o match
-    if (client.isOwnerMatch(match_room)) {
+    if (true) {
         // Avisa que o jogador principal está saindo
         client.emitToMatch(SocketEvents.MainPlayerOut, client.user, { except_sender: true });
         // Retira todos os cliente do ROOM
 
-        io.in(match_room).clients((err, socket_ids: Array<string>) => {
+        io.in(match_code).clients((err, socket_ids: Array<string>) => {
             socket_ids.forEach((id: string) => {
                 const sockets = io.of('/').connected;
                 if (sockets[id])
-                    sockets[id].leave(match_room);
+                    sockets[id].leave(match_code);
             });
         })
     }
@@ -134,6 +123,6 @@ export async function handleMatchDisconect(client: Client) {
     else {
         // Avisa que está saindo do match
         client.emitToMatch(SocketEvents.SecondaryPlayerOut, client.user, { except_sender: true });
-        client.socket.leave(client.match_room);
+        client.socket.leave(client.match_code);
     }
 }

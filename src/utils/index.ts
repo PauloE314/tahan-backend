@@ -117,3 +117,42 @@ export function get_question(quiz: Quizzes, answered_questions: Array<{question_
     // retorna o elemento
     return { question, returning_question };
 }
+
+
+import crypto from 'crypto';
+
+// Executa um método um dado número de vezes
+export async function CountRunner (
+    times: number, cb: (stopTimmer: () => void,  ...data: any) => any, onTimeOver: (...data: any) => any
+) {
+    let counter = times;
+    // Cria o contador
+    const timmer = setInterval(() => {
+        // Caso o contador acabe
+        if (counter == 0) {
+            stopTimmer();
+            onTimeOver();
+        }
+
+        cb(stopTimmer);
+
+        counter--;
+    }, 1000);
+    // Função de parar a contagem
+    const stopTimmer = () => clearInterval(timmer);
+}
+
+// Gera uma string aleatória
+export function get_random_value(length: number, list?: Array<string>) {
+    let result = '';
+    const value_list = list || [];
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for ( let i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    if (value_list.includes(result))
+        return get_random_value(length, value_list);
+    
+    return result;
+ }
