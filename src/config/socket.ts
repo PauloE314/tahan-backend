@@ -15,12 +15,16 @@ export const SocketEvents = {
     MatchJoined: 'match-joined',
     PlayerJoin: 'player-join',
     OponentReady: 'oponent-ready',
+    OponentOut: 'oponent-out',
     SecondaryPlayerOut: 'secondary-player-out',
     MainPlayerOut: 'main-player-out',
     GameData: 'game-data',
     GameStartCounter: 'game-start-counter',
     OponentAnswered: 'oponent-answered',
     BothAnswered: 'both-answered',
+    AnswerCounter: 'answer-counter',
+    TimeOut: 'time-out',
+    EndGame: 'end-game',
     
 
     NextQuestion: 'next-question',
@@ -29,8 +33,7 @@ export const SocketEvents = {
     Exception: "error",
     TimerToNextQuestion: 'timer-to-next-question',
     TimerToAnswer: 'timer-to-answer',
-    TimeOut: 'time-out',
-    EndGame: 'end-game'
+    
 };
 
 
@@ -38,6 +41,7 @@ export const SocketEvents = {
 export const GameStates = {
     Begin: 'begin',
     Playing: 'playing',
+    BeforeEnd: 'before-end',
     Ended: 'ended'
 };
 

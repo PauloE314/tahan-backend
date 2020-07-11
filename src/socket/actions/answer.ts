@@ -1,11 +1,8 @@
-import { Quizzes } from '@models/quiz/Quizzes';
-import { getRepository } from 'typeorm';
 import { SocketEvents, GameErrors } from "@config/socket";
 import { Socket, Server } from 'socket.io';
 import Client from '../helpers/client';
 import GameQuiz from '../helpers/game';
-import { count_runner } from '../../utils';
-import { AnswerData, GameData, GameCountData, BothAnsweredData } from 'src/@types/socket';
+import { AnswerData, BothAnsweredData } from 'src/@types/socket';
 import next_question from './nextQuestion';
 
 // Adiciona o usuário à sala passada como parâmetro
@@ -15,7 +12,6 @@ export default async function Answer (io: Server, client: Client, data: AnswerDa
         return client.emitError(GameErrors.UserNotInMatch);
         
     const game = GameQuiz.get_game(client.room_key);
-
     // Checa o jogo existe ou não
     if (!game) 
         return client.emitError(GameErrors.GameDoesNotExist);
@@ -25,27 +21,26 @@ export default async function Answer (io: Server, client: Client, data: AnswerDa
     oponent.emit(SocketEvents.OponentAnswered);
 
     // responde o jogo
-    game.answerQuestion(client, data.answer_id, ({ player1_answer, player2_answer }) => {
-        const both_answered_data: BothAnsweredData = {
-            player1_answer, player2_answer
-        };
-        io.to(game.room_key).emit(SocketEvents.BothAnswered, both_answered_data);
-        // Retorna a próxima questão
-        return next_question(game);
-    });
-
-    // Contagem para iniciar o jogo
-    count_runner({
-        times: 5,
-        execute: (counter, stopTimmer) => {
-            const time_data: GameCountData = { count: counter }
-            io.to(game.room_key).emit(SocketEvents.GameStartCounter, time_data);
+    game.answerQuestion({
+        client,
+        answer_id: data.answer_id,
+        on_answer: (player_answer) => {
+            // Caso a resposta esteja correta
+            if (player_answer == 'right')
+                return client.emit(SocketEvents.RightAnswer);
+            
+            // Caso esteja errada
+            return client.emit(SocketEvents.WrongAnswer);
         },
-        // Quando a contagem acabar
-        on_time_over: () => {
-            // Manda envia os dados da primeira questão
-            const next_question_data = game.nextQuestion();
-            io.to(game.room_key).emit(SocketEvents.NextQuestion, next_question_data);
+        on_both_answered: ({ player1_answer, player2_answer }) => {
+            const both_answered_data: BothAnsweredData = {
+                player1_answer, player2_answer
+            };
+            io.to(game.room_key).emit(SocketEvents.BothAnswered, both_answered_data);
+            // Para o contador
+            game.timmer.stop_timmer();
+            // Retorna a próxima questão
+            return next_question(io, game.room_key);
         }
-    })
+    });
 }

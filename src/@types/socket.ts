@@ -74,8 +74,24 @@ export interface NextQuestionData {
 }
 // Resposta do oponente
 export interface OponentAnsweredData {};
+// Resposta correta
+export interface RightAnswer {};
+// Resposta incorreta
+export interface WrongAnswer {};
 // Resposta de ambos
 export interface BothAnsweredData {
     player1_answer: 'right' | 'wrong',
     player2_answer: 'right' | 'wrong'
 };
+// Caso um player saia
+export interface PlayerOutData {};
+// Fim de jogo
+export interface EndGameData {
+    draw: boolean,
+    winner: {
+        created_at: Date | string,
+        username: string,
+        email: string, 
+        occupation: string
+    }
+}

@@ -5,6 +5,7 @@ import { Socket, Server } from 'socket.io';
 import Client from '../helpers/client';
 import Match from '../helpers/match';
 import GameQuiz from '../helpers/game';
+import rooms_manager from '../helpers/rooms';
 import { count_runner } from '../../utils';
 import { StartGameData, GameData, GameCountData } from 'src/@types/socket';
 import next_question from './nextQuestion';
@@ -21,8 +22,9 @@ export default async function StartGame (io: Server, client: Client, data: Start
         return client.emitError(GameErrors.RoomIncomplete);
 
     // Checa se o match está em jogo ou não
-    if (match.room.game) 
+    if (match.room.game) {
         return client.emitError(GameErrors.UserAlreadyInGame);
+    }
 
     // Pega o quiz
     const quiz = await getRepository(Quizzes).findOne({
@@ -47,18 +49,51 @@ export default async function StartGame (io: Server, client: Client, data: Start
     }
 
     // Envia dados de jogo
-    io.to(game.room_key).emit(SocketEvents.GameData, game_data)
+    io.to(game.room_key).emit(SocketEvents.GameData, game_data);
+    const { players } = match;
+    // const { room_key } = game;
+    // Quando um dos jogadores for desconectado
+    players.forEach(player => 
+        player.on(SocketEvents.ClientDisconnected, () => {
+            if (!player.room_key)
+                return;
+            // Certifica que o jogo ainda existe
+            const game = GameQuiz.get_game(player.room_key);
+            if (!game)
+                return;
+            // Avisa ao oponente que o jogador saiu
+            const oponent = game.room.match.players.find(p => p.user.id !== player.user.id);
+            io.to(game.room_key).emit(SocketEvents.OponentOut);
+            // Para qualquer temporizador
+            game.timmer.stop_timmer();
+            const data = game.endGame({ forced_winner: oponent});
+            // Envia o fim do jogo
+            io.to(game.room_key).emit(SocketEvents.EndGame, data);
 
+            // Caso o desconectado seja o player 1
+            if (player.user.id === game.room.match.player_1.user.id) {
+                // Termina o match
+                oponent.emit(SocketEvents.MainPlayerOut)
+                game.room.match.end_match(io);
+            }
+            // Caso seja o player 2, termina apenas o game
+            else {
+                oponent.emit(SocketEvents.SecondaryPlayerOut);
+                rooms_manager.delete_game(game.room_key);
+            }
+        })
+    )
     // Contagem para iniciar o jogo
     count_runner({
         times: 5,
         execute: (counter, stopTimmer) => {
-            const time_data: GameCountData = { count: counter }
+            const time_data: GameCountData = { count: counter };
             io.to(game.room_key).emit(SocketEvents.GameStartCounter, time_data);
         },
         // Quando a contagem acabar
         on_time_over: () => {
-            return next_question(game);
+            game.startGame();
+            return next_question(io, game.room_key);
         }
     })
 }

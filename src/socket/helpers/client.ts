@@ -25,15 +25,14 @@ export default class Client {
         this.user = user;
         clients[this.user.id] = this;
 
+        console.log('REGISTRANDO USUÁRIO: ' + this.user.username);
+
         // Quando o usuário for desconectado, retira-o da lista de clientes
         this.socket.on(SocketEvents.ClientDisconnected, () => {
+            console.log('DESREGISTRANDO USUÁRIO: ' + this.user.username);
             delete clients[this.user.id];
-            const survived = [];
-            for (let client in clients) {
-                survived.push(clients[client].user.username);
-            }
-            console.log('clientes: ');
-            console.log(survived)
+            console.log('Restante:')
+            console.log(Client.all_clients());
         })
     }
 
@@ -110,6 +109,9 @@ export default class Client {
 
     public static get_client(id: number ) {
         return clients[id];
+    }
+    public static all_clients() {
+        return Object.keys(clients).map(client_id => clients[client_id].user.username)
     }
 }
 

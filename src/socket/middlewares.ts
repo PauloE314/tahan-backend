@@ -1,6 +1,6 @@
 import { auth_user } from "../utils/";
 import { Err } from '../utils/classes';
-import { APISocket } from 'src/@types';
+import { APISocket } from 'src/@types/socket';
 import { GameErrors } from "@config/socket"
 import { Server } from "socket.io";
 import Client from "./helpers/client";
@@ -25,7 +25,8 @@ async function Auth(socket: APISocket, next: (err?: any) => any) {
             return next(new Err(GameErrors.PermissionDenied.name, "Permissão negada"));
  
         if (Client.get_client(user.info.id)) {
-            console.log('mesmo usuário: ' + Client.get_client(user.info.id).user.username)
+            console.log('mesmo usuário: ' + Client.get_client(user.info.id).user.username);
+            console.log(Client.all_clients())
             return next(new Err(GameErrors.PermissionDenied.name, "Já existe outro dispositivo com esse cliente"));
         }
 

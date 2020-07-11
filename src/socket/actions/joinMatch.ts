@@ -7,7 +7,6 @@ import { JoinMatchData } from "src/@types/socket";
 
 // Adiciona o usuário à sala passada como parâmetro
 export default async function JoinMatch (io: Server, client: Client, data: JoinMatchData) {
-    try {
     // Certifica que o usuário não está em outra sala
     if (client.room_key)
         return client.emitError(GameErrors.UserAlreadyInMatch);
@@ -38,8 +37,4 @@ export default async function JoinMatch (io: Server, client: Client, data: JoinM
         // Avisa aos players (no caso só o player 1) sobre o ocorrido
         match.player_1.emit(SocketEvents.SecondaryPlayerOut);
     });
-    }
-    catch(err) {
-        console.log(err.message);
-    }
 }

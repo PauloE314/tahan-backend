@@ -32,7 +32,7 @@ export default function useSocket(io: Server) {
         socket.on(SocketEvents.StartGame, (data) => actions.StartGame(io, client, data));
 
         // Lida com as respostas do jogador
-        socket.on(SocketEvents.Answer, (data) => actions.Ready(io, client, data));
+        socket.on(SocketEvents.Answer, (data) => actions.Answer(io, client, data));
 
         // Quando o jogador for desconectado
         socket.on(SocketEvents.ClientDisconnected, () => {

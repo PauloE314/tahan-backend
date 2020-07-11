@@ -17,9 +17,8 @@ export default class Match {
         this.player_1.room_key = this.room_key;
         // Adiciona o jogador um ao Match
         this.player_1.joinNewRoom(io, this.room_key);
-        // Salva as alterações
-        // this.update_match_list();
-        rooms_manager.set_room(this.room_key, { match: this });
+
+        rooms_manager.set_room(this.room_key, () => ({ match: this }));
     }
     // Adiciona o jogador 2
     public add_player_2(io: Server, player_2: Client) {
@@ -51,6 +50,7 @@ export default class Match {
         })
 
         // Deleta a sala da listagem
+        console.log('END_MATCH: Deletando sala');
         rooms_manager.delete_room(this.room_key);
 
         const survived = [];
@@ -58,7 +58,7 @@ export default class Match {
         for (let room in all_rooms) {
             survived.push('match: ' + all_rooms[room].match.room_key);
         }
-        console.log('clientes:')
+        console.log('matchs:')
         console.log(survived);
     }
     // Emite um evento para ambos os players
