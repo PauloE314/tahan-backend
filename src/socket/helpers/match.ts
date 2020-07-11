@@ -14,7 +14,7 @@ export default class Match {
         const match_list_ids = Object.keys(rooms_manager.all_rooms());
         this.room_key = `game-${get_random_value(4, match_list_ids)}`;
         this.player_1 = player_1;
-        this.player_1.match_code = this.room_key;
+        this.player_1.room_key = this.room_key;
         // Adiciona o jogador um ao Match
         this.player_1.joinNewRoom(io, this.room_key);
         // Salva as alterações
@@ -25,7 +25,7 @@ export default class Match {
     public add_player_2(io: Server, player_2: Client) {
         // Salva o usuário
         this.player_2 = player_2;
-        this.player_2.match_code = this.room_key;
+        this.player_2.room_key = this.room_key;
         // Entra na sala
         this.player_2.joinToExistentRoom(io, this.room_key);
 
@@ -36,7 +36,7 @@ export default class Match {
         // Sai da sala
         this.player_2.socket.leave(this.room_key);
         // Zera o código
-        this.player_2.match_code = null;
+        this.player_2.room_key= null;
         // Remove o player
         this.player_2 = null;
     }
@@ -45,7 +45,7 @@ export default class Match {
         // Retira todos os membros do match da sala
         const sockets = io.of('/').connected;
         this.players.forEach(player => {
-            player.match_code = undefined;
+            player.room_key = undefined;
             if (sockets[player.socket.id])
                 sockets[player.socket.id].leave(this.room_key);
         })

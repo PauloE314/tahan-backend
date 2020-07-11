@@ -1,24 +1,21 @@
 import { Quizzes } from '@models/quiz/Quizzes';
-import { getRepository, getCustomRepository } from 'typeorm';
+import { getRepository } from 'typeorm';
 import { SocketEvents, GameErrors } from "@config/socket";
 import { Socket, Server } from 'socket.io';
-import { Err } from 'src/utils/classes';
-// import JoinGame from './'
-import { Games } from '@models/games/Games';
-import GamesRepository from '@database/repositories/GamesRepo';
 import Client from '../helpers/client';
 import Match from '../helpers/match';
 import GameQuiz from '../helpers/game';
 import { count_runner } from '../../utils';
 import { StartGameData, GameData, GameCountData } from 'src/@types/socket';
+import next_question from './nextQuestion';
 
 // Adiciona o usuário à sala passada como parâmetro
 export default async function StartGame (io: Server, client: Client, data: StartGameData) {
     // Checa se o usuário está em um jogo
-    if (!client.match_code)
+    if (!client.room_key)
         return client.emitError(GameErrors.UserNotInMatch);
     
-    const match = Match.get_match(client.match_code);
+    const match = Match.get_match(client.room_key);
     // Checa se o match já tem os dois jogadores
     if (!match.all_ready(io))
         return client.emitError(GameErrors.RoomIncomplete);
@@ -61,9 +58,7 @@ export default async function StartGame (io: Server, client: Client, data: Start
         },
         // Quando a contagem acabar
         on_time_over: () => {
-            // Manda envia os dados da primeira questão
-            const next_question_data = game.nextQuestion();
-            io.to(game.room_key).emit(SocketEvents.NextQuestion, next_question_data);
+            return next_question(game);
         }
     })
 }

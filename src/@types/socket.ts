@@ -32,6 +32,10 @@ export interface ReadyData {  }
 export interface StartGameData {
     quiz_id: number
 }
+// Resposta
+export interface AnswerData {
+    answer_id: number
+}
 
 // ---- Dados de saída do socket ---- //
 
@@ -68,3 +72,10 @@ export interface NextQuestionData {
     question: string,
     alternatives: Alternatives[];
 }
+// Resposta do oponente
+export interface OponentAnsweredData {};
+// Resposta de ambos
+export interface BothAnsweredData {
+    player1_answer: 'right' | 'wrong',
+    player2_answer: 'right' | 'wrong'
+};

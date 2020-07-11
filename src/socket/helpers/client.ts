@@ -1,8 +1,7 @@
 import { Server } from "socket.io";
-import { APISocket } from "src/@types";
+import { APISocket } from "src/@types/socket";
 import { Users } from "@models/User";
 import { GameErrorModel, GameErrors, SocketEvents } from '@config/socket'
-import { getRepository } from "typeorm";
 
 
 interface ClientList {
@@ -17,7 +16,7 @@ export default class Client {
     public socket: APISocket;
     // public io: Server;
     public user: Users;
-    public match_code: string | null;
+    public room_key: string | null;
     
     // Cria um novo cliente
     constructor(io: Server, socket: APISocket, user: Users) {
@@ -40,8 +39,8 @@ export default class Client {
 
     // Adiciona o usuário a uma sala
     public joinRoom(room_id: string) {
-        if (this.match_code)
-            this.socket.leave(this.match_code);
+        if (this.room_key)
+            this.socket.leave(this.room_key);
 
         this.socket.join(room_id);
     }
@@ -75,17 +74,17 @@ export default class Client {
     // Emite evento para todos da sala
     public emitToMatch(io: Server, event_name: string, data?: any, options?: { except_sender: boolean }) {
         // Caso o usuário não esteja em uma sala, retorna false
-        if (!this.match_code)
+        if (!this.room_key)
             return false;
 
         const except_sender = options ? options.except_sender : false;
         const event_data = data ? data : null;
         // Emite o evento para todos exceto o usuário
         if (except_sender)
-            this.socket.broadcast.to(this.match_code).emit(event_name, event_data);
+            this.socket.broadcast.to(this.room_key).emit(event_name, event_data);
         // Emite o evento para todos
         else
-            io.to(this.match_code).emit(event_name, event_data);
+            io.to(this.room_key).emit(event_name, event_data);
     }
 
     // Emite para o cliente

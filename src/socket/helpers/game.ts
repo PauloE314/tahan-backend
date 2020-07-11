@@ -27,6 +27,7 @@ interface GameEndStatus {
 export default class GameQuiz {
     public room_key: string
     public game_state: string;
+    public timmer?: NodeJS.Timer;
     public quiz: Quizzes;
     public game_questions: Array<GameQuestions>;
     public current_question_index: number = 0;
@@ -124,7 +125,7 @@ export default class GameQuiz {
         return this.game_questions[this.current_question_index];
     }
     // Retorna o jogo da sala passada como parâmetro
-    public static get_game(room_id: string) {
+    public static get_game(room_id: string) : GameQuiz | null {
         const room = rooms_manager.get_room(room_id);
         return room ? room.game : null;
     }

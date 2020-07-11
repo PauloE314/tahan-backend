@@ -31,6 +31,9 @@ export default function useSocket(io: Server) {
         // Começa o jogo
         socket.on(SocketEvents.StartGame, (data) => actions.StartGame(io, client, data));
 
+        // Lida com as respostas do jogador
+        socket.on(SocketEvents.Answer, (data) => actions.Ready(io, client, data));
+
         // Quando o jogador for desconectado
         socket.on(SocketEvents.ClientDisconnected, () => {
             console.log(client.user.username + ' desconectando...');

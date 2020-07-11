@@ -9,7 +9,7 @@ import { JoinMatchData } from "src/@types/socket";
 export default async function JoinMatch (io: Server, client: Client, data: JoinMatchData) {
     try {
     // Certifica que o usuário não está em outra sala
-    if (client.match_code)
+    if (client.room_key)
         return client.emitError(GameErrors.UserAlreadyInMatch);
 
     const match = Match.get_match(data.code);

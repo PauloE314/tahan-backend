@@ -19,6 +19,8 @@ export const SocketEvents = {
     MainPlayerOut: 'main-player-out',
     GameData: 'game-data',
     GameStartCounter: 'game-start-counter',
+    OponentAnswered: 'oponent-answered',
+    BothAnswered: 'both-answered',
     
 
     NextQuestion: 'next-question',
