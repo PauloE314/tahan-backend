@@ -2,14 +2,15 @@ import { SocketEvents, GameErrors } from "@config/socket";
 import { Server } from 'socket.io';
 import Client from '../helpers/client';
 import Match from '../helpers/match';
+import { JoinMatchData } from "src/@types/socket";
 
 
 // Adiciona o usuário à sala passada como parâmetro
-export default async function JoinMatch (io: Server, client: Client, data: { code: string }) {
+export default async function JoinMatch (io: Server, client: Client, data: JoinMatchData) {
     try {
     // Certifica que o usuário não está em outra sala
     if (client.match_code)
-        return client.emitError(GameErrors.UserAlreadyInGame);
+        return client.emitError(GameErrors.UserAlreadyInMatch);
 
     const match = Match.get_match(data.code);
     

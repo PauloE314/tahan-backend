@@ -3,10 +3,10 @@ import { Server, Socket } from 'socket.io';
 import { SocketEvents } from '@config/socket';
 import { useMiddlewares } from "./middlewares";
 import actions from "./actions";
-import { APISocket } from 'src/@types';
+import { APISocket } from 'src/@types/socket';
 import Client from './helpers/client';
 
-const room_name = 'sala-teste';
+
 
 
 export default function useSocket(io: Server) {

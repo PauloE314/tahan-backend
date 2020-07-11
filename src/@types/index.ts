@@ -33,37 +33,5 @@ export interface APIRequest extends Request{
 
 
 
-// Modelo de SOCKET
-interface CLientSocket extends SocketIO.Client {
-    user: user_interface,
-    quiz: Quizzes,
-    answered_questions: Array<{question_id: number, right_answered: boolean}>,
-    question: Questions,
-    gameMode: 'single' | 'multi',
-    time: boolean,
-    timeToNextQuestion: boolean,
-    // Experimental
-    game: Games,
-    isPlaying: Boolean,
-    room: string
-}
-
-
-export interface Room extends SocketIO.Room {
-    game: Games,
-    players: { id: number, isReady: boolean }[],
-    quiz: Quizzes
-}
-
-
-
-// Modelo cliente
-export interface APISocket extends SocketIO.Socket{
-    client: CLientSocket,
-    
-}
-
-
-
 
 

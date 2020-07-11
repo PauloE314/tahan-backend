@@ -102,19 +102,19 @@ interface GetQuizResponse {
     
 
 // Executa um método um dado número de vezes
-export async function count_runner (
-    times: number, cb: (stopTimmer: () => void, counter: number) => any, onTimeOver: () => any
-) {
-    let counter = times;
+export async function count_runner ( data: { times: number, execute?: (counter: number, stopTimmer: () => void) => any, on_time_over?: () => any }) {
+    let counter = data.times;
+    const execute = data.execute ? data.execute : () => {};
+    const on_time_over = data.on_time_over ? data.on_time_over : () => {};
     // Cria o contador
     const timmer = setInterval(() => {
         // Caso o contador acabe
         if (counter == 0) {
             stopTimmer();
-            onTimeOver();
+            on_time_over();
         }
 
-        cb(stopTimmer, counter);
+        execute(counter, stopTimmer);
 
         counter--;
     }, 1000);

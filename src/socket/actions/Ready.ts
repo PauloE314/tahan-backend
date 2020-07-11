@@ -1,10 +1,11 @@
 import { SocketEvents, GameErrors } from "@config/socket";
+import { ReadyData } from 'src/@types/socket';
 import { Server } from 'socket.io';
 import Client from '../helpers/client';
 import Match from '../helpers/match';
 
 // Adiciona o usuário à sala passada como parâmetro
-export default async function Ready (io: Server, client: Client, data: any) {
+export default async function Ready (io: Server, client: Client, data: ReadyData) {
     // Checa se o usuário está em um jogo
     if (!client.match_code)
         return client.emitError(GameErrors.UserNotInGame)

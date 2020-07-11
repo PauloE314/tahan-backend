@@ -2,13 +2,14 @@ import { SocketEvents, GameErrors } from "@config/socket";
 import { Server } from 'socket.io';
 import Client from '../helpers/client';
 import Match from '../helpers/match';
+import { CreateMatchData, MatchCreatedData } from "src/@types/socket";
 
 
 
-export default async function createMatch (io: Server, client: Client, data: any){
+export default async function createMatch (io: Server, client: Client, data: CreateMatchData){
     // Caso o usuário já esteja em um match
     if (client.match_code)
-        return client.emitError(GameErrors.UserAlreadyInGame);
+        return client.emitError(GameErrors.UserAlreadyInMatch);
         
 
     // Cria um match
@@ -18,7 +19,8 @@ export default async function createMatch (io: Server, client: Client, data: any
     console.log(`Match ${match.room_key} está com os players ${match.players.map(player => player.user.username)}`);
     
     // Envia os dados do match
-    client.emit(SocketEvents.MatchCreated, { match_code: match.room_key });
+    const match_data: MatchCreatedData = { match_code: match.room_key };
+    client.emit(SocketEvents.MatchCreated, match_data);
 
     // Caso o usuário se disconecte
     client.on(SocketEvents.ClientDisconnected, async () => {

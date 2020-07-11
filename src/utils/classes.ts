@@ -1,7 +1,7 @@
 import { APIRequest } from "../@types";
 import { Response, NextFunction } from "express";
 import { SocketEvents } from '@config/socket';
-import { APISocket } from 'src/@types';
+
 import { Server, Socket } from "socket.io";
 
 // Classe de seeds
@@ -134,11 +134,6 @@ export class FieldValidator {
         return this.field_name;
     }
 }
-
-interface SocketInitialConfigs {
-    global_middlewares?: Array<(socket: APISocket, next:(err?: any) => any) => any>
-}
-
 
 // Error
 export class Err extends Error {

@@ -57,7 +57,9 @@ export const GameErrors = {
     RoomIsFull: { name: 'room-is-full', code: 6, message: 'Esse jogo já possui 2 jogadores' },
     RoomIsEmpty: { name: 'room-is-empty', code: 7, message: 'Esse jogo está vazio' },
     RoomIncomplete: { name: 'room-incomplete', code: 8, message: 'Esse match não está completo' },
-    UserAlreadyInGame: { name: 'user-in-game', code: 9, message: 'O usuário ainda está em jogo' },
-    UserNotInGame: { name: 'user-not-in-game', code: 10, message: 'O usuário não está participando do jogo'},
+    UserAlreadyInMatch: { name: 'user-in-match', code: 9, message: 'O usuário já está em um match' },
+    UserNotInMatch: { name: 'user-not-in-match', code: 10, message: 'O usuário não está em um match' },
+    UserAlreadyInGame: { name: 'user-in-game', code: 11, message: 'O usuário ainda está em jogo' },
+    UserNotInGame: { name: 'user-not-in-game', code: 12, message: 'O usuário não está participando do jogo'},
 
 }
