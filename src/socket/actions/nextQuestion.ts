@@ -10,22 +10,22 @@ import rooms_manager from "../helpers/rooms";
 
 export default function next_question(io: Server, game_id: string, count_start?: boolean) {
     const game = GameQuiz.get_game(game_id);
+    // Caso o jogo não exista mais, para a função
     if (!game)
         return;
-
-    // console.log('Próxima questão...')
 
     const game_data = game.nextQuestion();
     // Caso o jogo esteja para terminar
     if (game.game_state === GameStates.BeforeEnd) {
-        const { room_key } = game;
         // Envia o término do jogo para os jogadores
         const { draw, winner } = game.endGame();
-        const end_game_data : EndGameData = { draw, winner: winner ? winner : null };
+        const end_game_data: EndGameData = { draw, winner: winner ? winner : null };
         // Envia os dados de fim de jogo
         io.to(game.room_key).emit(SocketEvents.EndGame, end_game_data);
 
-        rooms_manager.delete_game(room_key);
+        game.delete_game();
+
+        // rooms_manager.room_status();
         return;
     }
     // Caso não haja nenhum dado sendo retornado

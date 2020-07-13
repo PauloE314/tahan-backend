@@ -1,8 +1,9 @@
 import { SocketEvents, GameErrors } from "@config/socket";
 import { Server } from 'socket.io';
-import Client from '../helpers/client';
+import Client, { client_status } from '../helpers/client';
 import Match from '../helpers/match';
 import { CreateMatchData, MatchCreatedData } from "src/@types/socket";
+import rooms_manager from "../helpers/rooms";
 
 
 
@@ -14,8 +15,6 @@ export default async function createMatch (io: Server, client: Client, data: Cre
     // Cria um match
     const match = new Match(io, client);
 
-    // console.log(`Match ${match.room_key} está com os players ${match.players.map(player => player.user.username)}`);
-    
     // Envia os dados do match
     const match_data: MatchCreatedData = { match_code: match.room_key };
     client.emit(SocketEvents.MatchCreated, match_data);

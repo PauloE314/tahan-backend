@@ -10,6 +10,7 @@ interface RoomList {
     [key: string]: Room
 }
 
+// Lista das salas
 const room_list: RoomList = {};
 
 
@@ -22,15 +23,13 @@ export default {
     set_room(id: string, data: (room: Room | undefined) => Room ) {
         room_list[id] = data(room_list[id]);
     },
+    // Apagar apenas o jogo
     delete_game(id: string) {
-        if (room_list[id]) {
-            if (room_list[id].game) {
+        const room = room_list[id];
+        if (room) {
+            if (room.game)  {
+                room.game.timmer.stop_timmer();
                 delete room_list[id].game;
-                console.log('Todos os jogos')
-                console.log(
-                    Object.keys(room_list)
-                        .filter(id => room_list[id].game)
-                )
             }
         }
     },
@@ -45,8 +44,25 @@ export default {
             delete room_list[id];
         }
     },
-    // Apaga a sala
+    // retorna lista de salas
     all_rooms() {
         return room_list;
+    },
+
+    room_status() {
+        const rooms = Object.keys(room_list);
+        console.log('Salas: \n');
+
+        rooms.forEach(room_id => {
+            const room = room_list[room_id];
+            const player_1 = room.match.player_1.user.username;
+            const player_2 = room.match.player_2 ? room.match.player_2.user.username : null;
+
+
+            console.log('   room_id: ' + room_id);
+            console.log('   users: ' + player_1 + ', ' + player_2);
+            console.log('   ' + (room.game ? 'estão jogando' : 'não estão jogando'));
+            console.log('-----------------');
+        })
     }
 }

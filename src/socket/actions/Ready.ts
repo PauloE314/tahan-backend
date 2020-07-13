@@ -18,8 +18,8 @@ export default async function Ready (io: Server, client: Client, data: ReadyData
     // Checa se ele realmente está em jogo
     if (!match.is_player(client))
         return client.emitError(GameErrors.UserNotInGame);
+
     // Emite ao oponente que ele está pronto
     const oponent = match.players.find(player => player.user.id !== client.user.id)
-    oponent.emit(SocketEvents.OponentReady)
-    
+    return oponent.emit(SocketEvents.OponentReady);
 }

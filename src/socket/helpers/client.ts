@@ -1,7 +1,8 @@
 import { Server } from "socket.io";
 import { APISocket } from "src/@types/socket";
 import { Users } from "@models/User";
-import { GameErrorModel, GameErrors, SocketEvents } from '@config/socket'
+import { GameErrorModel, GameErrors, SocketEvents } from '@config/socket';
+import GameQuiz from './game';
 
 
 interface ClientList {
@@ -10,6 +11,22 @@ interface ClientList {
 
 // Armazena as conexões
 const clients: ClientList = {};
+
+export function client_status() {
+    const client_list = Object.keys(clients);
+    console.log('Clientes conectados:\n');
+    console.log('----------------------------');
+    client_list.forEach(client_id => {
+        const client = <Client>clients[client_id];
+        const room_key = client.room_key ? client.room_key : 'undefined';
+
+        console.log('   nome: ' + client.user.username);
+        console.log('   room_key: ' + room_key);
+        console.log('   jogando: ' + (GameQuiz.get_game(room_key) ? 'true' : 'false'));
+        console.log('----------------------------');
+    });
+    console.log('\n');
+}
 
 // Modelo de um cliente
 export default class Client {
@@ -25,14 +42,12 @@ export default class Client {
         this.user = user;
         clients[this.user.id] = this;
 
-        console.log('REGISTRANDO USUÁRIO: ' + this.user.username);
-
+        client_status();
         // Quando o usuário for desconectado, retira-o da lista de clientes
         this.socket.on(SocketEvents.ClientDisconnected, () => {
-            console.log('DESREGISTRANDO USUÁRIO: ' + this.user.username);
             delete clients[this.user.id];
-            console.log('Restante:')
-            console.log(Client.all_clients());
+
+            client_status();
         })
     }
 

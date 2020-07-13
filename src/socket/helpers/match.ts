@@ -31,35 +31,29 @@ export default class Match {
         return this.player_2;
     }
     // Remove o jogador 2
-    public remove_player_2() {
+    public remove_player_2() {;
         // Sai da sala
-        this.player_2.socket.leave(this.room_key);
-        // Zera o código
-        this.player_2.room_key= null;
+        if (this.player_2) {
+            this.player_2.socket.leave(this.room_key);
+            this.player_2.room_key= null;
+        }
         // Remove o player
         this.player_2 = null;
     }
     // Termina o match
     public end_match(io: Server) {
         // Retira todos os membros do match da sala
-        const sockets = io.of('/').connected;
-        this.players.forEach(player => {
-            player.room_key = undefined;
-            if (sockets[player.socket.id])
-                sockets[player.socket.id].leave(this.room_key);
-        })
+        if (this.player_1) {
+            this.player_1.socket.leave(this.room_key);
+            this.player_1.room_key = undefined;
+        }
+        if (this.player_2) {
+            this.player_2.socket.leave(this.room_key);
+            this.player_2.room_key = undefined;
+        }
 
         // Deleta a sala da listagem
-        console.log('END_MATCH: Deletando sala');
         rooms_manager.delete_room(this.room_key);
-
-        const survived = [];
-        const all_rooms = rooms_manager.all_rooms();
-        for (let room in all_rooms) {
-            survived.push('match: ' + all_rooms[room].match.room_key);
-        }
-        console.log('matchs:')
-        console.log(survived);
     }
     // Emite um evento para ambos os players
 

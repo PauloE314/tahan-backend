@@ -3,6 +3,7 @@ import { Server } from 'socket.io';
 import Client from '../helpers/client';
 import Match from '../helpers/match';
 import { JoinMatchData } from "src/@types/socket";
+import rooms_manager from "../helpers/rooms";
 
 
 // Adiciona o usuário à sala passada como parâmetro
@@ -28,13 +29,18 @@ export default async function JoinMatch (io: Server, client: Client, data: JoinM
     // Avisa ao jogador 2
     match.player_2.emit(SocketEvents.MatchJoined);
     
-    console.log(`Match ${match.room_key} está com os players ${match.players.map(player => player.user.username)}`);
-    
     // Caso o usuário seja disconectado
     client.on(SocketEvents.ClientDisconnected, () => {
-        // Remove o usuário
-        match.remove_player_2();
-        // Avisa aos players (no caso só o player 1) sobre o ocorrido
-        match.player_1.emit(SocketEvents.SecondaryPlayerOut);
+        const room = rooms_manager.get_room(client.room_key);
+        // Caso a sala não exista mais, para a função
+        if (!room)
+            return;
+        // Caso não esteja ocorrendo um jogo
+        if (!room.game) {
+            // Remove o player 2
+            room.match.remove_player_2();
+            // Avisa ao player 1 sobre o ocorrido
+            room.match.player_1.emit(SocketEvents.SecondaryPlayerOut);
+        }
     });
 }

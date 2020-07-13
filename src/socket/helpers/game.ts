@@ -140,6 +140,10 @@ export default class GameQuiz {
         return { draw: true }
     }
 
+    public delete_game() {
+        rooms_manager.delete_game(this.room_key);
+    }
+
     // Retorna a sala a qual esse jogo pertence
     get room() {
         return rooms_manager.get_room(this.room_key);
@@ -162,7 +166,6 @@ class Counter {
     public stop_timmer() {
         this.count = 0;
         clearInterval(this.timmer);
-        console.log('parando timmer')
     }
 
     public start_count_runner ( data: { times: number, execute?: (counter: number, stopTimmer: () => void) => any, on_time_over?: () => any }) {
