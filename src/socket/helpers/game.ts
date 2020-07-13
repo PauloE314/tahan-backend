@@ -32,7 +32,7 @@ export default class GameQuiz {
     public timmer: Counter;
     public quiz: Quizzes;
     public game_questions: Array<GameQuestions>;
-    public current_question_index: number = 2;
+    public current_question_index: number = 0;
 
 
     constructor(match: Match, quiz: Quizzes) {
