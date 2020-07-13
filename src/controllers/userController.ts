@@ -136,16 +136,14 @@ export default class UserController {
         
         const { google_data } = request;
 
-        const user = await userRepo.findOne({email: google_data.email});
+        const user = await userRepo.findOne({googleID: google_data.id});
 
         // Caso não exista um usuário cadastrado com esse google email
         if (!user) 
-          return { googleId: "Não existe nenhum usuário cadastrado com esse email" };
+          return { googleId: "Não existe nenhum usuário cadastrado com esse ID" };
 
-        user.googleID = google_data.id;
-        const saved = await getRepository(Users).save(user);
 
-        return saved;
+        return user;
       }
       // Sistema de login manual
       async function manual_login(request: APIRequest, response: Response) : Promise<Users|object> {

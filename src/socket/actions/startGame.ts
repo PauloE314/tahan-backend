@@ -68,23 +68,20 @@ export default async function StartGame (io: Server, client: Client, data: Start
             const data = game.endGame({ forced_winner: oponent});
             // Envia o fim do jogo
             oponent.emit(SocketEvents.EndGame, data);
+            // Avisa que o oponente saiu
+            oponent.emit(SocketEvents.OponentOut);
 
             // Caso o desconectado seja o player 1
-            if (player.user.id === game.room.match.player_1.user.id) {
-                oponent.emit(SocketEvents.MainPlayerOut);
+            if (player.user.id === game.room.match.player_1.user.id) 
                 // Deleta o match
                 room.match.end_match(io);
-            }
+            
             // Caso seja o player 2, termina apenas o game
-            else {
-                oponent.emit(SocketEvents.SecondaryPlayerOut);
+            else 
                 room.match.remove_player_2();
-            }
+            
             // Apaga o jogo realmente
             game.delete_game();
-
-            // client_status();
-            // rooms_manager.room_status();
         })
     );
     // Contagem para iniciar o jogo

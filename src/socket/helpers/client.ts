@@ -3,6 +3,7 @@ import { APISocket } from "src/@types/socket";
 import { Users } from "@models/User";
 import { GameErrorModel, GameErrors, SocketEvents } from '@config/socket';
 import GameQuiz from './game';
+import { Err } from "src/utils/classes";
 
 
 interface ClientList {
@@ -31,7 +32,6 @@ export function client_status() {
 // Modelo de um cliente
 export default class Client {
     public socket: APISocket;
-    // public io: Server;
     public user: Users;
     public room_key: string | null;
     
@@ -42,13 +42,8 @@ export default class Client {
         this.user = user;
         clients[this.user.id] = this;
 
-        client_status();
         // Quando o usuário for desconectado, retira-o da lista de clientes
-        this.socket.on(SocketEvents.ClientDisconnected, () => {
-            delete clients[this.user.id];
-
-            client_status();
-        })
+        this.socket.on(SocketEvents.ClientDisconnected, () => delete clients[this.user.id])
     }
 
     // Adiciona o usuário a uma sala
@@ -83,24 +78,6 @@ export default class Client {
         return true;
     }
 
-
-
-    // Emite evento para todos da sala
-    public emitToMatch(io: Server, event_name: string, data?: any, options?: { except_sender: boolean }) {
-        // Caso o usuário não esteja em uma sala, retorna false
-        if (!this.room_key)
-            return false;
-
-        const except_sender = options ? options.except_sender : false;
-        const event_data = data ? data : null;
-        // Emite o evento para todos exceto o usuário
-        if (except_sender)
-            this.socket.broadcast.to(this.room_key).emit(event_name, event_data);
-        // Emite o evento para todos
-        else
-            io.to(this.room_key).emit(event_name, event_data);
-    }
-
     // Emite para o cliente
     public emit(event_name: string, event_data?: any) {
         this.socket.emit(event_name, event_data ? event_data : null);
@@ -117,16 +94,9 @@ export default class Client {
         this.socket.on(event_name, () => cb(this.socket))
     }
 
-
-    get rooms() {
-        return this.socket.rooms;
-    }
-
+    // Métodos globais
     public static get_client(id: number ) {
         return clients[id];
-    }
-    public static all_clients() {
-        return Object.keys(clients).map(client_id => clients[client_id].user.username)
     }
 }
 
@@ -135,7 +105,7 @@ export default class Client {
 // Erro de jogo
 export class GameError {
     public game_error: GameErrorModel; 
-    private error: Error;
+    public error: Error;
 
     constructor(game_error: GameErrorModel) {
         // Tenta pegar os dados do erro
@@ -149,16 +119,17 @@ export class GameError {
             throw new Error('Esse código de erro não existe');
 
         this.game_error = error_exists[0];
-        console.log(this.game_error);
         // Armazena o erro real do JS
-        const err = new Error();
-        err.name = this.game_error.name;
-        err.message = this.game_error.message;
+        const err = new Err(SocketEvents.GameError, this.game_error);
         this.error = err;   
     }
     // Envia o erro ao cliente
-    sendToClient(user: Client) {
-        user.emit('GAME_ERROR', this.game_error);
+    sendToClient(client: Client) {
+        client.emit(SocketEvents.GameError, this.game_error);
+    }
+
+    sendToSocket(socket: APISocket) {
+        socket.emit(SocketEvents.GameError, this.game_error);
     }
     // Ativa o erro real
     raiseError() {

@@ -80,8 +80,8 @@ export interface RightAnswer {};
 export interface WrongAnswer {};
 // Resposta de ambos
 export interface BothAnsweredData {
-    player1_answer: 'right' | 'wrong',
-    player2_answer: 'right' | 'wrong'
+    player1_answer: 'right' | 'wrong' | 'no-answer',
+    player2_answer: 'right' | 'wrong' | 'no-answer'
 };
 // Caso um player saia
 export interface PlayerOutData {};

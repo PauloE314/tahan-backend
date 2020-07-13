@@ -1,8 +1,5 @@
 import { APIRequest } from "../@types";
 import { Response, NextFunction } from "express";
-import { SocketEvents } from '@config/socket';
-
-import { Server, Socket } from "socket.io";
 
 // Classe de seeds
 export class Seed {

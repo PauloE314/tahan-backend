@@ -1,9 +1,10 @@
 import { auth_user } from "../utils/";
 import { Err } from '../utils/classes';
 import { APISocket } from 'src/@types/socket';
-import { GameErrors } from "@config/socket"
+import { GameErrors, SocketEvents } from "@config/socket"
 import { Server } from "socket.io";
 import Client from "./helpers/client";
+import { GameError } from './helpers/client'
 
 
 // Aplica os middlewares
@@ -14,20 +15,23 @@ export async function useMiddlewares(io: Server) {
 }
 
 
-// Middleware de autenticaçãp
+// Middleware de autenticação
 async function Auth(socket: APISocket, next: (err?: any) => any) {
     const { token } = socket.request._query;
+
+    // permission_deined.sendToSocket(socket);
     
     try {
         const user = await auth_user({ token: String(token), raiseError: true, bearer: false});
         
-        if (!user) 
-            return next(new Err(GameErrors.PermissionDenied.name, "Permissão negada"));
- 
+        if (!user) {
+            const permission_deined = new GameError(GameErrors.PermissionDenied);
+            return next(permission_deined.error);
+        }
+
         if (Client.get_client(user.info.id)) {
-            console.log('mesmo usuário: ' + Client.get_client(user.info.id).user.username);
-            console.log(Client.all_clients())
-            return next(new Err(GameErrors.PermissionDenied.name, "Já existe outro dispositivo com esse cliente"));
+            const double_user = new GameError(GameErrors.DoubleUser);
+            return next(double_user.error);
         }
 
         socket.client.user = user;

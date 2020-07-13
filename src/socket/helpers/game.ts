@@ -62,13 +62,11 @@ export default class GameQuiz {
         const cb = onEnd ? onEnd : () => {};
         
         // assegura que o jogo está ocorrendo
-        if (this.game_state !== GameStates.Playing) {
-            console.log('O jogo não está ocorrendo')
+        if (this.game_state !== GameStates.Playing) 
             return;
-        }
+        
         // Checa se ainda há questões para responder
         if (this.current_question_index + 1 === this.game_questions.length) {
-            console.log('O jogo está para acabar')
             this.game_state = GameStates.BeforeEnd;
             return;
         }
@@ -87,16 +85,19 @@ export default class GameQuiz {
         // Checa se o jogo está ocorrendo
         if (this.game_state !== GameStates.Playing)
             return;
+
+        const player_how_answered = this.room.match.is_player(data.client, 'player_1') ? 'player_1' : 'player_2';
+
+        // checa se o usuário já respondeu
+        if (this.current_question[player_how_answered] != null)
+            return;
         
         // Checa se a resposta está correta
         const answer_state: PlayerAnswer = data.answer_id === this.current_question.question.rightAnswer.id ? 'right' : 'wrong';
-        console.log('resposta certa: ' + this.current_question.question.rightAnswer.id);
-        console.log('resposta dada: ' + data.answer_id);
-        console.log('answer state: ' + answer_state)
         // Executa call back
         data.on_answer(answer_state);
         // Armazena a resposta
-        const player_how_answered = this.room.match.is_player(data.client, 'player_1') ? 'player_1' : 'player_2';
+        
         this.game_questions[this.current_question_index][player_how_answered] = answer_state;
 
         const p1_answer = this.current_question.player_1 !== null;
@@ -104,7 +105,7 @@ export default class GameQuiz {
         // Se ambos tiverem respondido
         if (p1_answer && p2_answer) {
             const cb = data.on_both_answered ? data.on_both_answered : () => {};
-            return cb({ player1_answer: p1_answer[0], player2_answer: p2_answer[0] });
+            return cb({ player1_answer: this.current_question.player_1, player2_answer: this.current_question.player_2 });
         }
     }
 

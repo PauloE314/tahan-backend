@@ -1,4 +1,4 @@
-import { SocketEvents, GameErrors } from "@config/socket";
+import { SocketEvents, GameErrors, GameStates } from "@config/socket";
 import { Socket, Server } from 'socket.io';
 import Client from '../helpers/client';
 import GameQuiz from '../helpers/game';
@@ -15,6 +15,10 @@ export default async function Answer (io: Server, client: Client, data: AnswerDa
     // Checa o jogo existe ou não
     if (!game) 
         return client.emitError(GameErrors.GameDoesNotExist);
+
+    // Checa se o jogo está ocorrendo
+    if (game.game_state !== GameStates.Playing) 
+        return client.emitError(GameErrors.InvalidAction)
 
     // Avisa ao oponente que o jogador respondeu
     const oponent = game.room.match.players.find(player => player.user.id !== client.user.id);
@@ -36,6 +40,7 @@ export default async function Answer (io: Server, client: Client, data: AnswerDa
             const both_answered_data: BothAnsweredData = {
                 player1_answer, player2_answer
             };
+            console.log(both_answered_data);
             io.to(game.room_key).emit(SocketEvents.BothAnswered, both_answered_data);
             // Para o contador
             game.timmer.stop_timmer();
