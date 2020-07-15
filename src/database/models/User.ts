@@ -1,7 +1,7 @@
 import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateColumn } from "typeorm";
 import { Topics } from './Topics';
 import { Quizzes } from "./quiz/Quizzes";
-import { SingleGames } from "@models/SingleGames";
+import { SingleGames } from "@models/games/SingleGames";
 
 @Entity()
 @Unique(['email', 'googleID'])
@@ -35,6 +35,4 @@ export class Users {
     @OneToMany(type => Quizzes, quiz => quiz.author)
     writenQuizzes: Quizzes[];
 
-    @OneToMany(type => SingleGames, game => game.player)
-    played_games: SingleGames[];
 }

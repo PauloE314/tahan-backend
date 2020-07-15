@@ -5,6 +5,9 @@ import { SocketEvents, GameStates } from "@config/socket";
 import { GameCountData, EndGameData, BothAnsweredData } from "src/@types/socket";
 import { Questions } from "@models/quiz/Questions";
 import rooms_manager from "../helpers/rooms";
+import { PlayerScore } from "@models/games/PlayerScore";
+import { GameHistoric } from "@models/games/GameHistoric";
+import { getRepository } from "typeorm";
 
 
 
@@ -20,12 +23,40 @@ export default function next_question(io: Server, game_id: string, count_start?:
         // Envia o término do jogo para os jogadores
         const { draw, winner } = game.endGame();
         const end_game_data: EndGameData = { draw, winner: winner ? winner : null };
+        
         // Envia os dados de fim de jogo
         io.to(game.room_key).emit(SocketEvents.EndGame, end_game_data);
 
-        game.delete_game();
+        // Salva o histórico do jogo
+        if (end_game_data) {
+            console.log('Iniciando salvamento no DB...');
+            const answered_questions = game.game_questions.filter(game_question => game_question.answered);
 
-        // rooms_manager.room_status();
+            // Cria um score do jogador 1
+            const p1_score = new PlayerScore();
+            p1_score.score = answered_questions.filter(question => question.player_1 === 'right').length / answered_questions.length;
+            p1_score.player = game.room.match.player_1.user;
+            
+            // Cria score do player 2
+            const p2_score = new PlayerScore();
+            p2_score.score = answered_questions.filter(question => question.player_2 === 'right').length / answered_questions.length;
+            p2_score.player = game.room.match.player_2.user;
+            
+            // Cria o histórico do jogo
+            const game_historic = new GameHistoric();
+            game_historic.is_multiplayer = true;
+            game_historic.player_1_score = p1_score;
+            game_historic.player_2_score = p2_score;
+            game_historic.quiz = game.quiz;
+            
+            // Salva o histórico
+            getRepository(GameHistoric).save(game_historic).then(() => {
+                game.delete_game();
+            })
+        }
+        else
+            game.delete_game();
+
         return;
     }
     // Caso não haja nenhum dado sendo retornado

@@ -8,6 +8,7 @@ import rooms_manager from "../helpers/rooms";
 
 // Adiciona o usuário à sala passada como parâmetro
 export default async function JoinMatch (io: Server, client: Client, data: JoinMatchData) {
+    console.log('Entrando no match...')
     // Certifica que o usuário não está em outra sala
     if (client.room_key)
         return client.emitError(GameErrors.UserAlreadyInMatch);

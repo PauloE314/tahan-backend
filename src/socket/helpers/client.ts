@@ -125,6 +125,7 @@ export class GameError {
     }
     // Envia o erro ao cliente
     sendToClient(client: Client) {
+        console.log('Enviando erro: ', client.user.username, this.game_error.message);
         client.emit(SocketEvents.GameError, this.game_error);
     }
 

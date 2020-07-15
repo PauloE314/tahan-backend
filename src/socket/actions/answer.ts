@@ -40,7 +40,6 @@ export default async function Answer (io: Server, client: Client, data: AnswerDa
             const both_answered_data: BothAnsweredData = {
                 player1_answer, player2_answer
             };
-            console.log(both_answered_data);
             io.to(game.room_key).emit(SocketEvents.BothAnswered, both_answered_data);
             // Para o contador
             game.timmer.stop_timmer();

@@ -18,7 +18,7 @@ export default function useSocket(io: Server) {
         // Cria um cliente
         const client = new Client(io, socket, socket.client.user.info);
 
-        console.log('Cliente: ' + client.user.username);
+        // console.log('Cliente: ' + client.user.username);
 
         // Cria jogo
         socket.on(SocketEvents.CreateMatch, (data) => actions.CreateMatch(io, client, data));

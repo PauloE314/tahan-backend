@@ -7,7 +7,9 @@ import { Quizzes } from '@models/quiz/Quizzes';
 import { Alternatives } from '@models/quiz/Alternatives';
 import { Questions } from '@models/quiz/Questions';
 import { connect } from 'net';
-import { SingleGames } from '@models/SingleGames';
+import { SingleGames } from '@models/games/SingleGames';
+import { GameHistoric } from '@models/games/GameHistoric';
+import { PlayerScore } from '@models/games/PlayerScore';
 
 interface InputQuestion { 
     question: string,
@@ -221,6 +223,7 @@ export default class QuizzesController {
 
     /* Permite que um aluno responda as questões */
     async answer(request: APIRequest, response: Response, next: NextFunction) {
+        try{
         const { user, quiz } = request;
         const body: Array<UserAnswer> = request.body;
         // Corrige as questões
@@ -237,28 +240,38 @@ export default class QuizzesController {
         const correct_answers = answers.filter(answer => answer.isRight);
         // Score do usuário
         const score = (correct_answers.length / quiz.questions.length) * 10;
+
+        // Cria o score do player
+        const player_score = new PlayerScore();
+        player_score.player = user.info;
+        player_score.score = score;
+
         // Registra o jogo
-        const game = new SingleGames();
-        game.player = user.info;
+        const game = new GameHistoric();
+        game.is_multiplayer = false;
+        game.player_1_score = player_score;
         game.quiz = quiz;
-        game.score = score;
         // Salva o jogo
-        await getRepository(SingleGames).save(game);
+        await getRepository(GameHistoric).save(game);
         // Retorna os dados
         return response.send({ answers, score });
+        }
+        catch(err) {
+            return response.send(err.message)
+        }
     }
 
     /* Permite o professor pegar as estatísticas dos quizzes */
     async games(request: APIRequest, response: Response, next: NextFunction) {
         const quiz = request.quiz;
         // Pega lista de jogos com o quiz especificado na URL
-        const single_games = await getRepository(SingleGames).find({
-            relations: ['player'],
+        const game_historic = await getRepository(GameHistoric).find({
+            relations: ['player_1_score', 'player_1_score.player', 'player_2_score', 'player_2_score.player', 'quiz'],
             where: {
                 quiz: { id: quiz.id }
             }
         });
 
-        return response.send(single_games);
+        return response.send(game_historic);
     }
 }

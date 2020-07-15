@@ -13,7 +13,8 @@ type PlayerAnswer =  'right' | 'wrong' | null;
 interface GameQuestions {
     question: Questions,
     player_1: PlayerAnswer,
-    player_2: PlayerAnswer
+    player_2: PlayerAnswer,
+    answered: boolean
 };
 
 export interface GameEndStatus {
@@ -28,7 +29,7 @@ export default class GameQuiz {
     public timmer: Counter;
     public quiz: Quizzes;
     public game_questions: Array<GameQuestions>;
-    public current_question_index: number = 0;
+    public current_question_index: number = -1;
 
 
     constructor(match: Match, quiz: Quizzes) {
@@ -39,8 +40,8 @@ export default class GameQuiz {
         
         const { questions } = quiz;
         // Randomiza as questões do quiz
-        const random_questions = random_array(questions);
-        this.game_questions = random_questions.map(question => ({ question, player_1: null, player_2: null }));
+        const random_questions = <Questions[]>random_array(questions);
+        this.game_questions = random_questions.map(question => ({ question, player_1: null, player_2: null, answered: false }));
 
         // Salva o game na sala
         rooms_manager.set_room(this.room_key, (room) => {
@@ -60,18 +61,20 @@ export default class GameQuiz {
         // assegura que o jogo está ocorrendo
         if (this.game_state !== GameStates.Playing) 
             return;
-        
-        // Checa se ainda há questões para responder
-        if (this.current_question_index + 1 === this.game_questions.length) {
-            this.game_state = GameStates.BeforeEnd;
-            return;
-        }
+
 
         // Avança um índice
         this.current_question_index++;
 
+
+        // Checa se ainda há questões para responder
+        if (this.current_question_index === this.game_questions.length) {
+            this.game_state = GameStates.BeforeEnd;
+            return;
+        }
+
         // Retorna a qestão
-        const question = Object.assign({}, this.game_questions[this.current_question_index].question);
+        const question = Object.assign({}, this.current_question.question);
         delete question.rightAnswer;
         return question
     }
@@ -100,6 +103,7 @@ export default class GameQuiz {
         const p2_answer = this.current_question.player_2 !== null;
         // Se ambos tiverem respondido
         if (p1_answer && p2_answer) {
+            this.game_questions[this.current_question_index].answered = true;
             const cb = data.on_both_answered ? data.on_both_answered : () => {};
             return cb({ player1_answer: this.current_question.player_1, player2_answer: this.current_question.player_2 });
         }

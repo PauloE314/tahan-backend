@@ -18,6 +18,7 @@ export default async function createMatch (io: Server, client: Client, data: Cre
     // Envia os dados do match
     const match_data: MatchCreatedData = { match_code: match.room_key };
     client.emit(SocketEvents.MatchCreated, match_data);
+    console.log(match.room_key);
 
     // Caso o usuário principal se disconecte
     client.on(SocketEvents.ClientDisconnected, async () => {

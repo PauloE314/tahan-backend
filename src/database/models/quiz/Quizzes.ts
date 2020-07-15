@@ -2,7 +2,7 @@ import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, Cr
 import { Questions } from './Questions';
 import { Users } from "@models/User";
 import { Sections } from "@models/Sections";
-import { SingleGames } from '@models/SingleGames';
+import { SingleGames } from '@models/games/SingleGames';
 
 
 @Entity()
