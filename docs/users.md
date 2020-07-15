@@ -1,4 +1,4 @@
-# Users
+# **Users**
 
 ## **PATH: /users/ - GET, POST**
 
@@ -7,13 +7,13 @@
 Retorna a lista de usuários e suas informações. Permite a busca por usuários em função do username e email deles.
 
 ```json
-//base_url/users/?username=Paulo
+//base_url/users/?username=<name>
 [
   {
     "id": 1,
-    "username": "Paulo Lourenço",
-    "email": "email@gmail.com",
-    "occupation": "student"
+    "username": <string>,
+    "email": <string>,
+    "occupation": "student" | "teacher"
   }
 ]
 ```
@@ -26,10 +26,10 @@ Cria um usuário. É possível criar o usuário com um token OAuth recebido do l
 ```json
 {
   "method": "manual",
-  "username": "Paulo Lourenço",
-  "password": "Senha1234",
-  "email": "email@gmail.com",
-  "occupation": "student"
+  "username": <string>,
+  "password": <string>,
+  "email": <string>,
+  "occupation": "student" | "teacher"
 }
 ```
 
@@ -37,8 +37,8 @@ Cria um usuário. É possível criar o usuário com um token OAuth recebido do l
 ```json
 {
   "method": "google",
-  "access_token": "<token>",
-  "occupation": "teacher"
+  "access_token": <string>,
+  "occupation": "student" | "teacher"
 }
 ```
 
@@ -56,8 +56,8 @@ Permite logar com suas credenciais. Retorna as informações do usuário e um to
 ```json
 {
   "method": "manual",
-  "email": "email@gmail.com",
-  "password": "Senha1234"
+  "email": <string>,
+  "password": <string>
 }
 ```
 
@@ -65,7 +65,7 @@ Permite logar com suas credenciais. Retorna as informações do usuário e um to
 ```json
 {
   "method": "google",
-  "access_token": "<token>"
+  "access_token": <string>
 }
 ```
 
@@ -76,11 +76,11 @@ Permite logar com suas credenciais. Retorna as informações do usuário e um to
 {
   "user": {
     "id": 1,
-    "username": "Paulo Lourenço",
-    "email": "email@gmail.com",
-    "occupation": "student"
+    "username": <string>,
+    "email": <string>,
+    "occupation": "student" | "teacher",
   },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTkzMDkxODc4LCJleHAiOjE1OTMxNzgyNzh9.UctR_2MStYdjWO5fNA8E-bUr7rq4AM6A8ezs7zaqksY"
+  "token": <string>
 }
 ```
 
@@ -95,10 +95,10 @@ Retorna as informações de um usuário específico.
 ```json
 {
   "id": 1,
-  "username": "Paulo Lourenço",
-  "email": "email@gmail.com",
-  "occupation": "student",
-  "created_at": "2020-07-02T16:10:20.000Z"
+  "username": <string>,
+  "email": <string>,
+  "occupation": "student" | "teacher",
+  "created_at": <Date | string>
 }
 ```
 
@@ -114,14 +114,13 @@ Retorna as informações do usuário logado.
 {
   "info": {
     "id": 1,
-    "username": "Paulo Lourenço",
-    "email": "email@gmail.com",
-    "image": null,
-    "occupation": "student"
+    "username": <string>,
+    "email": <string>,
+    "occupation": "student" | "teacer"
   },
   "date": {
-    "expires": "Sun Jun 28 2020 12:29:09 GMT-0300 (GMT-03:00)",
-    "starts": "Sat Jun 27 2020 12:29:09 GMT-0300 (GMT-03:00)"
+    "expires": <Date | string>,
+    "starts": <Date | string>
   }
 }
 ```
@@ -132,7 +131,7 @@ OBS: "date" se refere ao tempo de inicial e máximo do Token utilizado no moment
 Permite atualizar o username ou senha na aplicação:
 ```json
 {
-    "username": "Novo nome"
+    "username": <string>
 }
 ```
 

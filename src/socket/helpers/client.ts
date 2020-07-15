@@ -98,6 +98,9 @@ export default class Client {
     public static get_client(id: number ) {
         return clients[id];
     }
+    public static all_clients() {
+        return clients;
+    }
 }
 
 
