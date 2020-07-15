@@ -1,3 +1,4 @@
+/* Listagem de eventos do jogo */
 export const SocketEvents = {
     // Eventos do cliente
     ClientConnect: 'connect',
@@ -31,7 +32,7 @@ export const SocketEvents = {
 };
 
 
-
+/* Listagem de estados do jogo */
 export const GameStates = {
     Begin: 'begin',
     Playing: 'playing',
@@ -40,13 +41,13 @@ export const GameStates = {
 };
 
 
-
+/* Modelo de erro */
 export interface GameErrorModel {
     name: string,
     code: number,
     message: string
 }
-
+/* Listagem de erros */
 export const GameErrors = {
     PermissionDenied: { name: 'permission-denied', code: 0, message: 'O usuário não tem permissão para essa ação'},
     DoubleUser: { name: 'double-user', code: 1, message: 'Já existe outro cliente usando essa conta'},
@@ -62,5 +63,4 @@ export const GameErrors = {
     UserNotInMatch: { name: 'user-not-in-match', code: 11, message: 'O usuário não está em um match' },
     UserAlreadyInGame: { name: 'user-in-game', code: 12, message: 'O usuário ainda está em jogo' },
     UserNotInGame: { name: 'user-not-in-game', code: 13, message: 'O usuário não está participando do jogo'},
-
 }

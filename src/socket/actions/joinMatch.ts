@@ -12,7 +12,7 @@ export default async function JoinMatch (io: Server, client: Client, data: JoinM
     if (client.room_key)
         return client.emitError(GameErrors.UserAlreadyInMatch);
 
-    const match = Match.get_match(data.code);
+    const match = Match.get_match(data.match_code);
     
     // Verifica se existe um Match com esse código
     if (!match)

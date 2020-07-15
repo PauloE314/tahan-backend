@@ -80,9 +80,52 @@ export default class QuizValidator extends Validator {
         return next();
     }
 
+    // Validação de resposta
+    public answer_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+        // Checa se existe a mesma quantidade de respostas e perguntas
+        const { body, quiz } = request;
+        // Checa se é um array de respostas
+        if (!Array.isArray(body))
+            return response.status(400).send({ message: "Envie uma lista de respostas "});
+        // Checa se o número de pergunta e respostas é o mesmo
+        if (quiz.questions.length !== body.length)
+            return response.status(400).send({ message: "O número de respostas é insuficiente" });
+        // Pega as respostas válidas
+        const valid_answers = body.filter((answer: any) => (
+            answer.question && answer.answer
+        ));
+        // Certifica se todas as respostas ainda são válidas
+        if (quiz.questions.length !== valid_answers.length)
+            return response.status(400).send({ message: "Questões mal-formatadas" });
+        
+        const answered_questions = valid_answers.map(valid_answer => valid_answer.question);
+        // Certifica que toda questão tem uma resposta
+        const no_answered_questions = {};
+        for (let question of quiz.questions) 
+            if (!answered_questions.includes(question.id))
+                no_answered_questions['question-' + question.id] = 'no answered';
+        // Caso haja questões sem respostas
+        if (Object.keys(no_answered_questions).length)
+            return response.status(400).send({ message: no_answered_questions})
+        
 
+        // Avança
+        return next();
+    }
 
-    // Validators de campos
+    // Validação de estatísticas
+    public games_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+        // Checa se o professor é o criador do quiz
+        if (request.user.info.id !== request.quiz.author.id)
+            return response.status(401).send({ message: 'O usuário não é o autor do quiz' });
+
+        return next();
+    }
+
+    /*
+        Validadores de campo
+    */
+
     // Validator de título
     private async validate_name (name: string | undefined, options?: { currentName: string }) {
         const currentName = options ? options.currentName : null;

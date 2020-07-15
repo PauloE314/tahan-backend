@@ -1,14 +1,10 @@
 import Client from "./client";
 import { Quizzes } from "@models/quiz/Quizzes";
-import { GameErrors, GameStates, SocketEvents, GameErrorModel } from "@config/socket";
+import { GameStates } from "@config/socket";
 import { Questions } from "@models/quiz/Questions";
-import { Server } from "socket.io";
-import { Games } from "@models/games/Games";
-import { getRepository } from "typeorm";
 import Match from "./match";
 import rooms_manager from './rooms';
-import { random_array, count_runner } from "src/utils";
-import rooms from "./rooms";
+import { random_array } from "src/utils";
 import { Users } from "@models/User";
 
 type PlayerAnswer =  'right' | 'wrong' | null;
@@ -188,58 +184,4 @@ class Counter {
             this.count--;
         }, 1000);
     }
-}
-
-// Erro de jogo
-// export class GameError {
-//     public error_code: number;
-//     public game_error: GameErrorModel; 
-//     private error: Error;
-
-//     constructor(error_code: number) {
-//         // Tenta pegar os dados do erro
-//         const game_error = Object.keys(GameErrors).map(
-//             game_err_name => GameErrors[game_err_name]
-//         ).filter(
-//             game_err => game_err.code === error_code
-//         )
-//         // Caso não exista nenhum erro com esse código, para o código
-//         if (!game_error.length)
-//             throw new Error('Esse código de erro não existe');
-
-//         this.game_error = game_error[0];
-//         // Armazena o erro real do JS
-//         const err = new Error();
-//         err.name = this.game_error.name;
-//         err.message = this.game_error.message;
-//         this.error = err;   
-//     }
-//     // Envia o erro ao cliente
-//     sendToClient(user: Client) {
-//         user.emit('GAME_ERROR', this.game_error);
-//     }
-//     // Ativa o erro real
-//     raiseError() {
-//         throw this.error;
-//     }
-// } 
-
-
-
-
-
-export async function getFullGameData(id: number) {
-    const game = await getRepository(Games).findOne({
-        where: { id },
-        relations: [ 'quiz', 'match', 'match.player1', 'match.player2', 'match.answered_questions', 'match.currentQuestion' ]
-    })
-    return game;
-}
-
-export async function getFullQuizData(id: number) {
-    const quiz = await getRepository(Quizzes).findOne({
-        where: { id },
-        relations: ['section', 'author', 'questions', 'questions.alternatives', 'questions.rightAlternative']
-    });
-    return quiz;
 }

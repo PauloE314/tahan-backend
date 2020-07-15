@@ -14,7 +14,7 @@ export async function getSection(request: APIRequest, response: Response, next: 
     const section = await getRepository(Sections).findOne({ id: section_id});
 
     if (!section) {
-        return response.status(401).send({message: "Seção não encontrada"});
+        return response.status(401).send({ message: "Seção não encontrada" });
     }
 
     request.section = section;
@@ -50,7 +50,7 @@ export async function getQuiz(request: APIRequest, response: Response, next: Nex
         });
 
         if (!quiz)
-            return response.send({message: "Quiz não encontrado"});
+            return response.send({ message: "Quiz não encontrado" });
 
         request.quiz = quiz;
     }

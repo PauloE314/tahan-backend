@@ -24,7 +24,7 @@ export interface GameCountData {
 export interface CreateMatchData { }
 // Entrar em match
 export interface JoinMatchData {
-    code: string
+    match_code: string
 }
 // Afirmar prontidão
 export interface ReadyData {  }

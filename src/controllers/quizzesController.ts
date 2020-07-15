@@ -7,6 +7,7 @@ import { Quizzes } from '@models/quiz/Quizzes';
 import { Alternatives } from '@models/quiz/Alternatives';
 import { Questions } from '@models/quiz/Questions';
 import { connect } from 'net';
+import { SingleGames } from '@models/SingleGames';
 
 interface InputQuestion { 
     question: string,
@@ -14,6 +15,11 @@ interface InputQuestion {
         text: string,
         right?: boolean
     }[]
+};
+
+interface UserAnswer {
+    question: number,
+    answer: number
 }
 
 export default class QuizzesController {
@@ -42,7 +48,7 @@ export default class QuizzesController {
         }
     }
 
-    // Criação de quiz
+    /* Criação de quiz */
     async create(request: APIRequest, response: Response, next: NextFunction) {
         const { section } = request;
         const { name } = request.body;
@@ -120,7 +126,7 @@ export default class QuizzesController {
         
     }
 
-    // Ler o quiz
+    /* Ler o quiz */
     async read(request: APIRequest, response: Response, next: NextFunction) {
         const { quiz } = request;
 
@@ -128,7 +134,7 @@ export default class QuizzesController {
     }
 
 
-    // Dá update no quiz
+    /* Dá update no quiz */
     async update(request: APIRequest, response: Response, next: NextFunction) {
         const { name, remove_questions } = request.body;
         const add_questions : InputQuestion[] = request.body.add_questions;
@@ -199,7 +205,7 @@ export default class QuizzesController {
         }
     }
 
-    // Delete no quiz
+    /* Delete no quiz */
     async delete(request: APIRequest, response: Response, next: NextFunction) {
         try {
             const { quiz } = request;
@@ -211,5 +217,48 @@ export default class QuizzesController {
         catch(err) {
             return response.send({name: err.name, message: err.message})
         }
+    }
+
+    /* Permite que um aluno responda as questões */
+    async answer(request: APIRequest, response: Response, next: NextFunction) {
+        const { user, quiz } = request;
+        const body: Array<UserAnswer> = request.body;
+        // Corrige as questões
+        const answers = body.map(answer => {
+            const question = quiz.questions.find(question => question.id === answer.question);
+            return {
+                question: question.id,
+                answer: answer.answer,
+                rightAnswer: question.rightAnswer.id,
+                isRight: question.rightAnswer.id === answer.answer
+            };
+        });
+        // Pega a lista de respostas corretas
+        const correct_answers = answers.filter(answer => answer.isRight);
+        // Score do usuário
+        const score = (correct_answers.length / quiz.questions.length) * 10;
+        // Registra o jogo
+        const game = new SingleGames();
+        game.player = user.info;
+        game.quiz = quiz;
+        game.score = score;
+        // Salva o jogo
+        await getRepository(SingleGames).save(game);
+        // Retorna os dados
+        return response.send({ answers, score });
+    }
+
+    /* Permite o professor pegar as estatísticas dos quizzes */
+    async games(request: APIRequest, response: Response, next: NextFunction) {
+        const quiz = request.quiz;
+        // Pega lista de jogos com o quiz especificado na URL
+        const single_games = await getRepository(SingleGames).find({
+            relations: ['player'],
+            where: {
+                quiz: { id: quiz.id }
+            }
+        });
+
+        return response.send(single_games);
     }
 }

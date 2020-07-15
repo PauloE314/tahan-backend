@@ -1,10 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request } from 'express';
 import { Users } from '@models/User';
 import { Sections } from '@models/Sections';
 import { Topics } from '@models/Topics';
 import { Quizzes } from '@models/quiz/Quizzes';
-import { Questions } from '@models/quiz/Questions';
-import { Games } from '@models/games/Games';
 
 // modelo de usuário
 export interface user_interface {
