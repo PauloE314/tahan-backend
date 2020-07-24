@@ -9,6 +9,7 @@ import { Users } from '@models/User';
 import { getRepository } from "typeorm";
 import { Quizzes } from "@models/quiz/Quizzes";
 import { Questions } from "@models/quiz/Questions";
+import { print } from "util";
 
 
 interface jwt_decoded {
@@ -18,7 +19,9 @@ interface jwt_decoded {
 }
 
 
-
+/**
+ * Autentica um usuário
+ */
 export async function auth_user(input: { token: string, raiseError: boolean, bearer?: boolean}) : Promise<user_interface | void> {
     const { bearer, raiseError, token } = input;
 
@@ -30,6 +33,7 @@ export async function auth_user(input: { token: string, raiseError: boolean, bea
         else
             return;
 
+    // Checa formatação do Bearer token
     if (bearer !== false) {
         const splited_header = token.split(' ');
         // Checa se ele está bem formatado
@@ -45,7 +49,8 @@ export async function auth_user(input: { token: string, raiseError: boolean, bea
         // retorna o dado
         const userRepo = getRepository(Users);
         const user = await userRepo.findOne(user_jwt_data.id);
-
+        
+        // Caso o usuário exista, retorna seus dados
         if (user)
             return {
                 info: user,
@@ -54,9 +59,10 @@ export async function auth_user(input: { token: string, raiseError: boolean, bea
                     starts: String(new Date(user_jwt_data.iat *1000))
                 }
             }
-
-        return;
+        // Caso não, retorna erro
+        throw new Error('O usuário não existe mais')
     }
+    // Lida com as exceptions do código
     catch(err) {
         if (!raiseError)
             return;
@@ -73,21 +79,25 @@ export async function auth_user(input: { token: string, raiseError: boolean, bea
 }
 
 
-
+/**
+ * Pega as informações do usuário dado um access token. Caso o toke de acesso seja inválido, retorna null ou erro
+ */
 export async function get_google_user_data(access_token: string, options?: { raise: boolean }) : Promise<google_data|null>{
     const raise_error = options? options.raise : false;
     const url = "https://www.googleapis.com/plus/v1/people/me?access_token=";
     try {
+        // Pega os dados do usuário
         const { data } = await axios.get(url + access_token);
+        console.log(data)
         const email = data.emails[0].value;
-        const { id, displayName } = data;
-
+        const { id, displayName, image } = data;
+        // Retorna os dados escolhidos
         return {
-            email, id, displayName
+            email, id, displayName, image_url: image.url
         };
     }
+    // Caso token seja inválido, retorna null ou erro
     catch(err) {
-        console.log(err.response)
         if (raise_error)
             throw err;
         

@@ -16,14 +16,14 @@ export class Users {
     @Column()
     email: string;
 
-    @Column({ select: false, nullable: true })
-    password?: string;
-
-    @Column({ select: false, nullable: true })
-    googleID?: string;
+    @Column({ select: false })
+    googleID: string;
 
     @Column()
     occupation: 'student' | 'teacher';
+
+    @Column({ nullable: true })
+    image_url: string;
 
     @CreateDateColumn()
     created_at: Date;

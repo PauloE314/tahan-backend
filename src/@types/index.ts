@@ -17,7 +17,8 @@ export interface user_interface {
 export interface google_data {
     email: string,
     id: string,
-    displayName: string
+    displayName: string,
+    image_url: string
 }
 
 // Modelo de Request

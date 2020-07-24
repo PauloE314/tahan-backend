@@ -19,14 +19,14 @@ export async function useMiddlewares(io: Server) {
 async function Auth(socket: APISocket, next: (err?: any) => any) {
     const { token } = socket.request._query;
 
-    // permission_deined.sendToSocket(socket);
+    // permission_denied.sendToSocket(socket);
     
     try {
         const user = await auth_user({ token: String(token), raiseError: true, bearer: false});
         
         if (!user) {
-            const permission_deined = new GameError(GameErrors.PermissionDenied);
-            return next(permission_deined.error);
+            const permission_denied = new GameError(GameErrors.PermissionDenied);
+            return next(permission_denied.error);
         }
 
         if (Client.get_client(user.info.id)) {

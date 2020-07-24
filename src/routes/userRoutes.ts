@@ -8,22 +8,16 @@ const controller = new UserController();
 const validator = new UserValidator();
 
 
-// Criar
-routes.post('/', validator.createUser_validation, controller.create);
+// Entrar na aplicação
+routes.post('/sign-in', validator.signIn_validation, controller.sign_in);
 
 // Leitura
 routes.get('/', controller.list);
 routes.get('/self/', auth_require, controller.read_self);
-// routes.get('/:id([0-9]+)/', validator.read_validation, controller.read)
 routes.get('/:id([0-9]+)/', controller.read);
-
-// Update
-routes.put('/self/', auth_require, validator.update_validation, controller.update);
 
 // Delete
 routes.delete('/self/', auth_require, controller.delete);
 
-// Outros
-routes.post('/login/', validator.login_validation, controller.login);
 
 export default routes;

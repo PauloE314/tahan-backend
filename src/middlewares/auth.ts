@@ -4,7 +4,9 @@ import { APIRequest } from "src/@types";
 
 
 
-// Checa se usuário está logado e retorna suas informações
+/*
+ * Checa se usuário está logado e retorna suas informações
+ */
 export async function auth_require(request: APIRequest, response: Response, next: NextFunction) {
     const token = request.headers.authorization;
     const valid_error_names = ['TokenExpiredError', "JsonWebTokenError", "Error"];
@@ -30,7 +32,7 @@ export async function is_teacher(request: APIRequest, response: Response, next: 
     const user = request.user.info;
 
     if (!(user.occupation == 'teacher')) {
-        return response.status(401).send({message: 'Permissão negada, apenas professores podem excecutar essa ação'});
+        return response.status(401).send({message: 'Permissão negada, apenas professores podem executar essa ação'});
     }
 
     return next();
@@ -40,7 +42,7 @@ export async function is_student(request: APIRequest, response: Response, next: 
     const user = request.user.info;
 
     if (!(user.occupation === "student")) {
-        return response.status(401).send({message: 'Permissão negada, apenas alunos podem excecutar essa ação'});
+        return response.status(401).send({message: 'Permissão negada, apenas alunos podem executar essa ação'});
     }
 
     return next();

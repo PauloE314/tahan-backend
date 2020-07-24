@@ -16,8 +16,6 @@ export default {
         time_to_answer: 30
     },
 
-
-
     secret_key: "zKRk85IqOdErrmR4",
-    jwtTime: "3d"
+    jwtTime: "365d"
 }
