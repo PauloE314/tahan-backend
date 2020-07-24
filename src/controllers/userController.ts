@@ -6,6 +6,8 @@ import crypto from 'bcrypt';
 import { APIRequest } from 'src/@types';
 import { Users } from '@models/User';
 import configs from '@config/server';
+import { Quizzes } from '@models/quiz/Quizzes';
+import { Posts } from '@models/Posts';
 
 /**
  * Controlador de rotas do usuário. Essa classe concatena as funções necessárias para listagem, update, criação e delete de contas na aplicação
@@ -85,6 +87,38 @@ export default class UserController {
 
       return response.send(user);
   }
+
+  /**
+   * Lista os quizzes feitos pelo usuário 
+   */
+  async quizzes(request: APIRequest, response: Response) {
+      const { user } = request;
+
+      // Lista de quizzes
+      const quizzes = await getRepository(Quizzes).find({
+          relations: ['author', 'questions', 'questions.alternatives', 'questions.rightAnswer' ],
+          where : { author: { id: user.info.id } }
+      });
+
+      // Retorna a lista
+      return response.send(quizzes)
+  }
+
+  /**
+   * Lista as postagens feitas pelo usuário 
+   */
+  async posts(request: APIRequest, response: Response) {
+    const { user } = request;
+
+    // Lista de postagens
+    const posts = await getRepository(Posts).find({
+        relations: ['author', 'topic'],
+        where : { author: { id: user.info.id } }
+    });
+
+    // Retorna a lista
+    return response.send(posts)
+}
 
   
   /**

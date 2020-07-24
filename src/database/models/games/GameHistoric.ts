@@ -1,5 +1,4 @@
 import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, ManyToMany, JoinTable, CreateDateColumn, OneToOne, JoinColumn } from "typeorm";
-import { Topics } from "../Topics";
 import { Quizzes } from '../quiz/Quizzes';
 import { Users } from '../User';
 

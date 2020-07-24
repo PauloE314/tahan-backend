@@ -1,7 +1,7 @@
 import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn } from "typeorm";
 import { Questions } from './Questions';
 import { Users } from "@models/User";
-import { Sections } from "@models/Sections";
+import { Topics } from "@models/Topics";
 import { SingleGames } from '@models/games/SingleGames';
 
 
@@ -21,8 +21,8 @@ export class Quizzes {
     @OneToMany(type => SingleGames, game => game.quiz, { cascade: true })
     games: SingleGames[];
 
-    @ManyToOne(type => Sections, section => section.id)
-    section: Sections;
+    @ManyToOne(type => Topics, topic => topic.id)
+    topic: Topics;
 
     @CreateDateColumn()
     created_at: Date;

@@ -2,40 +2,38 @@ import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 
 import { getRepository } from "typeorm";
-import { Sections } from "@models/Sections";
 import { Topics } from "@models/Topics";
+import { Posts } from "@models/Posts";
 import { auth_user } from 'src/utils';
 import { Quizzes } from "@models/quiz/Quizzes";
 
-// Tenta encontrar a seção
-export async function getSection(request: APIRequest, response: Response, next: NextFunction) {
-    const section_id = Number(request.params.section_id)
+// Tenta encontrar um tópico pelo id
+export async function getTopic(request: APIRequest, response: Response, next: NextFunction) {
+    const topic_id = Number(request.params.topic_id)
 
-    const section = await getRepository(Sections).findOne({ id: section_id});
+    const topic = await getRepository(Topics).findOne({ id: topic_id });
 
-    if (!section) {
+    if (!topic) {
         return response.status(401).send({ message: "Seção não encontrada" });
     }
 
-    request.section = section;
+    request.topic = topic;
     return next();
 }
 
-// Tenta encontrar um tópico
-export async function getTopic(request: APIRequest, response: Response, next: NextFunction) {
-    const id = Number(request.params.id);
+// Tenta encontrar uma postagem pelo id
+export async function getPost(request: APIRequest, response: Response, next: NextFunction) {
+    const post_id = Number(request.params.id);
 
-    const topic = await getRepository(Topics).findOne({ 
+    const post = await getRepository(Posts).findOne({ 
         relations: ["author"],
-        where: { id }
+        where: { id: post_id }
     });
 
-    if (!topic)
-        return response.send({message: "Tópico não encontrado"});
+    if (!post)
+        return response.send({ message: "Postagem não encontrada" });
 
-    request.topic = topic;
-    
-
+    request.post = post;
     return next();
 }
 

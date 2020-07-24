@@ -1,30 +1,23 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn} from "typeorm";
-import { Sections } from './Sections';
-import { Users } from './User';
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne } from "typeorm";
+import { Posts } from "./Posts";
+import { Quizzes } from './quiz/Quizzes';
+
+
 
 @Entity()
-@Unique(['id', "title"])
+@Unique(['name'])
 export class Topics {
 
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => Sections, section => section.id, {
-        onDelete: "CASCADE"
-    })
-    section: Sections;
-
-    @ManyToOne(type => Users, author => author.id)
-    author: Users;
-
     @Column()
-    title: string;
+    name: string;
 
-    @Column()
-    content: String;
+    @OneToMany(type => Posts, post => post.topic)
+    posts: Posts[];
 
-    @CreateDateColumn()
-    created_at: Date;
+    @OneToMany(type => Quizzes, quiz => quiz.topic)
+    quizzes: Quizzes[];
+
 }
-
-

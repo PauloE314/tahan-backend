@@ -39,7 +39,7 @@ Retorna as informações de um usuário específico.
   "id": 1,
   "username": "<string>",
   "email": "<string>",
-  "occupation": "student" | "teacher",
+  "occupation": "student | teacher",
   "created_at": "<Date | string>"
 }
 ```
@@ -67,6 +67,80 @@ Retorna as informações do usuário logado.
 }
 ```
 OBS: "date" se refere ao tempo de inicial e máximo do Token utilizado no momento.
+
+
+
+## **Path: /users/self/quizzes - GET**
+
+#### GET: (Autenticação necessária)
+
+Retorna a lista dos quizzes do usuário logado. 
+
+```json
+[
+  {
+    "id": 1,
+    "name": "<string>",
+    "created_at": "<Date|string>",
+    "author": {
+      "id": "<number>",
+      "username": "<string>",
+      "email": "<string>",
+      "occupation": "teacher",
+      "image_url": "<string>",
+      "created_at": "<Date|string>"
+    },
+    "questions": [
+      {
+        "id": "<number>",
+        "question": "<string>",
+        "alternatives": [
+          {
+            "id": "<number>",
+            "text": "<string>"
+          },
+          "..."
+        ],
+        "rightAnswer": {
+          "id": "<number>",
+          "text": "<string>"
+        }
+      }
+    ]
+  }
+]
+```
+
+
+## **Path: /users/self/posts - GET**
+
+#### GET: (Autenticação necessária)
+
+Retorna as informações do usuário logado. 
+
+```json
+[
+  {
+    "id": "<number>",
+    "title": "<string>",
+    "content": "<string>",
+    "created_at": "<Date|string>",
+    "author": {
+      "id": "<number>",
+      "username": "<string>",
+      "email": "<string>",
+      "occupation": "teacher",
+      "image_url": "<string>",
+      "created_at": "<Date|string>"
+    },
+    "topic": {
+      "id": "<number>",
+      "name": "<name>"
+    }
+  }
+]
+```
+
 
 
 #### DELETE: (Autenticação necessária)

@@ -1,7 +1,6 @@
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 
-import { Topics } from '@models/Topics';
 import { getRepository } from "typeorm";
 import { Validator } from "src/utils/classes";
 import { Quizzes } from "@models/quiz/Quizzes";
@@ -17,12 +16,12 @@ export default class QuizValidator extends Validator {
         this.clear();
         const { name, questions } = request.body;
 
-        // Validação de nome do quizz
+        // Validação de nome do quiz
         await this.createFieldValidator({
             name: "name", data: name, validation: this.validate_name
         });
 
-        // Validação das questões do quizz
+        // Validação das questões do quiz
         await this.createFieldValidator({
             name: "questions", data: questions, validation: this.validate_questions
         })
@@ -131,10 +130,10 @@ export default class QuizValidator extends Validator {
         const currentName = options ? options.currentName : null;
         // Validação de título
         if (!name)
-            return "Envie um nome para o quizz";
+            return "Envie um nome para o quiz";
 
         if (name.length < 5)
-            return "Envie um nome que tenha mais de 5 caracateres";
+            return "Envie um nome que tenha mais de 5 caracteres";
 
         const same_name_quiz = await getRepository(Quizzes).findOne({ name });
         if (same_name_quiz) {
@@ -150,7 +149,7 @@ export default class QuizValidator extends Validator {
         const questionsIdList = options.quiz.questions.map(question => question.id);
 
         if (!Array.isArray(questions))
-            return "Envie uma lista coms os IDs das questões a serem removidas";
+            return "Envie uma lista com os IDs das questões a serem removidas";
 
         for (let questionId of questions)
             if (!questionsIdList.includes(questionId))
@@ -188,7 +187,7 @@ export default class QuizValidator extends Validator {
             else {
                 // Pega os erros das alternativas
                 const alt_errors = this.validate_alternatives(question.alternatives);
-                // Amazena os erros
+                // Armazena os erros
                 if (alt_errors)
                     errors[question_index] = { alternatives: alt_errors };
 

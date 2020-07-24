@@ -1,6 +1,6 @@
 # **Quizzes**
 
-## **PATH: /sections/:id/quizzes - GET, POST**
+## **PATH: /topics/:id/quizzes - GET, POST**
 
 #### GET: (Autenticação não necessária)
 Lista os quizzes dessa seção. Cada quiz possui os dados do autor e a seção que se encontra. Permite a pesquisa pelo ```name``` do quiz nos queries params.
@@ -8,18 +8,18 @@ Lista os quizzes dessa seção. Cada quiz possui os dados do autor e a seção q
 ```json
 [
   {
-    "id": <number>,
-    "name": <string>,
+    "id": "<number>",
+    "name": "<string>",
     "author": {
-      "id": <number>,
-      "username": <string>,
-      "email": <string>,
-      "occupation": "student" | "teacher",
-      "created_at": <Date | string>
+      "id": "<number>",
+      "username": "<string>",
+      "email": "<string>",
+      "occupation": "student | teacher",
+      "created_at": "<Date | string>"
     },
-    "section": {
-      "id": <number>,
-      "name": <string>
+    "topic": {
+      "id": "<number>",
+      "name": "<string>"
     }
   }
 ]
@@ -32,46 +32,45 @@ Permite os professores criarem quizzes. Cada questão deve ter, no mínimo, 2 al
 
 ```json
 {
-	"name": <string>,
+	"name": "<string>",
 	"questions": [
         {
-          "question": <string>,
+          "question": "<string>",
           "alternatives": [
-            { "text": <string> },
-            { "text": <string> },
-            { "text": <string>, "right": true }
+            { "text": "<string>"},
+            { "text": "<string>" },
+            { "text": "<string>", "right": true }
           ]
-        },
-        ...
+        }
 	]
 }
 ```
 
 
-## **PATH: /sections/:section_id/quizzes/:id - GET, PUT, DELETE**
+## **PATH: /topics/:topic_id/quizzes/:id - GET, PUT, DELETE**
 
-#### GET: (Autenticação necessária)
+#### GET: (Autenticação não necessária)
 
 Retorna as informações de um quiz.
 
 ```json
 {
-  "id": <number>,
-  "name": <string>,
-  "created_at": <Date | string>,
+  "id": "<number>",
+  "name": "<string",
+  "created_at": "<Date | string>",
   "author": {
-    ...
+    "..."
   },
   "questions": [
     {
-      "id": <number>,
-      "question": <string>,
+      "id": "<number>",
+      "question": "<string>",
       "alternatives": [
-        ...
+        "..."
       ],
       "rightAnswer": {
-        "id": <number>,
-        "text": <string>
+        "id": "<number>",
+        "text": "<string>"
       }
     }
     ...
@@ -85,17 +84,20 @@ Permite ao criador do quiz retirar ou adicionar questões (sempre com o mínimo 
 
 ```json
 {
-  "name": <string>,
-  "removed_questions": [<number>, <number>, ...],
+  "name": "<string>",
+  "removed_questions": [
+    "<number>",
+    "..."
+  ],
   "add_questions": [
     {
-		"question": <string>,
-		"alternatives": [
-			{ "text": <string> },
-			{ "text": <string>, "right": true }
-		]
-	}
-    ...
+      "question": "<string>",
+      "alternatives": [
+        { "text": "<string>" },
+        { "text": "<string>", "right": true }
+      ]
+    }
+    "..."
   ]
 }
 ```
@@ -105,7 +107,7 @@ Permite ao criador do quiz deletá-lo.
 
 <hr>
 
-## **PATH: /sections/:section_id/quizzes/:id/answer - POST**
+## **PATH: /topics/:topic_id/quizzes/:id/answer - POST**
 
 #### POST: (Autenticação necessária)
 
@@ -113,19 +115,10 @@ Permite um aluno responder um quiz. Os dados de envio devem ser no formato:
 ```json
 [
 	{
-		"question": <number>,
-		"answer": <number>
+		"question": "<number>",
+		"answer": "<number>"
 	},
-	{
-		"question": <number>,
-		"answer": <number>
-	},
-      ...
-
-	{
-		"question": <question_id>,
-		"answer": <answer_id>
-	}
+	"..."
 ]
 ```
 
@@ -134,20 +127,20 @@ A resposta será no formato:
 {
   "answers": [
     {
-      "question": <number>,
-      "answer": <number>,
-      "rightAnswer": <number>,
-      "isRight": <boolean>
+      "question": "<number>",
+      "answer": "<number>",
+      "rightAnswer": "<number>",
+      "isRight": "<boolean>"
     },
     {
-      "question": <number>,
-      "answer": <number>,
-      "rightAnswer": <number>,
-      "isRight": <boolean>
+      "question": "<number>",
+      "answer": "<number>",
+      "rightAnswer": "<number>",
+      "isRight": "<boolean>"
     },
       ...
   ],
-  "score": <number>
+  "score": "<number>"
 }
 ```
 
@@ -157,7 +150,7 @@ As respostas individuais não são armazenadas no banco de dados, apenas o score
 
 <hr>
 
-## **PATH: /sections/:section_id/quizzes/:id/games - GET**
+## **PATH: /topics/:topic_id/quizzes/:id/games - GET**
 
 #### GET: (Autenticação necessária)
 Permite o professor que criou o devido quiz ver a lista de jogos daquele quiz. A resposta será no formato:
@@ -166,27 +159,27 @@ Permite o professor que criou o devido quiz ver a lista de jogos daquele quiz. A
 [
   {
     "id": 1,
-    "played_at": <Date | string>,
-    "is_multiplayer": <boolean>,
+    "played_at": "<Date | string>",
+    "is_multiplayer": "<boolean>",
     "player_1_score": {
-      "id": <number>,
-      "score": <number>,
+      "id": "<number>",
+      "score": "<number>",
       "player": {
-        "id": <number>,
-        "username": <string>,
-        "email": <string>,
-        "occupation": "student" | "teacher",
-        "created_at": <Date | string>
+        "id": "<number>",
+        "username": "<string>",
+        "email": "<string>",
+        "occupation": "'student' | 'teacher'",
+        "created_at": "<Date | string>"
       }
     },
-    "player_2_score": <PlayerScore | null>,
+    "player_2_score": "<PlayerScore | null>",
     "quiz": {
-      "id": <number>,
-      "name": <string>,
-      "created_at": <Date | string>
+      "id": "<number>",
+      "name": "<string>",
+      "created_at": "<Date | string>"
     }
   },
-    ...
+    "..."
 ]
 ```
 

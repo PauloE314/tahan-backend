@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { Users } from '@models/User';
-import { Sections } from '@models/Sections';
 import { Topics } from '@models/Topics';
+import { Posts } from '@models/Posts';
 import { Quizzes } from '@models/quiz/Quizzes';
 
 // modelo de usuário
@@ -25,8 +25,8 @@ export interface google_data {
 export interface APIRequest extends Request{
     user?: user_interface,
     google_data?: google_data,
-    section?: Sections,
     topic?: Topics,
+    post?: Posts,
     quiz?: Quizzes
 }
 

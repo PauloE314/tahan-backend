@@ -1,6 +1,6 @@
 import { user_interface } from './index';
 import { Users } from '@models/User';
-import { Sections } from '@models/Sections';
+import { Topics } from '@models/Topics';
 import { Alternatives } from '@models/quiz/Alternatives';
 
 // Modelo de SOCKET
@@ -64,7 +64,7 @@ export interface GameData {
     name: string,
     author: Users,
     created_at: Date | string,
-    section: Sections
+    topic: Topics
 }
 // Próxima questão
 export interface NextQuestionData {

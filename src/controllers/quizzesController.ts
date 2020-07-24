@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { Sections } from '@models/Sections';
+import { Topics } from '@models/Topics';
 
 import { APIRequest } from 'src/@types';
 import { getRepository, getConnection, Like } from 'typeorm';
@@ -24,11 +24,15 @@ interface UserAnswer {
     answer: number
 }
 
+/**
+ * Controlador de quizzes da aplicação
+ */
 export default class QuizzesController {
+    // Lista todos os quizzes
     async list(request: APIRequest, response: Response, next: NextFunction) {
         try {
-            const { section } = request;
-            const where = <any>{ section: { id: section.id } };
+            const { topic } = request;
+            const where = <any>{ topic: { id: topic.id } };
 
             // Armazena o nome do queries params
             const { name } = request.query;
@@ -38,7 +42,7 @@ export default class QuizzesController {
             // Encontra a lista de quizzes que batem com a pesquisa
             const quizzes = await getRepository(Quizzes)
                 .find({
-                    relations: ['author', 'section', 'questions'],
+                    relations: ['author', 'topic'],
                     where
                 });
 
@@ -52,12 +56,12 @@ export default class QuizzesController {
 
     /* Criação de quiz */
     async create(request: APIRequest, response: Response, next: NextFunction) {
-        const { section } = request;
+        const { topic } = request;
         const { name } = request.body;
         const questions : InputQuestion[] = request.body.questions;
         const user = request.user.info;
 
-        // Cria um queryrunner para as transactions
+        // Cria um query_runner para as transactions
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.connect();
 
@@ -68,7 +72,7 @@ export default class QuizzesController {
             const new_quiz = new Quizzes();
             new_quiz.name = name;
             new_quiz.author = user;
-            new_quiz.section = section;
+            new_quiz.topic = topic;
 
             const saved_quiz = await queryRunner.manager.save(new_quiz);
 
@@ -104,7 +108,7 @@ export default class QuizzesController {
                 }
             }
             
-            const full_quizz = await queryRunner.manager.find(Quizzes, {
+            const full_quiz = await queryRunner.manager.find(Quizzes, {
                 relations: ['questions', 'questions.alternatives', 'questions.rightAnswer'],
                 where: {
                     id: saved_quiz.id
@@ -114,7 +118,7 @@ export default class QuizzesController {
             // Roda as transactions;
             await queryRunner.commitTransaction();
 
-            return response.send(full_quizz);
+            return response.send(full_quiz);
         }
         // Caso ocorra um erro, dá rollback
         catch(err) {
@@ -123,9 +127,7 @@ export default class QuizzesController {
             return response.send({name: err.name, message: err.message})
         } finally {
             await queryRunner.release();
-        }
-
-        
+        }        
     }
 
     /* Ler o quiz */

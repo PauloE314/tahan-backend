@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import userRouter from '@routes/userRoutes';
-import sectionRouter from '@routes/sectionRoutes';
-import topicRouter from '@routes/topicsRouter';
+import topicsRouter from '@routes/topicsRoutes';
+import postsRouter from '@routes/postsRouter';
 import quizRouter from '@routes/quizRouter';
 import testRouter from "@routes/testRouter"
 
@@ -9,10 +9,10 @@ const router = Router();
 
 
 router.use('/users/', userRouter);
-router.use('/sections/', sectionRouter);
+router.use('/topics/', topicsRouter);
 
-router.use('/sections/:section_id/topics/', topicRouter);
-router.use("/sections/:section_id/quizzes/", quizRouter);
+router.use('/topics/:topic_id/posts/', postsRouter);
+router.use("/topics/:topic_id/quizzes/", quizRouter);
 
 router.use("/tests/", testRouter);
 
