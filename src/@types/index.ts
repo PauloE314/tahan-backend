@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { Users } from '@models/User';
 import { Topics } from '@models/Topics';
-import { Posts } from '@models/Posts';
+import { Posts } from '@models/Posts/Posts';
 import { Quizzes } from '@models/quiz/Quizzes';
 
 // modelo de usuário

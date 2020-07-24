@@ -1,5 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne } from "typeorm";
-import { Posts } from "./Posts";
+import { Posts } from "./Posts/Posts";
 import { Quizzes } from './quiz/Quizzes';
 
 

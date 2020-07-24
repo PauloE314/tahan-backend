@@ -7,7 +7,7 @@ import { APIRequest } from 'src/@types';
 import { Users } from '@models/User';
 import configs from '@config/server';
 import { Quizzes } from '@models/quiz/Quizzes';
-import { Posts } from '@models/Posts';
+import { Posts } from '@models/Posts/Posts';
 
 /**
  * Controlador de rotas do usuário. Essa classe concatena as funções necessárias para listagem, update, criação e delete de contas na aplicação

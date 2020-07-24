@@ -47,6 +47,17 @@ Retorna a lista de postagens de um tópico. Essa URL está sujeita a filtro pelo
     "section": {
       "id": "<number>",
       "name": "<string>"
+    },
+    "likes": "<number>",
+    "comments": {
+      "list": [
+        {
+          "id": "<number>",
+          "text": "<string>"
+        },
+        "..."
+      ],
+      "count_comments": "<number>"
     }
   }
 ]
@@ -82,3 +93,11 @@ Permite deletar a postagem.
 
 **Detalhes:**
 - O usuário precisa ser o autor da postagem
+
+<hr>
+
+## **PATH: /topics/:topic_id/posts/:id/like - POST**
+
+#### POST (Autenticação necessária):
+Altera o estado do like do usuário em questão para o post especificado na URL; caso ele já tenha dado like na postagem, retira o like e o oposto também é válido
+

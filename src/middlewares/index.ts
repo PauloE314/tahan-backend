@@ -3,7 +3,7 @@ import { Response, NextFunction } from "express";
 
 import { getRepository } from "typeorm";
 import { Topics } from "@models/Topics";
-import { Posts } from "@models/Posts";
+import { Posts } from "@models/Posts/Posts";
 import { auth_user } from 'src/utils';
 import { Quizzes } from "@models/quiz/Quizzes";
 

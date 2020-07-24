@@ -1,7 +1,7 @@
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 
-import { Posts } from '@models/Posts';
+import { Posts } from '@models/Posts/Posts';
 import { getRepository } from "typeorm";
 import { Users } from "@models/User";
 import { Validator } from "src/utils/classes";
@@ -84,7 +84,18 @@ export default class PostValidator extends Validator {
         return this.answer(request, response, next);
     }
     
+    /**
+     * Valida os comentários dos posts
+     */
+    public comment_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+        this.clear();
+        const { text } = request.body;
+        // Certifica que existe um texto
+        if (!text)
+            return response.status(400).send({ message: { text: 'Envie um texto para comentar' }})
 
+        return next();
+    }
 
 
 
