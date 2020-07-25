@@ -12,6 +12,7 @@ Retorna a lista de usuários e suas informações. Permite a busca por usuários
   {
     "id": 1,
     "username": "<string>",
+    "image_url": "<string>",
     "email": "<string>",
     "occupation": "student | teacher"
   }
@@ -39,6 +40,7 @@ Retorna as informações de um usuário específico.
   "id": 1,
   "username": "<string>",
   "email": "<string>",
+  "image_url": "<string>",
   "occupation": "student | teacher",
   "created_at": "<Date | string>"
 }
@@ -58,6 +60,7 @@ Retorna as informações do usuário logado.
     "id": 1,
     "username": "<string>",
     "email": "<string>",
+    "image_url": "<string>",
     "occupation": "student" | "teacher"
   },
   "date": {
