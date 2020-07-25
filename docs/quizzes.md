@@ -85,11 +85,11 @@ Permite ao criador do quiz retirar ou adicionar questões (sempre com o mínimo 
 ```json
 {
   "name": "<string>",
-  "removed_questions": [
+  "removed": [
     "<number>",
     "..."
   ],
-  "add_questions": [
+  "add": [
     {
       "question": "<string>",
       "alternatives": [

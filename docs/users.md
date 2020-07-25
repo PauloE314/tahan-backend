@@ -80,33 +80,8 @@ Retorna a lista dos quizzes do usuário logado.
 [
   {
     "id": 1,
-    "name": "<string>",
-    "created_at": "<Date|string>",
-    "author": {
-      "id": "<number>",
-      "username": "<string>",
-      "email": "<string>",
-      "occupation": "teacher",
-      "image_url": "<string>",
-      "created_at": "<Date|string>"
-    },
-    "questions": [
-      {
-        "id": "<number>",
-        "question": "<string>",
-        "alternatives": [
-          {
-            "id": "<number>",
-            "text": "<string>"
-          },
-          "..."
-        ],
-        "rightAnswer": {
-          "id": "<number>",
-          "text": "<string>"
-        }
-      }
-    ]
+    "name": "Primeiro quizz",
+    "created_at": "2020-07-25T14:52:11.000Z"
   }
 ]
 ```
@@ -124,18 +99,11 @@ Retorna as informações do usuário logado.
     "id": "<number>",
     "title": "<string>",
     "content": "<string>",
+    "description": "<string>",
     "created_at": "<Date|string>",
-    "author": {
-      "id": "<number>",
-      "username": "<string>",
-      "email": "<string>",
-      "occupation": "teacher",
-      "image_url": "<string>",
-      "created_at": "<Date|string>"
-    },
     "topic": {
       "id": "<number>",
-      "name": "<name>"
+      "name": "<string>"
     }
   }
 ]

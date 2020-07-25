@@ -13,13 +13,12 @@ export class Questions {
     @Column()
     question: string;
 
-    // Quando o quiz for deletado, a questão é deletada
     @ManyToOne(type => Quizzes, quiz => quiz.id, { onDelete: 'CASCADE' })
     quiz: Quizzes;
 
-    // Quando a questão for salva, cria as alternativas
     @OneToMany(type => Alternatives, alternative => alternative.question, { cascade: true })
-    public alternatives: Alternatives[];
+    alternatives: Alternatives[];
+
 
     @OneToOne(type => Alternatives, { cascade: true })
     @JoinColumn()

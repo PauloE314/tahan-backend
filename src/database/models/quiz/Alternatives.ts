@@ -13,11 +13,9 @@ export class Alternatives {
     @Column()
     text: string;
 
-    // Quando a questão for deletada, deleta a alternativa
     @ManyToOne(type => Questions, question => question.id, { onDelete: 'CASCADE' })
-    public question?: Questions;
+    question?: Questions;
 
-    // O mesmo aqui
     @OneToOne(type => Questions, question => question.rightAnswer, { onDelete: 'CASCADE' })
     rightAnswerQuestion?: Questions;
 }

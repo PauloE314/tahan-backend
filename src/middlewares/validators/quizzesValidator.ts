@@ -34,7 +34,7 @@ export default class QuizValidator extends Validator {
     // Update
     public update_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
         this.clear();
-        const { name, remove_questions, add_questions } = request.body;
+        const { name, remove, add } = request.body;
         const user = request.user.info;
 
         if (user.id != request.quiz.author.id) 
@@ -47,12 +47,12 @@ export default class QuizValidator extends Validator {
 
         // Valida as questões que serão removidas
         const remove_questions_validator = await this.createFieldValidator({
-            name: "remove_questions", data: remove_questions, validation: this.validate_remove_questions, options: { quiz: request.quiz, optional: true }
+            name: "remove_questions", data: remove, validation: this.validate_remove_questions, options: { quiz: request.quiz, optional: true }
         });
 
         // Valida as questões que serão adicionadas
         const add_questions_validator = await this.createFieldValidator({
-            name: "add_questions", data: add_questions, validation: this.validate_questions, options: { optional: true, creating: false }
+            name: "add_questions", data: add, validation: this.validate_questions, options: { optional: true, creating: false }
         });
         // Checa a quantidade total de questões
         if (remove_questions_validator.isValid && add_questions_validator.isValid) {

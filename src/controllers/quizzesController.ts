@@ -140,8 +140,8 @@ export default class QuizzesController {
 
     /* Dá update no quiz */
     async update(request: APIRequest, response: Response, next: NextFunction) {
-        const { name, remove_questions } = request.body;
-        const add_questions : InputQuestion[] = request.body.add_questions;
+        const { name, remove } = request.body;
+        const add : InputQuestion[] = request.body.add;
         const { quiz } = request;
 
         // Renomear quiz
@@ -154,18 +154,19 @@ export default class QuizzesController {
 
         await queryRunner.startTransaction();
 
+
         try {
-            if (remove_questions) {
-                for (let question of remove_questions) {
+            if (remove) {
+                for (let question of remove) {
                     quiz.questions = quiz.questions.filter(quest => quest.id !== question);
                     await queryRunner.manager.delete(Questions, { id: question });
                 }
                 await queryRunner.manager.save(quiz);
             }
 
-            if (add_questions) {
+            if (add) {
                 // Cria as novas questões
-                for (let quest of add_questions) {
+                for (let quest of add) {
                     const question = new Questions();
                     question.question = quest.question;
                     question.quiz = quiz;
@@ -186,17 +187,17 @@ export default class QuizzesController {
                 }
             }
 
-            const full_quizz = await queryRunner.manager.find(Quizzes, {
+            // Aplica as transactions
+            await queryRunner.commitTransaction();
+            // Pega os dados totais do quiz
+            const full_quiz = await queryRunner.manager.find(Quizzes, {
                 relations: ['questions', 'questions.alternatives', 'questions.rightAnswer'],
                 where: {
                     id: quiz.id
                 }
             });
 
-            // Aplica as transactions
-            await queryRunner.commitTransaction();
-
-            return response.send(full_quizz);
+            return response.send(full_quiz);
             // Remover questões inválidas
             }
         catch(err) {

@@ -96,8 +96,8 @@ export default class UserController {
 
       // Lista de quizzes
       const quizzes = await getRepository(Quizzes).find({
-          relations: ['author', 'questions', 'questions.alternatives', 'questions.rightAnswer' ],
-          where : { author: { id: user.info.id } }
+        relations: ['questions'],
+        where : { author: { id: user.info.id } }
       });
 
       // Retorna a lista
@@ -112,7 +112,7 @@ export default class UserController {
 
     // Lista de postagens
     const posts = await getRepository(Posts).find({
-        relations: ['author', 'topic'],
+        relations: ['topic'],
         where : { author: { id: user.info.id } }
     });
 

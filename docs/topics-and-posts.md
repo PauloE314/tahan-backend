@@ -81,7 +81,7 @@ Retorna as informações de uma postagem específica ou uma mensagem de erro (ca
 {
   "id": "<number>",
   "title": "<string>",
-  "content": [
+  "contents": [
     {
       "id":"<number>",
       "subtitle": "<string>",
