@@ -20,6 +20,7 @@ export default class PostController {
             .createQueryBuilder('post')
             .loadRelationCountAndMap('post.likes', 'post.likes')
             .leftJoinAndSelect('post.topic', 'topic')
+            .loadRelationIdAndMap('post.author', 'post.author')
             .where("topic.id = :topic_id", { topic_id: request.topic.id })
     
         // Filtra caso haja um título
@@ -59,11 +60,26 @@ export default class PostController {
         })
         // Pega comentários
         const [comments, count_comments] = await getRepository(Comments).findAndCount({
-            // relations: ['post'],
+            relations: ['response', 'author'],
+            select: ['id', 'author', 'response', 'text'],
             where: { post: { id: post.id } }
         })
+        // return response.send({ ...post, likes: count_likes, comments: { list: comments, count_comments } });
+
+        // try {
+        const comment = await getRepository(Comments)
+            .createQueryBuilder('comments')
+            .loadRelationIdAndMap('comments.author', 'comments.author')
+            .loadRelationIdAndMap('comments.response', 'comments.response')
+            .getMany()
+
+        return response.send({ ...post, likes: count_likes, comments: { list: comment }})
     
-        return response.send({ ...post, likes: count_likes, comments: { list: comments, count_comments } });
+        // return response.send({ ...post, likes: count_likes, comments })
+        // }
+        // catch(err){
+        //     return response.status(500).send({ name: err.name, text: err.message })
+        // }
     }
 
     // Dá update no post (título e conteúdo)
@@ -116,7 +132,7 @@ export default class PostController {
      * Permite o usuário comentar no post
      */
     async comment (request: APIRequest, response: Response) {
-        const { text } = request.body;
+        const { text, reference } = request.body;
         const { user, post } = request;
 
         // Cria um comentário
@@ -124,6 +140,10 @@ export default class PostController {
         comment.text = text;
         comment.author = user.info;
         comment.post = post;
+        // Permite referênciar outro comentário
+        if (reference)
+            comment.response = reference
+
         const saved_comment = await getRepository(Comments).save(comment);
 
         delete saved_comment.post;

@@ -17,8 +17,11 @@ export class Comments {
     @ManyToOne(type => Posts, post => post.id)
     post: Posts;
 
+    @ManyToOne(type => Comments, comment => comment.id)
+    response?: Comments;
+
     @ManyToOne(type => Users, author => author.id)
-    author: Users
+    author: Users;
 }
 
 

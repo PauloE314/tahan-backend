@@ -5,6 +5,7 @@ import { Posts } from '@models/Posts/Posts';
 import { getRepository } from "typeorm";
 import { Users } from "@models/User";
 import { Validator } from "src/utils/classes";
+import { Comments } from "@models/Posts/Comments";
 
 
 const rules = {
@@ -89,10 +90,17 @@ export default class PostValidator extends Validator {
      */
     public comment_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
         this.clear();
-        const { text } = request.body;
+        const { text, reference } = request.body;
         // Certifica que existe um texto
         if (!text)
             return response.status(400).send({ message: { text: 'Envie um texto para comentar' }})
+
+        // Se houver uma resposta, certifica que referencia um comentário que existe
+        if (reference) {
+            const referenced_comment = await getRepository(Comments).findOne({ id: reference });
+            if (!referenced_comment)
+                return response.status(400).send({ message: { reference: 'Envie uma referência válida' }});
+        }
 
         return next();
     }
