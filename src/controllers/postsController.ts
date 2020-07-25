@@ -5,6 +5,7 @@ import { APIRequest } from 'src/@types';
 import { getRepository, Like } from 'typeorm';
 import { Likes } from '@models/Posts/Likes';
 import { Comments } from '@models/Posts/Comments';
+import { Contents } from '@models/Posts/Contents';
 
 /**
  * Controlador de rotas dos posts
@@ -19,7 +20,7 @@ export default class PostController {
         const all_posts = getRepository(Posts)
             .createQueryBuilder('post')
             .loadRelationCountAndMap('post.likes', 'post.likes')
-            .leftJoinAndSelect('post.topic', 'topic')
+            .leftJoin('post.topic', 'topic')
             .loadRelationIdAndMap('post.author', 'post.author')
             .where("topic.id = :topic_id", { topic_id: request.topic.id })
     
@@ -38,10 +39,21 @@ export default class PostController {
     // Cria um post para o tópico
     async create (request: APIRequest, response: Response, next: NextFunction) {
         const new_post = new Posts();
+        const { title, contents, academic_level, description } = request.body;
 
-        const { title, content } = request.body;
+        // Cria conteúdos
+        const content_list = contents.map((content: { subtitle: string, text: string }) => {
+            const new_content = new Contents();
+            new_content.subtitle = content.subtitle;
+            new_content.text = content.text;
+            return new_content;
+        }) 
+
+        // Cria post
         new_post.title = title;
-        new_post.content = content;
+        new_post.description = description;
+        new_post.contents = content_list;
+        new_post.academic_level = academic_level;
         new_post.topic = request.topic;
         new_post.author = request.user.info;
 
@@ -58,15 +70,6 @@ export default class PostController {
             relations: ['post'],
             where: { post: { id: post.id } }
         })
-        // Pega comentários
-        const [comments, count_comments] = await getRepository(Comments).findAndCount({
-            relations: ['response', 'author'],
-            select: ['id', 'author', 'response', 'text'],
-            where: { post: { id: post.id } }
-        })
-        // return response.send({ ...post, likes: count_likes, comments: { list: comments, count_comments } });
-
-        // try {
         const comment = await getRepository(Comments)
             .createQueryBuilder('comments')
             .loadRelationIdAndMap('comments.author', 'comments.author')
@@ -75,32 +78,46 @@ export default class PostController {
 
         return response.send({ ...post, likes: count_likes, comments: { list: comment }})
     
-        // return response.send({ ...post, likes: count_likes, comments })
-        // }
-        // catch(err){
-        //     return response.status(500).send({ name: err.name, text: err.message })
-        // }
     }
 
     // Dá update no post (título e conteúdo)
     async update (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
-        const { title, content } = request.body;
-
+        const { title, contents, academic_level, description } = request.body;
+        // Atualiza título
         if (title)
             post.title = title;
+        // Atualiza conteúdos
+        if (contents) {
+            // Remove os conteúdos
+            const remove_list = <Array<number>|undefined>contents.remove;
+            if (remove_list) {
+                post.contents = post.contents.filter(content => !remove_list.includes(content.id));
+                await getRepository(Contents).delete(remove_list);
+            }
+            // Adiciona novos conteúdos
+            const add_list = <Array<any>|undefined>contents.add;
+            if (add_list) {
+                const new_contents = add_list.map(content_data => {
+                    const new_content = new Contents();
+                    new_content.subtitle = content_data.subtitle;
+                    new_content.text = content_data.text;
+                    return new_content;
+                });
 
-        if (content)
-            post.content = content;
-
-        try {
-            const saved_post = await getRepository(Posts).save(post);
-
-            return response.send(saved_post);
+                post.contents = [ ...post.contents, ...new_contents ];
+            }
         }
-        catch(err) {
-            return response.send(err.message)
-        }
+        // Atualiza nível acadêmico
+        if (academic_level)
+            post.academic_level = academic_level;
+        // Atualiza descrição
+        if (description)
+            post.description = description;
+
+        const saved_post = await getRepository(Posts).save(post);
+
+        return response.send(saved_post);
     }
 
     /**

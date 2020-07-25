@@ -1,8 +1,9 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn, OneToOne, JoinTable, JoinColumn} from "typeorm";
 import { Topics } from '../Topics';
 import { Users } from '../User';
 import { Likes } from "./Likes";
 import { Comments } from "./Comments";
+import { Contents } from './Contents';
 
 @Entity()
 @Unique(['id', "title"])
@@ -23,16 +24,22 @@ export class Posts {
     title: string;
 
     @Column()
-    content: String;
+    description: string;
+
+    @OneToMany(type => Contents, content => content.post, { cascade: true })
+    contents: Contents[];
 
     @CreateDateColumn()
     created_at: Date;
 
+    @Column()
+    academic_level: string;
+
     @OneToMany(type => Likes, like => like.post)
-    likes: Likes[]
+    likes: Likes[];
 
     @OneToMany(type => Comments, comment => comment.post)
-    comments: Comments[]
+    comments: Comments[];
 }
 
 

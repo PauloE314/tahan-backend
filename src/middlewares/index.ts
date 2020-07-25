@@ -26,7 +26,7 @@ export async function getPost(request: APIRequest, response: Response, next: Nex
     const post_id = Number(request.params.id);
 
     const post = await getRepository(Posts).findOne({ 
-        relations: ["author"],
+        relations: ["author", "contents"],
         where: { id: post_id }
     });
 

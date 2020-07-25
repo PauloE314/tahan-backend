@@ -99,5 +99,20 @@ Permite deletar a postagem.
 ## **PATH: /topics/:topic_id/posts/:id/like - POST**
 
 #### POST (Autenticação necessária):
-Altera o estado do like do usuário em questão para o post especificado na URL; caso ele já tenha dado like na postagem, retira o like e o oposto também é válido
+Altera o estado do like do usuário em questão para o post especificado na URL; caso ele já tenha dado like na postagem, retira o like e o oposto também é válido.
+
+<hr>
+
+
+## **PATH: /topics/:topic_id/posts/:id/comment - POST**
+
+#### POST (Autenticação necessária):
+Permite o usuário comentar em post. Os comentário podem referenciar outros comentário, para isso, deve ser enviado o "reference" como mostra no exemplo abaixo:
+
+```json
+{
+  "text": "<string>",
+  "reference": "<number>"
+}
+```
 
