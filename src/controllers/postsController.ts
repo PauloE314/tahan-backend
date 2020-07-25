@@ -14,10 +14,10 @@ export default class PostController {
     // Lista os posts da existente
     // Pesquisar por: username do author e titulo
     async list (request: APIRequest, response: Response, next: NextFunction) {
-        const query_params = request.query ? request.query : { title: null };
+        const query_params = request.query ? request.query : { title: null, author: null };
 
         // Pega os posts
-        const all_posts = getRepository(Posts)
+        let posts = getRepository(Posts)
             .createQueryBuilder('post')
             .loadRelationCountAndMap('post.likes', 'post.likes')
             .leftJoin('post.topic', 'topic')
@@ -25,15 +25,15 @@ export default class PostController {
             .where("topic.id = :topic_id", { topic_id: request.topic.id })
     
         // Filtra caso haja um título
-        if (query_params.title) {
-            const filtered_posts = await all_posts
-                .where('post.title like :title', { title: `%${query_params.title}%` })
-                .getMany()
+        if (query_params.title) 
+            posts = posts.where('post.title like :title', { title: `%${query_params.title}%` });
+
+        // Filtra caso haja o autor
+        if (query_params.author)
+            posts = posts.where('post.author = :author_id', { author_id: query_params.author });
         
-            return response.send(filtered_posts);
-        }
-        
-        return response.send(await all_posts.getMany());
+    
+        return response.send(await posts.getMany());
     }
 
     // Cria um post para o tópico
@@ -73,7 +73,7 @@ export default class PostController {
         const comment = await getRepository(Comments)
             .createQueryBuilder('comments')
             .loadRelationIdAndMap('comments.author', 'comments.author')
-            .loadRelationIdAndMap('comments.response', 'comments.response')
+            .loadRelationIdAndMap('comments.reference', 'comments.reference')
             .getMany()
 
         return response.send({ ...post, likes: count_likes, comments: { list: comment }})
@@ -135,7 +135,7 @@ export default class PostController {
             like.post = post;
             like.user = user.info;
             // Salva o like
-            const saved_like = await getRepository(Likes).save(like);
+            await getRepository(Likes).save(like);
             return response.send({ message: 'Like' });
         }
         // Caso exista, apaga o like
@@ -159,7 +159,7 @@ export default class PostController {
         comment.post = post;
         // Permite referênciar outro comentário
         if (reference)
-            comment.response = reference
+            comment.reference = reference
 
         const saved_comment = await getRepository(Comments).save(comment);
 

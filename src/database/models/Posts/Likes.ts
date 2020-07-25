@@ -11,7 +11,7 @@ export class Likes {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => Posts, post => post.id)
+    @ManyToOne(type => Posts, post => post.id, { onDelete: 'CASCADE' })
     post: Posts;
 
     @ManyToOne(type => Users, user => user.id)

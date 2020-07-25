@@ -14,11 +14,11 @@ export class Comments {
     @Column()
     text: string;
 
-    @ManyToOne(type => Posts, post => post.id)
+    @ManyToOne(type => Posts, post => post.id, { onDelete: 'CASCADE' })
     post: Posts;
 
     @ManyToOne(type => Comments, comment => comment.id)
-    response?: Comments;
+    reference?: Comments;
 
     @ManyToOne(type => Users, author => author.id)
     author: Users;

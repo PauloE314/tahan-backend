@@ -10,7 +10,7 @@ export class Contents {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => Posts, post => post.id)
+    @ManyToOne(type => Posts, post => post.id, { onDelete: 'CASCADE' })
     post: Posts;
 
     @Column()

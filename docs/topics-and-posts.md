@@ -27,38 +27,21 @@ Retorna a lista dos tópicos ("matérias", tipo matemática, física, etc).
 ## **PATH: /topics/:id/posts - GET, POST**
 
 #### GET (Autenticação não necessária):
-Retorna a lista de postagens de um tópico. Essa URL está sujeita a filtro pelo título da postagem
+Retorna a lista de postagens de um tópico. Essa URL está sujeita a filtro pelo título da postagem e o id do autor
 - baseurl/topics/1/posts/?title="Lorem"
+- baseurl/topics/1/posts/?author=1
+
 
 ```json
 [
   {
-    "id": 1,
+    "id": "<number>",
     "title": "<string>",
-    "content": "<string>",
-    "created_at": "<Date | string>",
-    "author": {
-      "id": "<number>",
-      "username": "<string>",
-      "email": "<string>",
-      "occupation": "student | teacher",
-      "created_at": "<Date | string>"
-    },
-    "section": {
-      "id": "<number>",
-      "name": "<string>"
-    },
-    "likes": "<number>",
-    "comments": {
-      "list": [
-        {
-          "id": "<number>",
-          "text": "<string>"
-        },
-        "..."
-      ],
-      "count_comments": "<number>"
-    }
+    "description": "<string>",
+    "created_at": "<Date|string>",
+    "academic_level": "fundamental | médio | superior",
+    "author": "<number>",
+    "likes": "<number>"
   }
 ]
 ```
@@ -70,14 +53,71 @@ Permite criar uma postagem no tópico selecionado na URL.
 **Detalhes:**
 - O usuário precisa ser um professor
 - O título precisa ter mais que 5 caracteres
-- O título precisa ser único
+- O título precisa ser único.
+
+Os dados de envio devem ser no seguinte modelo:
+```json
+{
+	"title": "<string>",
+  "description": "<string>",
+  "academic_level": "<string>",
+	"contents": [
+		{
+			"subtitle": "<string>",
+			"text": "<string>"
+		}
+	]
+}
+```
 
 <hr>
 
 ## **PATH: /topics/:topic_id/posts/:id - GET, PUT, DELETE**
 
 #### GET (Autenticação não necessária):
-Retorna as informações de uma postagem específica ou uma mensagem de erro (caso o tópico não exista). A postagem é retornada no mesmo modelo da listagem.
+Retorna as informações de uma postagem específica ou uma mensagem de erro (caso o tópico não exista). Os dados vem no seguinte formato:
+
+```json
+{
+  "id": "<number>",
+  "title": "<string>",
+  "content": [
+    {
+      "id":"<number>",
+      "subtitle": "<string>",
+      "text": "<string>"
+    },
+    "..."
+  ],
+  "description": "<string>",
+  "created_at": "<Date | string>",
+  "author": {
+    "id": "<number>",
+    "username": "<string>",
+    "email": "<string>",
+    "occupation": "teacher",
+    "created_at": "<Date | string>"
+  },
+  "likes": "<number>",
+  "comments": {
+    "list": [
+      {
+        "id": "<number>",
+        "text": "<string>",
+        "id": "<number>",
+      },
+      {
+        "id": "<number>",
+        "text": "<string>",
+        "reference": "<number>"
+      }
+      "..."
+    ],
+    "count_comments": "<number>"
+  }
+}
+
+```
 
 #### PUT (Autenticação necessária):
 Permite dar update no conteúdo e título da postagem.
