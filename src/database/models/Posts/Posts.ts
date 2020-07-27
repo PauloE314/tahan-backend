@@ -1,9 +1,11 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn, OneToOne, JoinTable, JoinColumn} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn, OneToOne, JoinTable, JoinColumn, ManyToMany} from "typeorm";
 import { Topics } from '../Topics';
 import { Users } from '../User';
 import { Likes } from "./Likes";
 import { Comments } from "./Comments";
 import { Contents } from './Contents';
+import { Containers } from './Containers';
+
 
 @Entity()
 @Unique(['id', "title"])
@@ -40,6 +42,9 @@ export class Posts {
 
     @OneToMany(type => Comments, comment => comment.post)
     comments: Comments[];
+
+    @ManyToMany(type => Containers, container => container.posts)
+    containers: Containers[];
 }
 
 

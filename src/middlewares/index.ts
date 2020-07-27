@@ -6,6 +6,7 @@ import { Topics } from "@models/Topics";
 import { Posts } from "@models/Posts/Posts";
 import { auth_user } from 'src/utils';
 import { Quizzes } from "@models/quiz/Quizzes";
+import { Containers } from "@models/Posts/Containers";
 
 // Tenta encontrar um tópico pelo id
 export async function getTopic(request: APIRequest, response: Response, next: NextFunction) {
@@ -69,4 +70,23 @@ export async function getUser(request: APIRequest, response: Response, next: Nex
     catch(err) {
         return response.send({name: err.name, message: err.message})
     }
+}
+
+
+// Tenta pegar o container
+export async function getContainer(request: APIRequest, response: Response, next: NextFunction) {
+    const id = Number(request.params.id);
+
+    if (id) {
+        const container = await getRepository(Containers).findOne({
+            relations: ['author', 'posts'],
+            where: { id }
+        });
+        if (container) {
+            request.container = container;
+            return next();
+        }
+        return response.status(400).send({ message: "Container de posts não encontrado" })
+    }
+    return next();
 }

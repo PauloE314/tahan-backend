@@ -9,11 +9,19 @@ export class Seed {
 }
 
 
-// Classe de validator
+interface field_validation {
+    [name: string]: (data: any, options: any) => Promise<any>
+}
+
+/**
+ * 
+ */
 export class Validator {
     private errors: any;
     // public FieldValidator: FieldValidatorType;
     private fieldValidators : FieldValidator[];
+
+    public fields: field_validation;
 
     // Configurações iniciais do validator
     constructor() {
@@ -81,6 +89,9 @@ export class Validator {
         // // Caso não, retorna dados inválidos
         return next();
     }
+
+
+
 }
 
 // Validator de campo

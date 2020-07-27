@@ -3,7 +3,8 @@ import userRouter from '@routes/userRoutes';
 import topicsRouter from '@routes/topicsRoutes';
 import postsRouter from '@routes/postsRouter';
 import quizRouter from '@routes/quizRouter';
-import testRouter from "@routes/testRouter"
+import testRouter from "@routes/testRouter";
+import postContainersRouter from "@routes/postsContainerRouter";
 
 const router = Router();
 
@@ -13,6 +14,8 @@ router.use('/topics/', topicsRouter);
 
 router.use('/topics/:topic_id/posts/', postsRouter);
 router.use("/topics/:topic_id/quizzes/", quizRouter);
+
+router.use('/post-containers/', postContainersRouter);
 
 router.use("/tests/", testRouter);
 

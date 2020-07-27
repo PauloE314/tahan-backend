@@ -17,6 +17,8 @@ routes.get('/self/', auth_require, controller.read_self);
 routes.get('/:id([0-9]+)/', controller.read);
 routes.get('/self/quizzes', auth_require, is_teacher, controller.quizzes)
 routes.get('/self/posts', auth_require, is_teacher, controller.posts)
+routes.get('/self/post-containers', auth_require, is_teacher, controller.post_containers)
+
 
 
 // Delete

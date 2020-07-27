@@ -1,7 +1,7 @@
 import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateColumn } from "typeorm";
 import { Posts } from './Posts/Posts';
 import { Quizzes } from "./quiz/Quizzes";
-import { SingleGames } from "@models/games/SingleGames";
+import { Containers } from './Posts/Containers'
 
 @Entity()
 @Unique(['email', 'googleID'])
@@ -35,4 +35,8 @@ export class Users {
     @OneToMany(type => Quizzes, quiz => quiz.author)
     writenQuizzes: Quizzes[];
 
+    // Posts
+
+    // @OneToMany(type => Containers, container => container.author)
+    // containers: Containers[];
 }
