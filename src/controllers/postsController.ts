@@ -83,34 +83,30 @@ export default class PostController {
     // Dá update no post (título e conteúdo)
     async update (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
-        const { title, contents, academic_level, description } = request.body;
+        const { title, remove, add, academic_level, description } = request.body;
         // Atualiza título
         if (title)
             post.title = title;
-        // Atualiza conteúdos
-        if (contents) {
-            // Remove os conteúdos
-            const remove_list = <Array<number>|undefined>contents.remove;
-            if (remove_list) {
-                post.contents = post.contents.filter(content => !remove_list.includes(content.id));
-                await getRepository(Contents).delete(remove_list);
-            }
-            // Adiciona novos conteúdos
-            const add_list = <Array<any>|undefined>contents.add;
-            if (add_list) {
-                const new_contents = add_list.map(content_data => {
-                    const new_content = new Contents();
-                    new_content.subtitle = content_data.subtitle;
-                    new_content.text = content_data.text;
-                    return new_content;
-                });
+        // Remove os conteúdos
+        if (remove) {
+            post.contents = post.contents.filter(content => !remove.includes(content.id));
+            await getRepository(Contents).delete(remove);
+        }
+        // Adiciona novos conteúdos
+        if (add) {
+            const new_contents = add.map(content_data => {
+                const new_content = new Contents();
+                new_content.subtitle = content_data.subtitle;
+                new_content.text = content_data.text;
+                return new_content;
+            });
 
-                post.contents = [ ...post.contents, ...new_contents ];
-            }
+            post.contents = [ ...post.contents, ...new_contents];
         }
         // Atualiza nível acadêmico
         if (academic_level)
             post.academic_level = academic_level;
+            
         // Atualiza descrição
         if (description)
             post.description = description;
@@ -166,14 +162,19 @@ export default class PostController {
         delete saved_comment.post;
         // Retorna os dados do comentário
         return response.send(saved_comment);
+        
+
     }
 
-    // Deleta o post
+    /**
+     * Permite deletar o post
+     */
     async delete (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
 
         await getRepository(Posts).remove(post);
 
         return response.send({ message: "Post deletado com sucesso" });
+        
     }
 }

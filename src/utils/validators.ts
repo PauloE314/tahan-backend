@@ -2,70 +2,87 @@ import { APIRequest } from "../@types";
 import { Response, NextFunction } from "express";
 
 
-interface field_validation {
-    [name: string]: {
-        method: (data: any, options: any) => Promise<any>
-    }
+
+interface validation_errors {
+    name: string,
+    message: any
 }
 
-interface errors {
-    [name: string]: {
-        name: string
-        message: any,
-    }
+type method = (data: any, options: any) => Promise<any>;
+
+interface method_list {
+    [name: string]: method
 }
-
-// Lista de validators de campo padrão
-const default_field_validators: field_validation = {
-    is_array: { method: is_array },
-    is_string: { method: is_string },
-    is_object: { method: is_object },
-    is_number: { method: is_number },
-
-};
 
 /**
- * Class destinada a validação de dados de rotas.
+ * Validador de rotas
  */
 export class Validator {
-    private field_validators: field_validation = default_field_validators;
+    public errors: Array<validation_errors>;
+    private methods: method_list;
+    
 
-    public validators: field_validation;
+    constructor(methods?: method_list) {
+        const custom_methods = methods ? methods : {};
+        // Salva métodos do usuário e predefinidos
+        this.methods = { ...custom_methods, is_array, is_string, is_object, is_number };
+        // Zera os erros
+        this.errors = [];
+    }
 
     /**
-     * Validação de item. Certifica que o item será válido em todos os métodos passados como parâmetro
+     * Retorna se tais campos são são válidos 
      */
-    public async validate(input: { name: string, data: any, methods: Array<string>, options?: any }) {
-        const { data, name } = input;
+    public are_all_valid(input: Array<string>) {
+        for (const field of input) {
+            if (this.errors[field] !== undefined)
+                return false;
+        }
+        return true
+    }
 
-        for (const validator_name of input.methods) {
-            const validator = this.field_validators[validator_name] || this.validators[validator_name];
-            // Executa método direto
-            const op = input.options ? input.options : { optional: false };
-            
-            // Checa se o campo é opcional
-            if (data == undefined)
-                if (op.optional)
-                    return;
+    /**
+     * Valida o campo passado como parâmetro
+     */
+    public async validate(input: {[name: string]: any}, methods: Array<method>, options?: any) {
+        // Pega os dados do objeto
+        const op = options ? options : { optional: false, save: true };
+        const name = Object.keys(input)[0];
+        const data = input[name];
+        const save = op.save !== false;
 
-            // Executa validação
-            const message = await validator.method(data, op);
-            // Salva um possível erro
-            if (message) {
-                const new_error = new FieldError(name, message);
-                return new_error;
+        // Checa se o dado é opcional
+        if (data == undefined)
+            if (op.optional)
+                return;
+
+        // Testa o dado em cada validator
+        for(const method of methods) {
+
+            // Executa o método
+            const response = await method(data, options);
+
+            // Lida com os erros
+            if (response !== null && response !== undefined) {
+                const err = { name, message: response };
+                // Salva
+                if (save)
+                    this.errors.push(err);
+
+                return err;
             }
         }
         return;
     }
 
     /**
-     * Aplica os validators de campo. Caso algum dos validators seja ativado, retorna a mensagem de erro
+     * Retorna a resposta para o usuário
      */
-    public resolve(request: APIRequest, response: Response, next: NextFunction, errors: Array<FieldError>) {
+    public resolve(request: APIRequest, response: Response, next: NextFunction) {
+        
         const returning_errors = {};
         // Checa se há um erro
-        for (const error of errors) {
+        for (const error of this.errors) {
             if (error)
                 returning_errors[error.name] = error.message;
         }
@@ -81,24 +98,12 @@ export class Validator {
 
 
 /**
- * Objeto de erro de campo
- */
-class FieldError {
-    name: string;
-    message: any;
-
-    constructor(name: string, message: any) {
-        this.name = name;
-        this.message = message;
-    }
-}
-
-
-
-/**
  * Validator simples que checa se um elemento é uma string
  */
-async function is_string (data: any, options: any) {
+export async function is_string (data: any, options: any) {
+    if (data == undefined)
+        return "Esse dado é obrigatório";
+        
     if (typeof data !== 'string' && !(data instanceof String)) {
         return `Esse formato de dado não é válido (esperado: string, obtido: ${typeof data})`;
     }
@@ -107,7 +112,10 @@ async function is_string (data: any, options: any) {
 /**
  * Validator simples que checa se um elemento é um array
  */
-async function is_array (data: any, options: any) {
+export async function is_array (data: any, options: any) {
+    if (data == undefined)
+        return "Esse dado é obrigatório";
+
     if (!Array.isArray(data)) {
         return `Esse formato de dado não é válido (esperado: array, obtido: ${typeof data})`;
     }
@@ -116,7 +124,10 @@ async function is_array (data: any, options: any) {
 /**
  * Validator simples que checa se um elemento é um objeto
  */
-async function is_object (data: any, options: any) {
+export async function is_object (data: any, options: any) {
+    if (data == undefined)
+        return "Esse dado é obrigatório";
+
     if (Array.isArray(data) || (typeof data !== 'object' && !(data instanceof Object))) {
         return `Esse formato de dado não é válido (esperado: object, obtido: ${typeof data})`;
     }
@@ -127,8 +138,11 @@ async function is_object (data: any, options: any) {
 /**
  * Validator simples que checa se um elemento é um número
  */
-async function is_number (data: any, options: any) {
+export async function is_number (data: any, options: any) {
+    if (data == undefined)
+        return "Esse dado é obrigatório";
+    
     if (typeof data !== 'number' && !(data instanceof Number)) {
-        return `Esse formato de dado não é válido (esperado: object, obtido: ${typeof data})`;
+        return `Esse formato de dado não é válido (esperado: number, obtido: ${typeof data})`;
     }
 }

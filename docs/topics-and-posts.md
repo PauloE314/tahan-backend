@@ -120,7 +120,25 @@ Retorna as informações de uma postagem específica ou uma mensagem de erro (ca
 ```
 
 #### PUT (Autenticação necessária):
-Permite dar update no conteúdo e título da postagem.
+Permite dar update na postagem. Os dados de envio devem ser no seguinte modelo:
+
+```json
+{
+  "academic_level": "<string>",
+  "contents": {
+    "add": [
+      {
+        "subtitle": "<string>",
+        "text": "<string>"
+      }
+    ],
+    "remove": [
+      "<number>", "..."
+    ],
+  },
+  "description": "<string>"
+}
+```
 
 **Detalhes:**
 - O usuário precisa ser um professor

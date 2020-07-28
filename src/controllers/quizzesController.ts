@@ -212,16 +212,12 @@ export default class QuizzesController {
 
     /* Delete no quiz */
     async delete(request: APIRequest, response: Response, next: NextFunction) {
-        try {
-            const { quiz } = request;
+        const { quiz } = request;
 
-            await getRepository(Quizzes).remove(quiz);
+        await getRepository(Quizzes).remove(quiz);
 
-            return response.send({ message: "Quiz deletado com sucesso" })
-        }
-        catch(err) {
-            return response.send({name: err.name, message: err.message})
-        }
+        return response.send({ message: "Quiz deletado com sucesso" })
+        
     }
 
     /* Permite que um aluno responda as questões */

@@ -1,98 +1,99 @@
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
-import { Validator } from "src/utils/validators";
+import { getRepository } from "typeorm";
+
+import { Validator, is_array, is_number, is_string } from "src/utils/validators";
 
 import { Posts } from '@models/Posts/Posts';
-import { getRepository } from "typeorm";
 import { Users } from "@models/User";
-// import { Validator } from "src/utils/classes";
-import { Comments } from "@models/Posts/Comments";
-import { Contents } from "@models/Posts/Contents";
 import { Containers } from "@models/Posts/Containers";
 
 /**
  * Validator de containers para posts
  */
-export default class PostContainersValidator extends Validator {
-    validators = {
-        name_validation: { method: name_validator },
-        post_validation: { method: post_validator },
-        is_owner: { method: is_container_owner },
-        add_validation: { method: add_validation },
-        remove_validation: { method: remove_validation }
-    }
+export default class PostContainersValidator {
     /**
-     * Validação de criação de container para posts
+     * **Validação de criação de container para posts**
+     * 
+     * post-container/ - POST
      */
     create_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
-        const { user } = request;
+        const user = request.user.info;
         const { name, posts } = request.body;
-        // Valida o nome do container
-        const name_validation = await this.validate({
-            name: 'name', data: name, methods: ['is_string', 'name_validation'], options: { user: user.info }
-        });
-        // Valida a lista de postagens
-        const posts_validation = await this.validate({
-            name: 'posts', data: posts, methods: ['is_array', 'post_validation'], options: { user: user.info, request }
-        })
+        const validator = new Validator();
 
-        // Resolve
-        return this.resolve(request, response, next, [name_validation, posts_validation]);        
+        // Valida o nome do container
+        await validator.validate({ name }, [is_string, name_validation], { user });
+        
+        // Valida lista de postagens
+        await validator.validate({ posts }, [is_array, post_validation], { user, request });
+
+        // Retorna a resposta
+        return validator.resolve(request, response, next);        
     }  
+    
     /**
-     * Validação de update de container para posts
+     * **Validação de update de container para posts.**
+     * 
+     * post-container/:number/ - PUT
      */
     update_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
-        const { user, container } = request;
+        const container = request.container;
+        const user = request.user.info;
         const { name, add, remove } = request.body;
+        const validator = new Validator();
 
         // Validação de usuário
-        const user_validation = await this.validate({
-            name: "user", data: user.info, methods: ["is_owner"], options: { container } 
-        })
+        const user_validation = await validator.validate({ user }, [is_container_owner], { container });
+
         if (user_validation)
-            return this.resolve(request, response, next, [user_validation]);
+            return validator.resolve(request, response, next);
 
         // Validação de nome
-        const name_validation = await this.validate({
-            name: 'name', data: name, methods: ['is_string', 'name_validation'], options: { user: user.info, optional: true }
-        });
+        await validator.validate({ name }, [is_string, name_validation], { user, optional: true });
 
         // Validação de adicionados
-        const add_validation = await this.validate({
-            name: "add", data: add, methods: ['is_array', 'post_validation', 'add_validation'], options: { optional: true, container, user: user.info, request }
-        });
+        await validator.validate(
+            { add },
+            [is_array, post_validation, add_validation],
+            { optional: true, container, user, request }
+        );
 
         // Validação de removidos
-        const remove_validation = await this.validate({
-            name: "remove", data: remove, methods: ['is_array', 'remove_validation'], options: { optional: true, container, user: user.info }
-        });
+        await validator.validate(
+            { remove },
+            [is_array, remove_validation],
+            { optional: true, container, user }
+        );
 
-        return this.resolve(request, response, next, [name_validation, add_validation, remove_validation]);
-
+        return validator.resolve(request, response, next);
     }
 
     /**
-     * Validação de delete de container para posts
+     * **Validação de delete de container para posts.**
+     * 
+     * post-container/:number/ - DELETE
      */
     delete_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
-        const { user, container } = request;
+        const user = request.user.info;
+        const container = request.container;
+        const validator = new Validator();
         // Validação de user
-        const user_validation = await this.validate({
-            name: "user", data: user.info, methods: ["is_owner"], options: { container } 
-        })
+        await validator.validate({ user }, [is_container_owner], { container });
 
-        return this.resolve(request, response, next, [user_validation]);
+        return validator.resolve(request, response, next);
     }
 }
+
+
 
 /**
  * Função que checa a validade dos nomes dos containers
  */
-async function name_validator(data: string, options: any) {
+async function name_validation(data: string, options: any) {
     const user: Users = options.user;
     // Valida tamanho
-    if (data.length <= 3) {
+    if (data.length < 3) {
         return "Envie um nome de no mínimo 3 caracteres";
     }
 
@@ -109,11 +110,9 @@ async function name_validator(data: string, options: any) {
 /**
  * Função que checa se os posts realmente existem
  */
-async function post_validator(data: Array<number>, options: any) {
+async function post_validation(data: Array<number>, options: any) {
     const user: Users = options.user;
     const request: APIRequest = options.request;
-    // Checa se existem pelo menos 1 post
-    console.log(user)
     // Pega todos os posts do usuário
     const all_posts = await getRepository(Posts).find({
         where: { author: { id: user.id } }
