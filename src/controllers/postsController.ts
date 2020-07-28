@@ -6,13 +6,17 @@ import { getRepository, Like } from 'typeorm';
 import { Likes } from '@models/Posts/Likes';
 import { Comments } from '@models/Posts/Comments';
 import { Contents } from '@models/Posts/Contents';
+import { SafeMethod } from 'src/utils';
 
 /**
  * Controlador de rotas dos posts
  */
 export default class PostController {
-    // Lista os posts da existente
-    // Pesquisar por: username do author e titulo
+    /**
+     * Lista os posts criados pelos usuários.
+     * Pesquisar por: username do author e titulo
+     */
+    @SafeMethod
     async list (request: APIRequest, response: Response, next: NextFunction) {
         const query_params = request.query ? request.query : { title: null, author: null };
 
@@ -37,6 +41,7 @@ export default class PostController {
     }
 
     // Cria um post para o tópico
+    @SafeMethod
     async create (request: APIRequest, response: Response, next: NextFunction) {
         const new_post = new Posts();
         const { title, contents, academic_level, description } = request.body;
@@ -63,6 +68,7 @@ export default class PostController {
     }
 
     // Ver um post específico
+    @SafeMethod
     async read (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
         // Pega a quantidade de likes
@@ -81,6 +87,7 @@ export default class PostController {
     }
 
     // Dá update no post (título e conteúdo)
+    @SafeMethod
     async update (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
         const { title, remove, add, academic_level, description } = request.body;
@@ -119,6 +126,7 @@ export default class PostController {
     /**
      * Permite dar like em post
      */
+    @SafeMethod
     async like(request: APIRequest, response: Response) {
         const { post, user } = request;
         // Tenta pegar o like anterior
@@ -144,6 +152,7 @@ export default class PostController {
     /**
      * Permite o usuário comentar no post
      */
+    @SafeMethod
     async comment (request: APIRequest, response: Response) {
         const { text, reference } = request.body;
         const { user, post } = request;
@@ -169,6 +178,7 @@ export default class PostController {
     /**
      * Permite deletar o post
      */
+    @SafeMethod
     async delete (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
 

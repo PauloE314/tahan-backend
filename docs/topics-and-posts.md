@@ -8,17 +8,10 @@ Retorna a lista dos tópicos ("matérias", tipo matemática, física, etc).
 ```json
 [
   {
-    "id": 1,
-    "name": "Matemática"
+    "id": "<number>",
+    "name": "<string>"
   },
-  {
-    "id": 2,
-    "name": "Português"
-  },
-  {
-    "id": 3,
-    "name": "Física"
-  }
+  "..."
 ]
 ```
 

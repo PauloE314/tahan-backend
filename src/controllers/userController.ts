@@ -9,12 +9,16 @@ import configs from '@config/server';
 import { Quizzes } from '@models/quiz/Quizzes';
 import { Posts } from '@models/Posts/Posts';
 import { Containers } from '@models/Posts/Containers';
+import { SafeMethod } from 'src/utils';
 
 /**
  * Controlador de rotas do usuário. Essa classe concatena as funções necessárias para listagem, update, criação e delete de contas na aplicação
  */
 export default class UserController {
-  // Lista todos os usuários com pesquisa
+  /**
+   * Lista os usuários da aplicação
+   */
+  @SafeMethod
   async list(request: APIRequest, response: Response, next: NextFunction) {
     const filter_fields = ['username', 'email'];
     const query_params = request.query;
@@ -38,7 +42,8 @@ export default class UserController {
   /**
    * Permite acesso à aplicação utilizando OAuth. Caso o usuário já não estiver cadastrado, cria a conta
    */
-  sign_in = async (request: APIRequest, response: Response, next: NextFunction) => {
+  @SafeMethod
+  async sign_in (request: APIRequest, response: Response, next: NextFunction) {
     const { secret_key, jwtTime } = configs;
     const { google_data, body } = request;
     // Tenta pegar o usuário
@@ -68,8 +73,9 @@ export default class UserController {
 
 
   /**
-   * Retorna as informações de um usuário
+   * Retorna as informações de um usuário.
    */
+  @SafeMethod
   async read(request: APIRequest, response: Response, next: NextFunction) {
     const id = Number(request.params.id);
     // Tenta pegar um usuário com esse ID
@@ -81,7 +87,10 @@ export default class UserController {
     return response.send(user);
   }
 
-  // Retorna as informações do usuário logado
+  /**
+   * Retorna todos os dados do usuário logado.
+   */
+  @SafeMethod
   async read_self(request: APIRequest, response: Response, next: NextFunction) {
     // Retorna as informações do usuário
       const { user } = request;
@@ -92,6 +101,7 @@ export default class UserController {
   /**
    * Lista os quizzes feitos pelo usuário 
    */
+  @SafeMethod
   async quizzes(request: APIRequest, response: Response) {
       const { user } = request;
 
@@ -108,6 +118,7 @@ export default class UserController {
   /**
    * Lista as postagens feitas pelo usuário 
    */
+  @SafeMethod
   async posts(request: APIRequest, response: Response) {
     const { user } = request;
 
@@ -124,6 +135,7 @@ export default class UserController {
   /**
    *  Listagem de containers do usuário 
    */
+  @SafeMethod
   async post_containers(request: APIRequest, response: Response) {
     const { user } = request;
 
@@ -140,6 +152,7 @@ export default class UserController {
   /**
    * Deleta o usuário
    */ 
+  @SafeMethod
   async delete(request: APIRequest, response: Response, next: NextFunction) {
     const user = request.user.info;
 
@@ -148,17 +161,19 @@ export default class UserController {
     return response.send({ message: 'Usuário removido com sucesso' });
   }
 
-  /**
-   * Retorna a ocupação do usuário dado o seu email acadêmico.
-   */
-  get_occupation(email: string): 'student' | 'teacher' {
-    // Pega a terminação do email
-    const email_end = email.split('@')[1];
-    // Checa se é estudante
-    if (email_end == 'academico.ifpb.edu.br')
-      return 'student'
-    // Ou professor
-    else
-      return 'teacher'
-  }
+  
+}
+
+/**
+ * Retorna a ocupação do usuário dado o seu email acadêmico.
+ */
+function get_occupation(email: string): 'student' | 'teacher' {
+  // Pega a terminação do email
+  const email_end = email.split('@')[1];
+  // Checa se é estudante
+  if (email_end == 'academico.ifpb.edu.br')
+    return 'student'
+  // Ou professor
+  else
+    return 'teacher'
 }

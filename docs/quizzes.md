@@ -158,7 +158,7 @@ Permite o professor que criou o devido quiz ver a lista de jogos daquele quiz. A
 ```json
 [
   {
-    "id": 1,
+    "id": "<number>",
     "played_at": "<Date | string>",
     "is_multiplayer": "<boolean>",
     "player_1_score": {

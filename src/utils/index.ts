@@ -156,3 +156,21 @@ export function random_array(array: Array<any>) {
     }
     return array;   
 }
+
+
+
+/**
+ * Decorator que certifica que, caso ocorra um erro, o server são será quebrado. 
+ */
+export function SafeMethod (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const original_method = descriptor.value;
+    descriptor.value = async (request: APIRequest, response: Response, next: NextFunction) => {
+        try {
+            await original_method(request, response, next);
+            return;
+        }
+        catch(err) {
+            return next(err);
+        }
+    }
+}

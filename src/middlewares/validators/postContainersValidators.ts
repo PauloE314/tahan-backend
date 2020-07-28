@@ -7,6 +7,7 @@ import { Validator, is_array, is_number, is_string } from "src/utils/validators"
 import { Posts } from '@models/Posts/Posts';
 import { Users } from "@models/User";
 import { Containers } from "@models/Posts/Containers";
+import { SafeMethod } from "src/utils";
 
 /**
  * Validator de containers para posts
@@ -17,7 +18,8 @@ export default class PostContainersValidator {
      * 
      * post-container/ - POST
      */
-    create_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+    @SafeMethod
+    async create_validation (request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const { name, posts } = request.body;
         const validator = new Validator();
@@ -37,7 +39,8 @@ export default class PostContainersValidator {
      * 
      * post-container/:number/ - PUT
      */
-    update_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+    @SafeMethod
+    async update_validation (request: APIRequest, response: Response, next: NextFunction) {
         const container = request.container;
         const user = request.user.info;
         const { name, add, remove } = request.body;
@@ -74,7 +77,8 @@ export default class PostContainersValidator {
      * 
      * post-container/:number/ - DELETE
      */
-    delete_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+    @SafeMethod
+    async delete_validation (request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const container = request.container;
         const validator = new Validator();

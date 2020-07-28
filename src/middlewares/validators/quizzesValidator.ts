@@ -6,6 +6,7 @@ import { Validator, is_string, is_array } from "src/utils/validators";
 import { Quizzes } from "@models/quiz/Quizzes";
 import configs from "@config/server";
 import { Questions } from "@models/quiz/Questions";
+import { SafeMethod } from "src/utils";
 
 
 
@@ -17,6 +18,7 @@ export default class QuizValidator {
      * 
      * topics/:number/quizzes/ - POST
      */
+    @SafeMethod
     public async create_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { name, questions } = request.body;
         const validator = new Validator();
@@ -36,6 +38,7 @@ export default class QuizValidator {
      * 
      * topics/:number/quizzes/:number - PUT
      */
+    @SafeMethod
     public async update_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { name, remove, add } = request.body;
         const quiz = request.quiz;
@@ -82,7 +85,8 @@ export default class QuizValidator {
      * 
      * topics/:number/quizzes/:number - DELETE
      */
-    public delete_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+    @SafeMethod
+    public async delete_validation (request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const { quiz } = request;
 
@@ -98,7 +102,8 @@ export default class QuizValidator {
      * 
      * topics/:number/quizzes/:number/answer - POST
      */
-    public async answer_validation  (request: APIRequest, response: Response, next: NextFunction) {
+    @SafeMethod
+    public async answer_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { body, quiz } = request;
         const validator = new Validator();
 
@@ -118,7 +123,8 @@ export default class QuizValidator {
      * 
      * topics/:number/quizzes/:number/games
      */
-    public games_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+    @SafeMethod
+    public async games_validation (request: APIRequest, response: Response, next: NextFunction) {
         // Checa se o professor é o criador do quiz
         if (request.user.info.id !== request.quiz.author.id)
             return response.status(401).send({ message: { user: 'O usuário não é o autor do quiz' }});

@@ -7,6 +7,7 @@ import { Likes } from '@models/Posts/Likes';
 import { Comments } from '@models/Posts/Comments';
 import { Contents } from '@models/Posts/Contents';
 import { Containers } from '@models/Posts/Containers';
+import { SafeMethod } from 'src/utils';
 
 /**
  * Controlador dos containers de posts
@@ -16,6 +17,7 @@ export default class PostContainersController {
     /**
      * Lista os containers 
      */
+    @SafeMethod
     async list(request: APIRequest, response: Response) {
         // Listagem de containers
         const containers = await getRepository(Containers)
@@ -30,6 +32,7 @@ export default class PostContainersController {
     /**
      * Cria um novo container para posts
      */
+    @SafeMethod
     async create(request: APIRequest, response: Response) {
         const { user, post_list } = request;
         const { name } = request.body;
@@ -45,8 +48,21 @@ export default class PostContainersController {
     }
 
     /**
+     * **Permite o usuário ler um container criado por um professor.**
+     * 
+     * /post-containers/:number/ - GET 
+     */
+    @SafeMethod
+    async read(request: APIRequest, response: Response) {
+        const { container } = request;
+
+        return response.send(container);
+    }
+
+    /**
      * Permite atualizar os containers
      */
+    @SafeMethod
     async update(request: APIRequest, response: Response) {
         const { user, container, post_list} = request;
         // return response.send('ok')
@@ -73,7 +89,8 @@ export default class PostContainersController {
      /**
       * Apaga um container
       */
-     async delete(request: APIRequest, response: Response) {
+    @SafeMethod
+    async delete(request: APIRequest, response: Response) {
         const { user, container } = request;
         await getRepository(Containers).remove(container);
 

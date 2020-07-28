@@ -3,7 +3,7 @@ import { APIRequest } from 'src/@types';
 import { Validator, is_string } from 'src/utils/validators';
 import { Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';
-import { get_google_user_data } from 'src/utils';
+import { get_google_user_data, SafeMethod } from 'src/utils';
 
 
 /**
@@ -16,7 +16,8 @@ export default class UserValidator {
      * 
      * users/ - POST
      */
-    public signIn_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+    @SafeMethod
+    public async signIn_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { access_token, occupation } = request.body;
         const validator = new Validator();
 

@@ -7,6 +7,7 @@ import { Users } from "@models/User";
 import { Validator, is_string, is_array, is_number } from "src/utils/validators";
 import { Comments } from "@models/Posts/Comments";
 import { Contents } from "@models/Posts/Contents";
+import { SafeMethod } from "src/utils";
 
 
 
@@ -20,6 +21,7 @@ export default class PostValidator {
      * 
      * topics/:number/posts/ - POST
      */
+    @SafeMethod
     public async create_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { title, contents, academic_level, description } = request.body;
         const user = request.user.info;
@@ -52,6 +54,7 @@ export default class PostValidator {
      * 
      * topics/:number/posts/:number/ - PUT
      */
+    @SafeMethod
     public async update_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { title, add, remove, academic_level, description } = request.body;
         const { post } = request;
@@ -92,7 +95,8 @@ export default class PostValidator {
      * 
      * topics/:number/posts/:number/ - DELETE
      */
-    public delete_validation = async (request: APIRequest, response: Response, next: NextFunction) => {
+    @SafeMethod
+    public async delete_validation (request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const post = request.post;
         const validator = new Validator();
@@ -109,6 +113,7 @@ export default class PostValidator {
      * 
      * topics/:number/posts/:number/comment - POST
      */
+    @SafeMethod
     public async comment_validation(request: APIRequest, response: Response, next: NextFunction) {
         const { text, reference } = request.body;
         const validator = new Validator();
