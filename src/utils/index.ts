@@ -100,6 +100,10 @@ export async function get_google_user_data(access_token: string, options?: { rai
     }
     // Caso token seja inválido, retorna null ou erro
     catch(err) {
+        console.log('ERR');
+        console.log('    ' + err.name);
+        console.log('    ' + err.message);
+
         if (raise_error)
             throw err;
         
