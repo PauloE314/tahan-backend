@@ -6,11 +6,12 @@ import { getRepository, getConnection, Like } from 'typeorm';
 import { Quizzes } from '@models/quiz/Quizzes';
 import { Alternatives } from '@models/quiz/Alternatives';
 import { Questions } from '@models/quiz/Questions';
-import { connect } from 'net';
 import { SingleGames } from '@models/games/SingleGames';
 import { GameHistoric } from '@models/games/GameHistoric';
 import { PlayerScore } from '@models/games/PlayerScore';
-import { SafeMethod } from 'src/utils';
+import { SafeMethod, paginate, filter } from 'src/utils';
+import configs from "@config/server";
+
 
 interface InputQuestion { 
     question: string,
@@ -30,32 +31,41 @@ interface UserAnswer {
  */
 export default class QuizzesController {
     /**
-     * Lista os quizzes da aplicação
+     * **web: quizzes/ - GET
+     * 
+     * Lista os quizzes da aplicação. Permite pesquisa por:
+     * 
+     * - Id do tópico: number
+     * - Id do autor: number
+     * - name do quizzes: number
      */
     @SafeMethod
     async list(request: APIRequest, response: Response, next: NextFunction) {
-        try {
-            const { topic } = request;
-            const where = <any>{ topic: { id: topic.id } };
+        // Pega dados dos query params
+        const { topic, author, name } = request.query;
 
-            // Armazena o nome do queries params
-            const { name } = request.query;
-            if (name) 
-                where.name = Like(`%${name}%`);
-            
-            // Encontra a lista de quizzes que batem com a pesquisa
-            const quizzes = await getRepository(Quizzes)
-                .find({
-                    relations: ['author', 'topic'],
-                    where
-                });
+        const quizzes = getRepository(Quizzes)
+            .createQueryBuilder('quiz')
+            .leftJoin('quiz.topic', 'topic')
+            .leftJoin('quiz.author', 'author')
+            .select([
+                'quiz',
+                'topic',
+                'author.id', 'author.username'
+            ])
 
-            // Retorna os quizzes
-            return response.send(quizzes);
-        }
-        catch(err) {
-            return response.send({name: err.name, message: err.message})
-        }
+        // Aplica filtros
+        const filtered = filter(quizzes, {
+            name: { like: name },
+            author: { equal: author },
+            topic: { equal: topic }
+        })
+
+        // Aplica paginação
+        const quizzes_data = await paginate(filtered, request);
+
+        // Resposta
+        return response.send(quizzes_data);
     }
 
     /**
@@ -63,8 +73,8 @@ export default class QuizzesController {
      */
     @SafeMethod
     async create(request: APIRequest, response: Response, next: NextFunction) {
-        const { topic } = request;
         const { name } = request.body;
+        const topic = request.topic;
         const questions : InputQuestion[] = request.body.questions;
         const user = request.user.info;
 

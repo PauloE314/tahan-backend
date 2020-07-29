@@ -9,8 +9,6 @@ const routes = Router({ mergeParams: true });
 const controller = new QuizzesController();
 const validator = new QuizzesValidator();
 
-// Pega a seção e lida com seções inexistentes
-routes.use(getTopic);
 
 // Criação
 routes.post('/', auth_require, is_teacher, validator.create_validation, controller.create);

@@ -3,7 +3,11 @@
 ## **PATH: /post-containers/ - GET, POST**
 
 #### GET (Autenticação não necessária):
-Retorna a lista de postagens.
+Retorna a lista de postagens. Permite o filtro por ```name``` e pelo ```id``` do autor.
+- base_url/post-containers/?name=:string
+- base_url/post-containers/?author=:string
+
+
 ```json
 [
   {

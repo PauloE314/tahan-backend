@@ -4,17 +4,21 @@
 
 #### GET (Autenticação não necessária):
 
-Retorna a lista de usuários e suas informações. Permite a busca por usuários em função do username e email deles.
+Retorna a lista de usuários e suas informações. Permite filtro pelo ```username```, ```email``` e ```occupation``` deles.
+- base_url/users/?username=:string
+- base_url/users/?email=:string
+- base_url/users/?occupation=:string
+
 
 ```json
-//base_url/users/?username=<name>
 [
   {
     "id": 1,
     "username": "<string>",
     "image_url": "<string>",
     "email": "<string>",
-    "occupation": "student | teacher"
+    "occupation": "student | teacher",
+    "created_at": "<Date | string>"
   }
 ]
 ```
@@ -88,7 +92,7 @@ Retorna a lista dos quizzes do usuário logado.
   }
 ]
 ```
-
+<hr>
 
 ## **Path: /users/self/posts - GET**
 
@@ -112,7 +116,49 @@ Retorna as informações do usuário logado.
 ]
 ```
 
+<hr>
 
+
+## **Path: /users/self/post-containers - GET**
+
+#### GET: (Autenticação necessária)
+
+Os containers do usuário logado. 
+
+```json
+[
+  {
+    "id": "<number>",
+    "name": "<string>",
+    "posts": [
+      {
+        "id": "<number>",
+        "title": "<string>",
+        "description": "<string>",
+        "created_at": "<Date|string>",
+        "academic_level": "fundamental | médio | superior"
+      }
+    ]
+  }
+]
+```
 
 #### DELETE: (Autenticação necessária)
 Apaga o usuário.
+
+
+<hr>
+
+## **Path: /users/:id/posts - GET, DELETE**
+
+#### GET: (Autenticação necessária)
+
+Retorna a lista de posts do usuário escolhido na URL.
+
+<hr>
+
+## **Path: /users/:id/post-containers - GET**
+
+#### GET: (Autenticação necessária)
+
+Retorna a lista de containers para posts do usuário escolhido na URL.

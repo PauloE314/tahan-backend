@@ -1,7 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { getRepository, Like } from 'typeorm';
 import jwt from 'jsonwebtoken';
-import crypto from 'bcrypt';
 
 import { APIRequest } from 'src/@types';
 import { Users } from '@models/User';
@@ -9,38 +8,47 @@ import configs from '@config/server';
 import { Quizzes } from '@models/quiz/Quizzes';
 import { Posts } from '@models/Posts/Posts';
 import { Containers } from '@models/Posts/Containers';
-import { SafeMethod } from 'src/utils';
+import { SafeMethod, paginate, filter } from 'src/utils';
 
 /**
  * Controlador de rotas do usuário. Essa classe concatena as funções necessárias para listagem, update, criação e delete de contas na aplicação
  */
 export default class UserController {
   /**
-   * Lista os usuários da aplicação
+   * **web: /users/ - GET**
+   * 
+   * Lista os usuários da aplicação. Permite filtro por:
+   * 
+   * - username: string
+   * - email: string
+   * - occupation: string
    */
   @SafeMethod
   async list(request: APIRequest, response: Response, next: NextFunction) {
-    const filter_fields = ['username', 'email'];
-    const query_params = request.query;
-    const queries = {};
+    // Pega dados dos query params
+    const { username, email, occupation } = request.query;
 
-    // Checa se os campos são válidos
-    const valid_fields = Object.keys(query_params).filter((element) => filter_fields.includes(element));
+    const users = getRepository(Users)
+      .createQueryBuilder('user')
 
-    // Põe a sintaxe de "like" do sql
-    valid_fields.forEach((query) => {
-      queries[query] = Like(`%${query_params[query]}%`);
+    // Aplica filtro
+    const filtered = filter(users, {
+      username: { like: username },
+      email: { like: email },
+      occupation: { like: occupation }
     });
+      
+    // Aplica paginação
+    const users_data = await paginate(filtered, request);
 
-    const userRepo = getRepository(Users);
-
-    // Encontra os usuários e os retorna
-    const user_list = await userRepo.find(queries);
-    return response.send(user_list);
+    // Resposta
+    return response.send({ users_data });
   }
 
   /**
-   * Permite acesso à aplicação utilizando OAuth. Caso o usuário já não estiver cadastrado, cria a conta
+   * **- web: /users/sign-in/ - POST**
+   * 
+   * Permite acesso à aplicação utilizando OAuth. Caso o usuário já não estiver cadastrado, cria a conta.
    */
   @SafeMethod
   async sign_in (request: APIRequest, response: Response, next: NextFunction) {
@@ -73,6 +81,8 @@ export default class UserController {
 
 
   /**
+   * **web: /users/:id - GET**
+   * 
    * Retorna as informações de um usuário.
    */
   @SafeMethod
@@ -88,6 +98,70 @@ export default class UserController {
   }
 
   /**
+   * **web: /users/:id/posts - GET**
+   * 
+   * Lista as postagens feitas por outro usuário. Permite filtro por:
+   * 
+   * - title: string
+   * - topic: string
+   */
+  @SafeMethod
+  async posts(request: APIRequest, response: Response) {
+    const id = Number(request.params.id);
+    const { title, topic } = request.query;
+
+    // Lista de postagens
+    const posts = getRepository(Posts)
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.topic', 'topic')
+      .where('post.author = :id', { id })
+
+    // Aplica filtros
+    const filtered = filter(posts, {
+      author: { equal: id },
+      topic: { equal: topic },
+      title: { like: title }
+    })
+    // Aplica paginação
+    const posts_data = await paginate(filtered, request);
+
+    // Retorna a lista
+    return response.send(posts_data)
+  }
+
+  /**
+   * **web: /users/:id/post-containers - GET**
+   * 
+   *  Listagem de containers de outro usuário. Permite filtro por:
+   * 
+   * - name: string
+   */
+  @SafeMethod
+  async post_containers(request: APIRequest, response: Response) {
+    const id = Number(request.params.id);
+    const { name } = request.query;
+
+    // Lista de containers
+    const post_containers = getRepository(Containers)
+      .createQueryBuilder('container')
+      .leftJoin('container.posts', 'posts')
+      .select(['container', 'posts'])
+
+    // Aplica filtros
+    const filtered = filter(post_containers, {
+      name: { like: name },
+      author: { equal: id }
+    })
+
+    // Aplica paginação
+    const post_containers_data = await paginate(filtered, request);
+
+    return response.send(post_containers_data);
+  }
+
+  /**
+   * **web: /users/self - GET**
+   * 
    * Retorna todos os dados do usuário logado.
    */
   @SafeMethod
@@ -99,53 +173,96 @@ export default class UserController {
   }
 
   /**
-   * Lista os quizzes feitos pelo usuário 
+   * **web: /users/self/quizzes - GET**
+   * 
+   * Lista os quizzes feitos pelo usuário. Permite filtro por:
+   * 
+   * - topic: number
+   * - name: string
    */
   @SafeMethod
-  async quizzes(request: APIRequest, response: Response) {
+  async self_quizzes(request: APIRequest, response: Response) {
       const { user } = request;
+      const { topic, name } = request.query;
 
       // Lista de quizzes
-      const quizzes = await getRepository(Quizzes).find({
-        relations: ['questions'],
-        where : { author: { id: user.info.id } }
+      const quizzes = getRepository(Quizzes)
+        .createQueryBuilder('quiz')
+        .leftJoin('quiz.questions', 'questions')
+        .select(['quiz', 'questions.id', 'questions.question'])
+      
+      // Aplica filtro
+      const filtered = filter(quizzes, {
+        author: { equal: user.info.id },
+        topic: { equal: topic },
+        name: { like: name }
       });
 
+      // Aplica paginação
+      const quizzes_data = await paginate(filtered, request);
+
       // Retorna a lista
-      return response.send(quizzes)
+      return response.send(quizzes_data)
   }
 
-  /**
-   * Lista as postagens feitas pelo usuário 
+   /**
+   * **web: /users/self/posts - GET**
+   * 
+   * Lista postagens feitas pelo usuário. Permite filtro por:
+   * 
+   * - title: string
    */
   @SafeMethod
-  async posts(request: APIRequest, response: Response) {
+  async self_posts(request: APIRequest, response: Response) {
     const { user } = request;
+    const { title } = request.query;
 
     // Lista de postagens
-    const posts = await getRepository(Posts).find({
-        relations: ['topic'],
-        where : { author: { id: user.info.id } }
+    const posts =  getRepository(Posts)
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.topic', 'topic')
+
+    // Aplica filtro
+    const filtered = filter(posts, {
+      author: { equal: user.info.id },
+      title: { like: title }
     });
+
+    // Aplica paginação
+    const posts_data = await paginate(filtered, request);
 
     // Retorna a lista
-    return response.send(posts)
+    return response.send(posts_data);
   }
 
+
   /**
-   *  Listagem de containers do usuário 
+   * **web: /users/self/posts - GET**
+   * 
+   * Lista containers de postagens feitos por um usuário. Permite filtro por:
+   * 
+   * - name: string
    */
   @SafeMethod
-  async post_containers(request: APIRequest, response: Response) {
+  async self_post_containers(request: APIRequest, response: Response) {
     const { user } = request;
+    const { name } = request.query;
 
     // Lista de containers
-    const post_containers = await getRepository(Containers).find({
-      relations: ['posts'],
-      where: { author: { id: user.info.id } } 
+    const post_containers = getRepository(Containers)
+      .createQueryBuilder('container')
+      .leftJoinAndSelect('container.posts', 'posts')
+    
+    // Aplica filtros
+    const filtered = filter(post_containers, {
+      author: { equal: user.info.id },
+      name: { equal: name }
     });
 
-    return response.send(post_containers);
+    // Aplica paginação
+    const post_containers_data = await paginate(filtered, request);
+
+    return response.send(post_containers_data);
   }
 
   

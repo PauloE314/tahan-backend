@@ -6,6 +6,7 @@ export default {
     port: 3000,
     image_host: `http://localhost:3000/uploads/`,
     image_path,
+    default_pagination: 5,
     quizzes: {
         min_questions: 4,
         max_questions: Infinity,

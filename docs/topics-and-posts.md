@@ -17,12 +17,13 @@ Retorna a lista dos tópicos ("matérias", tipo matemática, física, etc).
 
 <hr>
 
-## **PATH: /topics/:id/posts - GET, POST**
+## **PATH: /posts - GET, POST**
 
 #### GET (Autenticação não necessária):
-Retorna a lista de postagens de um tópico. Essa URL está sujeita a filtro pelo título da postagem e o id do autor
-- baseurl/topics/1/posts/?title="Lorem"
-- baseurl/topics/1/posts/?author=1
+Retorna a lista de postagens de um tópico. Essa URL está sujeita a filtro pelo título da postagem, o id do autor e id do tópico.
+- baseurl/topics/1/posts/?title=:string
+- baseurl/topics/1/posts/?author=:number
+- baseurl/topics/1/posts/?topic=:number
 
 
 ```json
@@ -31,9 +32,12 @@ Retorna a lista de postagens de um tópico. Essa URL está sujeita a filtro pelo
     "id": "<number>",
     "title": "<string>",
     "description": "<string>",
-    "created_at": "<Date|string>",
+    "created_at": "<Date | string>",
     "academic_level": "fundamental | médio | superior",
-    "author": "<number>",
+    "author": {
+      "id": "<number>",
+      "username": "<string>"
+    },
     "likes": "<number>"
   }
 ]
@@ -65,7 +69,7 @@ Os dados de envio devem ser no seguinte modelo:
 
 <hr>
 
-## **PATH: /topics/:topic_id/posts/:id - GET, PUT, DELETE**
+## **PATH: /posts/:id - GET, PUT, DELETE**
 
 #### GET (Autenticação não necessária):
 Retorna as informações de uma postagem específica ou uma mensagem de erro (caso o tópico não exista). Os dados vem no seguinte formato:
@@ -90,6 +94,10 @@ Retorna as informações de uma postagem específica ou uma mensagem de erro (ca
     "email": "<string>",
     "occupation": "teacher",
     "created_at": "<Date | string>"
+  },
+  "topic": {
+    "id": "<number>",
+    "name": "<string>"
   },
   "likes": "<number>",
   "comments": {

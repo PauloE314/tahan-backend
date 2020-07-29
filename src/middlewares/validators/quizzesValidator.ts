@@ -2,11 +2,12 @@ import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 
 import { getRepository } from "typeorm";
-import { Validator, is_string, is_array } from "src/utils/validators";
+import { Validator, is_string, is_array, is_number } from "src/utils/validators";
 import { Quizzes } from "@models/quiz/Quizzes";
 import configs from "@config/server";
 import { Questions } from "@models/quiz/Questions";
 import { SafeMethod } from "src/utils";
+import { Topics } from "@models/Topics";
 
 
 
@@ -20,14 +21,17 @@ export default class QuizValidator {
      */
     @SafeMethod
     public async create_validation (request: APIRequest, response: Response, next: NextFunction) {
-        const { name, questions } = request.body;
+        const { name, questions, topic } = request.body;
         const validator = new Validator();
 
         // Validação de nome do quiz
         await validator.validate({ name }, [is_string, validate_name]);
 
         // Validação das questões do quiz
-        await validator.validate({ questions }, [is_array, validate_questions], { creating: true })
+        await validator.validate({ questions }, [is_array, validate_questions], { creating: true });
+
+        // Validação de tópico
+        await validator.validate({ topic }, [is_number, validate_topic], { request });
         
         // Resposta
         return validator.resolve(request, response, next);
@@ -140,7 +144,9 @@ export default class QuizValidator {
     Validadores de campo
 */
 
-// Validator de título
+/**
+ * Valida o nome do quiz
+ */
 async function validate_name (name: string | undefined, options?: { currentName: string }) {
     const currentName = options ? options.currentName : null;
     // Validação de título
@@ -153,6 +159,20 @@ async function validate_name (name: string | undefined, options?: { currentName:
             return "Envie outro nome para o quiz, esse já foi escolhido anteriormente";
     }
     return;
+}
+
+/**
+ * valida o tópico do quiz
+ */
+async function validate_topic (data: number, options?: { request: APIRequest }) {
+    // Tenta pegar o tópico
+    const topic = await getRepository(Topics).findOne({ where: { id: data }});
+
+    // Retorna o erro
+    if (!topic)
+        return "Tópico inválido";
+
+    options.request.topic = topic;
 }
 
 /**

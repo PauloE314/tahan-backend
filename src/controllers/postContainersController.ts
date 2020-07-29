@@ -7,26 +7,46 @@ import { Likes } from '@models/Posts/Likes';
 import { Comments } from '@models/Posts/Comments';
 import { Contents } from '@models/Posts/Contents';
 import { Containers } from '@models/Posts/Containers';
-import { SafeMethod } from 'src/utils';
+import { SafeMethod, paginate, filter } from 'src/utils';
 
 /**
  * Controlador dos containers de posts
  */
 export default class PostContainersController {
-
     /**
-     * Lista os containers 
+     * **web: /users/:id/posts - GET**
+     * 
+     * Lista containers de postagens feitos por um usuário. Permite filtro por:
+     * 
+     * - author: id
+     * - name: string
      */
     @SafeMethod
     async list(request: APIRequest, response: Response) {
-        // Listagem de containers
-        const containers = await getRepository(Containers)
-        .createQueryBuilder('container')
-        .leftJoinAndSelect('container.posts', 'posts')
-        .loadRelationIdAndMap('container.author', 'container.author')
-        .getMany();
+        const { author, name } = request.query;
 
-        return response.send(containers);
+        // Listagem de containers
+        const containers = getRepository(Containers)
+        .createQueryBuilder('container')
+        .leftJoin('container.posts', 'posts')
+        .leftJoin('container.author', 'author')
+        .select([
+            'container',
+            'author.id', 'author.username',
+            'posts.id', 'posts.title', 'posts.academic_level'
+        ])
+
+        // Aplica filtros
+        const filtered = filter(containers, {
+            author: { equal: author },
+            name: { like: name }
+        })
+
+        // Aplica paginação
+        const containers_data = await paginate(filtered, request);
+
+        // Resposta
+        return response.send(containers_data);
     }
 
     /**

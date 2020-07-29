@@ -27,7 +27,7 @@ export async function getPost(request: APIRequest, response: Response, next: Nex
     const post_id = Number(request.params.id);
 
     const post = await getRepository(Posts).findOne({ 
-        relations: ["author", "contents"],
+        relations: ["author", "contents", "topic"],
         where: { id: post_id }
     });
 
@@ -44,7 +44,7 @@ export async function getQuiz(request: APIRequest, response: Response, next: Nex
 
     if (!isNaN(id)) {
         const quiz = await getRepository(Quizzes).findOne({
-            relations: ["questions", 'questions.alternatives', "questions.rightAnswer", "author"],
+            relations: ["questions", 'questions.alternatives', "questions.rightAnswer", "author", "topic"],
             where: { id }
         });
 

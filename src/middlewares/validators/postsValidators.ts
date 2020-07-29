@@ -8,6 +8,8 @@ import { Validator, is_string, is_array, is_number } from "src/utils/validators"
 import { Comments } from "@models/Posts/Comments";
 import { Contents } from "@models/Posts/Contents";
 import { SafeMethod } from "src/utils";
+import { Topics } from "@models/Topics";
+import { request } from "http";
 
 
 
@@ -23,7 +25,7 @@ export default class PostValidator {
      */
     @SafeMethod
     public async create_validation (request: APIRequest, response: Response, next: NextFunction) {
-        const { title, contents, academic_level, description } = request.body;
+        const { title, contents, academic_level, description, topic } = request.body;
         const user = request.user.info;
         const validator = new Validator();
 
@@ -44,6 +46,9 @@ export default class PostValidator {
 
         // Validação de nível de dificuldade
         await validator.validate({ academic_level }, [is_string, validate_academic_level]);
+
+        // Validação de tópico
+        await validator.validate({ topic }, [is_number, validate_topic], { request });
 
         // Resposta
         return validator.resolve(request, response, next);
@@ -162,6 +167,19 @@ async function validate_academic_level (academic_level: string) {
 
     if (!levels.includes(academic_level))
         return "Envie um nível acadêmico aceitável";
+}
+
+/**
+ * Validação de tópico 
+ */
+async function validate_topic (data: number, options?: { request: APIRequest }) {
+    // Tenta pegar o tópico
+    const topic = await getRepository(Topics).findOne({ where: { id: data }});
+    // Retorna o erro
+    if (!topic)
+        return "Tópico inválido";
+
+    options.request.topic = topic; 
 }
 
 /**

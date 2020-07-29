@@ -1,21 +1,24 @@
 # **Quizzes**
 
-## **PATH: /topics/:id/quizzes - GET, POST**
+## **PATH: /quizzes - GET, POST**
 
 #### GET: (Autenticação não necessária)
-Lista os quizzes dessa seção. Cada quiz possui os dados do autor e a seção que se encontra. Permite a pesquisa pelo ```name``` do quiz nos queries params.
+Lista os quizzes dessa seção. Cada quiz possui os dados do autor e a seção que se encontra. Permite a pesquisa pelo ```name``` do quiz, por ```topic``` e pelo ```id```  de seu criador nos query_params:
+- base_url/quizzes/?name=:string
+- base_url/quizzes/?author=:number
+- base_url/quizzes/?topic=:number
+
+
 
 ```json
 [
   {
     "id": "<number>",
     "name": "<string>",
+    "created_at": "<Date | string>",
     "author": {
       "id": "<number>",
       "username": "<string>",
-      "email": "<string>",
-      "occupation": "student | teacher",
-      "created_at": "<Date | string>"
     },
     "topic": {
       "id": "<number>",
@@ -47,7 +50,7 @@ Permite os professores criarem quizzes. Cada questão deve ter, no mínimo, 2 al
 ```
 
 
-## **PATH: /topics/:topic_id/quizzes/:id - GET, PUT, DELETE**
+## **PATH: /quizzes/:id - GET, PUT, DELETE**
 
 #### GET: (Autenticação não necessária)
 
@@ -72,9 +75,12 @@ Retorna as informações de um quiz.
         "id": "<number>",
         "text": "<string>"
       }
-    }
-    ...
-  ]
+    },
+    "..."
+  ],
+  "topic": {
+    "..."
+  }
 }
 ```
 
@@ -107,7 +113,7 @@ Permite ao criador do quiz deletá-lo.
 
 <hr>
 
-## **PATH: /topics/:topic_id/quizzes/:id/answer - POST**
+## **PATH: /quizzes/:id/answer - POST**
 
 #### POST: (Autenticação necessária)
 
@@ -150,7 +156,7 @@ As respostas individuais não são armazenadas no banco de dados, apenas o score
 
 <hr>
 
-## **PATH: /topics/:topic_id/quizzes/:id/games - GET**
+## **PATH: /quizzes/:id/games - GET**
 
 #### GET: (Autenticação necessária)
 Permite o professor que criou o devido quiz ver a lista de jogos daquele quiz. A resposta será no formato:

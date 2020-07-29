@@ -12,8 +12,8 @@ const router = Router();
 router.use('/users/', userRouter);
 router.use('/topics/', topicsRouter);
 
-router.use('/topics/:topic_id/posts/', postsRouter);
-router.use("/topics/:topic_id/quizzes/", quizRouter);
+router.use('/posts/', postsRouter);
+router.use("/quizzes/", quizRouter);
 
 router.use('/post-containers/', postContainersRouter);
 

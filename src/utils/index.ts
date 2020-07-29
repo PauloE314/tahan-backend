@@ -6,10 +6,12 @@ import { google_data } from "src/@types"
 import { APIRequest, user_interface } from "src/@types";
 import configs from '@config/server';
 import { Users } from '@models/User';
-import { getRepository } from "typeorm";
+import { getRepository, QueryBuilder, SelectQueryBuilder } from "typeorm";
 import { Quizzes } from "@models/quiz/Quizzes";
 import { Questions } from "@models/quiz/Questions";
 import { print } from "util";
+import { type } from "os";
+import { equal } from "assert";
 
 
 interface jwt_decoded {
@@ -173,4 +175,58 @@ export function SafeMethod (target: any, propertyKey: string, descriptor: Proper
             return next(err);
         }
     }
+}
+
+
+/**
+ * Função que automaticamente aplica paginação
+ */
+export async function paginate<T>(query_builder: SelectQueryBuilder<T>, request: APIRequest) {
+    // Dados de entrada
+    const request_page = Number(request.query.page);
+    const request_count = Number(request.query.count);
+    // Limpa dados
+    const page = !isNaN(request_page) ? request_page : 1;
+    const count = !isNaN(request_count) ? request_count : configs.default_pagination;
+    // Aplica paginação
+    query_builder
+        .skip((page - 1) * count)
+        .take(count)
+    // Pega os dados
+    const data = await query_builder.getMany();
+    // Pega a quantidade de entidades
+    const found = data.length;
+        
+    return {
+        page,
+        count,
+        found,
+        data
+    }
+}
+
+
+/**
+ * Função que aplica filtro. Cada parâmetro de entrada pode especificado o nome
+ */
+export function filter<T>(query_builder: SelectQueryBuilder<T>, params: { [name: string]: { like?: any, equal?: any, name?: string } }) {
+    // Seta a entidade
+    const entity = query_builder.alias;
+
+    for(const field in params) {
+        const data = params[field];
+        // Certifica que o dado existe
+        const name = params[field].name ? params[field].name : field;
+
+        // Aplica like
+        if (data.like) 
+            query_builder.andWhere(`${entity}.${field} LIKE :${name}`, { [name]: `%${data.like}%`});
+        
+        // Aplica igual
+        else if (data.equal !== undefined)
+            query_builder.andWhere(`${entity}.${field} = :${name}`, { [name]: data.equal });
+
+        
+    }
+    return query_builder;
 }

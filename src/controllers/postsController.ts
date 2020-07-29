@@ -6,44 +6,55 @@ import { getRepository, Like } from 'typeorm';
 import { Likes } from '@models/Posts/Likes';
 import { Comments } from '@models/Posts/Comments';
 import { Contents } from '@models/Posts/Contents';
-import { SafeMethod } from 'src/utils';
+import { SafeMethod, paginate, filter } from 'src/utils';
 
 /**
  * Controlador de rotas dos posts
  */
 export default class PostController {
     /**
-     * Lista os posts criados pelos usuários.
-     * Pesquisar por: username do author e titulo
+     * **web: /posts/ - GET**
+     * 
+     * Lista os posts criados pelos usuários. Permite filtro por:
+     * 
+     * - Id do author: number
+     * - Título: string
      */
     @SafeMethod
     async list (request: APIRequest, response: Response, next: NextFunction) {
-        const query_params = request.query ? request.query : { title: null, author: null };
+        const { topic, title, author } = request.query;
 
         // Pega os posts
         let posts = getRepository(Posts)
             .createQueryBuilder('post')
             .loadRelationCountAndMap('post.likes', 'post.likes')
             .leftJoin('post.topic', 'topic')
-            .loadRelationIdAndMap('post.author', 'post.author')
-            .where("topic.id = :topic_id", { topic_id: request.topic.id })
-    
-        // Filtra caso haja um título
-        if (query_params.title) 
-            posts = posts.where('post.title like :title', { title: `%${query_params.title}%` });
+            .leftJoin('post.author', 'author')
+            .select([
+                'post',
+                'topic',
+                'author.id', 'author.username'
+            ])
 
-        // Filtra caso haja o autor
-        if (query_params.author)
-            posts = posts.where('post.author = :author_id', { author_id: query_params.author });
+        // Aplica filtros
+        const filtered = filter(posts, {
+            title: { like: title },
+            topic: { equal: topic },
+            author: { equal: topic }
+        });
         
-    
-        return response.send(await posts.getMany());
+        // Aplica paginação
+        const posts_data = await paginate(filtered, request);
+
+        // Resposta
+        return response.send(posts_data);
     }
 
     // Cria um post para o tópico
     @SafeMethod
     async create (request: APIRequest, response: Response, next: NextFunction) {
         const new_post = new Posts();
+        const topic = request.topic;
         const { title, contents, academic_level, description } = request.body;
 
         // Cria conteúdos
@@ -52,14 +63,14 @@ export default class PostController {
             new_content.subtitle = content.subtitle;
             new_content.text = content.text;
             return new_content;
-        }) 
+        }) ;
 
         // Cria post
         new_post.title = title;
         new_post.description = description;
         new_post.contents = content_list;
         new_post.academic_level = academic_level;
-        new_post.topic = request.topic;
+        new_post.topic = topic;
         new_post.author = request.user.info;
 
         const saved_post = await getRepository(Posts).save(new_post);
