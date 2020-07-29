@@ -39,6 +39,13 @@ Retorna a lista de usuários e suas informações. Permite filtro pelo ```userna
 
 Permite entrar na aplicação com um access_token OAuth. Caso já tenha entrado na aplicação antes, apenas atualiza o token JWT; mas caso seja o primeiro acesso, cria a conta do usuário e retorna seus dados.
 
+```json
+{
+  "access_token": "<string>",
+  "occupation": "teacher | student"
+}
+```
+
 <hr>
 
 ## **Path: /users/:id/ - GET**
