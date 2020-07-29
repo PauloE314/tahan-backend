@@ -42,7 +42,7 @@ export default class UserController {
     const users_data = await paginate(filtered, request);
 
     // Resposta
-    return response.send({ users_data });
+    return response.send(users_data);
   }
 
   /**
@@ -188,8 +188,7 @@ export default class UserController {
       // Lista de quizzes
       const quizzes = getRepository(Quizzes)
         .createQueryBuilder('quiz')
-        .leftJoin('quiz.questions', 'questions')
-        .select(['quiz', 'questions.id', 'questions.question'])
+        .loadRelationIdAndMap('quiz.questions', 'quiz.questions')
       
       // Aplica filtro
       const filtered = filter(quizzes, {

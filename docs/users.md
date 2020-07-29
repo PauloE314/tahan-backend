@@ -11,16 +11,24 @@ Retorna a lista de usuários e suas informações. Permite filtro pelo ```userna
 
 
 ```json
-[
-  {
-    "id": 1,
-    "username": "<string>",
-    "image_url": "<string>",
-    "email": "<string>",
-    "occupation": "student | teacher",
-    "created_at": "<Date | string>"
-  }
-]
+{
+  "page": {
+    "current": "<number>",
+    "total": "<number>",
+  },
+  "count": "<number>",
+  "found": "<number>",
+  "data": [
+    {
+      "id": "<number>",
+      "username": "<string>",
+      "image_url": "<string>",
+      "email": "<string>",
+      "occupation": "student | teacher",
+      "created_at": "<Date | string>"
+    }
+  ]
+}
 ```
 
 <hr>
@@ -65,7 +73,7 @@ Retorna as informações do usuário logado.
     "username": "<string>",
     "email": "<string>",
     "image_url": "<string>",
-    "occupation": "student" | "teacher"
+    "occupation": "student | teacher"
   },
   "date": {
     "expires": "<Date | string>",
@@ -84,13 +92,26 @@ OBS: "date" se refere ao tempo de inicial e máximo do Token utilizado no moment
 Retorna a lista dos quizzes do usuário logado. 
 
 ```json
-[
-  {
-    "id": 1,
-    "name": "Primeiro quizz",
-    "created_at": "2020-07-25T14:52:11.000Z"
-  }
-]
+{
+  "page": {
+    "current": "<number>",
+    "total": "<number>"
+  },
+  "count": "<number>",
+  "found": "<number>",
+  "data": [
+    {
+      "id": "<number>",
+      "name": "<string>",
+      "created_at": "<Date|string>",
+      "questions": [
+        "<number>",
+        "..."
+      ]
+    }
+  ]
+}
+
 ```
 <hr>
 
@@ -101,19 +122,28 @@ Retorna a lista dos quizzes do usuário logado.
 Retorna as informações do usuário logado. 
 
 ```json
-[
-  {
-    "id": "<number>",
-    "title": "<string>",
-    "content": "<string>",
-    "description": "<string>",
-    "created_at": "<Date|string>",
-    "topic": {
+{
+  "page": {
+    "current": "<number>",
+    "total": "<number>"
+  },
+  "count": "<number>",
+  "found": "<number>",
+  "data": [
+    {
       "id": "<number>",
-      "name": "<string>"
+      "title": "<string>",
+      "content": "<string>",
+      "description": "<string>",
+      "created_at": "<Date|string>",
+      "topic": {
+        "id": "<number>",
+        "name": "<string>"
+      }
     }
-  }
-]
+  ]
+}
+
 ```
 
 <hr>
@@ -126,21 +156,31 @@ Retorna as informações do usuário logado.
 Os containers do usuário logado. 
 
 ```json
-[
-  {
-    "id": "<number>",
-    "name": "<string>",
-    "posts": [
-      {
-        "id": "<number>",
-        "title": "<string>",
-        "description": "<string>",
-        "created_at": "<Date|string>",
-        "academic_level": "fundamental | médio | superior"
-      }
-    ]
-  }
-]
+
+{
+  "page": {
+    "current": "<number>",
+    "total": "<number>"
+  },
+  "count": "<number>",
+  "found": "<number>",
+  "data": [     
+    {
+      "id": "<number>",
+      "name": "<string>",
+      "posts": [
+        {
+          "id": "<number>",
+          "title": "<string>",
+          "description": "<string>",
+          "created_at": "<Date|string>",
+          "academic_level": "fundamental | médio | superior"
+        }
+      ]
+    }
+  ]
+}
+
 ```
 
 #### DELETE: (Autenticação necessária)

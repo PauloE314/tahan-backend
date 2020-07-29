@@ -9,22 +9,31 @@ Retorna a lista de postagens. Permite o filtro por ```name``` e pelo ```id``` do
 
 
 ```json
-[
-  {
-    "id": "<number>",
-    "name": "<string>",
-    "posts": [
-      {
-        "id": "<number>",
-        "title": "<string>",
-        "description": "<string>",
-        "created_at": "<Date | string>",
-        "academic_level": "fundamental | médio | superior"
-      }
-    ],
-    "author": "<number>"
-  }
-]
+{
+  "page": {
+    "current": "<number>",
+    "total": "<number>"
+  },
+  "count": "<number>",
+  "found": "<number>",
+  "data": [
+    {
+      "id": "<number>",
+      "name": "<string>",
+      "posts": [
+        {
+          "id": "<number>",
+          "title": "<string>",
+          "description": "<string>",
+          "created_at": "<Date | string>",
+          "academic_level": "fundamental | médio | superior"
+        }
+      ],
+      "author": "<number>"
+    }
+  ]
+}
+
 ```
 
 #### POST (Autenticação necessária):

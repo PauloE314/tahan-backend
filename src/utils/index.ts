@@ -186,19 +186,20 @@ export async function paginate<T>(query_builder: SelectQueryBuilder<T>, request:
     const request_page = Number(request.query.page);
     const request_count = Number(request.query.count);
     // Limpa dados
-    const page = !isNaN(request_page) ? request_page : 1;
-    const count = !isNaN(request_count) ? request_count : configs.default_pagination;
+    const page = Math.max((!isNaN(request_page) ? request_page : 1), 1);
+    const count = Math.max((!isNaN(request_count) ? request_count : configs.default_pagination), 1);
     // Aplica paginação
     query_builder
         .skip((page - 1) * count)
         .take(count)
     // Pega os dados
-    const data = await query_builder.getMany();
-    // Pega a quantidade de entidades
-    const found = data.length;
+    const [data, found] = await query_builder.getManyAndCount();
         
     return {
-        page,
+        page: {
+            current: page,
+            total: Math.ceil(found / count)
+        },
         count,
         found,
         data
