@@ -17,13 +17,14 @@ Retorna a lista dos tópicos ("matérias", tipo matemática, física, etc).
 
 <hr>
 
-## **PATH: /posts - GET, POST**
+## **PATH: /posts/ - GET, POST**
 
 #### GET (Autenticação não necessária):
 Retorna a lista de postagens de um tópico. Essa URL está sujeita a filtro pelo título da postagem, o id do autor e id do tópico.
-- baseurl/topics/1/posts/?title=:string
-- baseurl/topics/1/posts/?author=:number
-- baseurl/topics/1/posts/?topic=:number
+
+- base_url/posts/?title=:string
+- base_url/posts/?author=:number
+- base_url/posts/?topic=:number
 
 
 ```json

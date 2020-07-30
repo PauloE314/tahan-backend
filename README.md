@@ -7,3 +7,36 @@ Tahan é um projeto que promete tornar o aprendizado divertido e produtivo ao me
 - [Containers para tópicos](./docs/containers.md)
 - [Games](./docs/game.md)
 - [Quizzes](./docs/quizzes.md)
+
+
+<hr>
+
+## **Detalhes de implementação**
+
+OBS: Todas as rotas de listagem seguem o mesmo padrão. Consiste em:
+
+```json
+
+{
+  "page": {
+    "current": "<number>",
+    "total": "<number>"
+  },
+  "count": "<number>",
+  "found": "<number>",
+  "data": [     
+    "..."
+  ]
+}
+```
+
+Onde:
+- Page: dados referentes a paginação, sendo ```current``` o número da página atual e ```total``` a quantidade de páginas totais. A página requerida pode ser especificada na URL por um query_param chamado ```page```:
+    - base_url/list/? **```page=3```**
+
+- Count: quantidade máxima de elementos retornados em ```data```. O padrão é 5. A quantidade de dados retornados pode ser especificado na URL por um query_param chamado ```count```:
+    - base_url/list/? **```count=10```**
+
+- Found: quantidade de elementos encontrados na busca.
+
+- Data: lista de elementos.

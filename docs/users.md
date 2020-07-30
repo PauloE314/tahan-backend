@@ -56,7 +56,7 @@ Retorna as informações de um usuário específico.
 
 ```json
 {
-  "id": 1,
+  "id": "<number>",
   "username": "<string>",
   "email": "<string>",
   "image_url": "<string>",
@@ -76,7 +76,7 @@ Retorna as informações do usuário logado.
 ```json
 {
   "info": {
-    "id": 1,
+    "id": "<number>",
     "username": "<string>",
     "email": "<string>",
     "image_url": "<string>",
@@ -96,7 +96,10 @@ OBS: "date" se refere ao tempo de inicial e máximo do Token utilizado no moment
 
 #### GET: (Autenticação necessária)
 
-Retorna a lista dos quizzes do usuário logado. 
+Retorna a lista dos quizzes do usuário logado. Permite filtro por ```topic``` e ```name```:
+
+- base_url/users/self/quizzes/?topic=:number
+- base_url/users/self/quizzes/?name=:string
 
 ```json
 {
@@ -126,7 +129,11 @@ Retorna a lista dos quizzes do usuário logado.
 
 #### GET: (Autenticação necessária)
 
-Retorna as informações do usuário logado. 
+Retorna as informações do usuário logado. Permite filtro por ```title``` e ```topic```:
+
+- base_url/users/self/posts/?title=:string
+- base_url/users/self/posts/?topic=:number
+
 
 ```json
 {
@@ -160,7 +167,10 @@ Retorna as informações do usuário logado.
 
 #### GET: (Autenticação necessária)
 
-Os containers do usuário logado. 
+Os containers do usuário logado. Permite filtro por ```title```:
+
+- base_url/users/self/posts/?title=:string
+
 
 ```json
 
@@ -196,11 +206,14 @@ Apaga o usuário.
 
 <hr>
 
-## **Path: /users/:id/posts - GET, DELETE**
+## **Path: /users/:id/posts - GET**
 
 #### GET: (Autenticação necessária)
 
-Retorna a lista de posts do usuário escolhido na URL.
+Retorna a lista de posts do usuário escolhido na URL. Permite filtro por ```title``` e ```topic```:
+
+- base_url/users/:id/posts/?title=:string
+- base_url/users/:id/posts/?topic=:number
 
 <hr>
 
@@ -208,4 +221,7 @@ Retorna a lista de posts do usuário escolhido na URL.
 
 #### GET: (Autenticação necessária)
 
-Retorna a lista de containers para posts do usuário escolhido na URL.
+Retorna a lista de containers para posts do usuário escolhido na URL. Permite filtro por ```title```:
+
+- base_url/users/:id/post-containers/?title=:string
+
