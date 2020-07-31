@@ -8,6 +8,7 @@ import configs from "@config/server";
 import { Questions } from "@models/quiz/Questions";
 import { SafeMethod } from "src/utils";
 import { Topics } from "@models/Topics";
+import { Users } from "@models/User";
 
 
 
@@ -17,15 +18,22 @@ export default class QuizValidator {
     /**
      * **Validação de criação de quiz.**
      * 
-     * topics/:number/quizzes/ - POST
+     * quizzes/ - POST
      */
     @SafeMethod
     public async create_validation (request: APIRequest, response: Response, next: NextFunction) {
-        const { name, questions, topic } = request.body;
+        const { name, questions, topic, mode, password } = request.body;
         const validator = new Validator();
 
         // Validação de nome do quiz
         await validator.validate({ name }, [is_string, validate_name]);
+
+        // Valida modo do quiz
+        const mode_validation = await validator.validate({ mode }, [is_string, validate_mode]);
+
+        // Valida a senha
+        if (mode_validation.is_valid && mode_validation.data === 'private')
+            await validator.validate({ password }, [is_string, validate_password]);
 
         // Validação das questões do quiz
         await validator.validate({ questions }, [is_array, validate_questions], { creating: true });
@@ -40,11 +48,11 @@ export default class QuizValidator {
     /**
      * **Validação para atualizar um quiz.**
      * 
-     * topics/:number/quizzes/:number - PUT
+     * quizzes/:number - PUT
      */
     @SafeMethod
     public async update_validation (request: APIRequest, response: Response, next: NextFunction) {
-        const { name, remove, add } = request.body;
+        const { name, remove, add, mode, password } = request.body;
         const quiz = request.quiz;
         const user = request.user.info;
         const validator = new Validator();
@@ -52,6 +60,22 @@ export default class QuizValidator {
         // Checa se o usuário é o autor
         if (user.id != request.quiz.author.id) 
             return response.status(401).send({message: "Apenas o criador do quiz pode alterá-lo"});
+
+        // Valida novo modo
+        const mode_validation = await validator.validate(
+            { mode }, 
+            [is_string, validate_mode],
+            { optional: true }
+        );
+
+        // Valida nova senha, caso o novo modo seja selecionado
+        if (mode_validation.is_valid)
+            await validator.validate(
+                { password },
+                [is_string, validate_password],
+                // É obrigatório apenas no caso de mudança de modo de público para privado
+                { optional: !(quiz.mode == 'public' && mode == 'private')}
+            );
 
         // Valida o novo nome
         await validator.validate(
@@ -74,7 +98,7 @@ export default class QuizValidator {
             { optional: true, creating: false }
         );
         // Checa a quantidade total de questões
-        if (!remove_validation && !add_validation) {
+        if (remove_validation.is_valid && add_validation.is_valid) {
             const questions = { add: add ? add.length : 0, remove: remove ? remove.length : 0 };
             const original_amount = quiz.questions.length;
             await validator.validate({ questions }, [validate_amount], { original_amount });
@@ -87,7 +111,7 @@ export default class QuizValidator {
     /**
      * Validação para apagar um quiz
      * 
-     * topics/:number/quizzes/:number - DELETE
+     * quizzes/:number - DELETE
      */
     @SafeMethod
     public async delete_validation (request: APIRequest, response: Response, next: NextFunction) {
@@ -102,18 +126,43 @@ export default class QuizValidator {
     }
 
     /**
+     * Validação de leitura de quiz.
+     * 
+     * quizzes/:number - GET
+     */
+    @SafeMethod
+    public async read_quiz_validation (request: APIRequest, response: Response, next: NextFunction) {
+        const { quiz, user } = request;
+        const { password } = request.query;
+        const validator = new Validator();
+        
+        // Valida a permissão de ver o quiz
+        await validator.validate({ password }, [quiz_permission], { quiz, user: user.info });
+        
+        return validator.resolve(request, response, next, 401);
+    }
+
+    /**
      * Validação para resposta de jogos individuais do quiz.
      * 
-     * topics/:number/quizzes/:number/answer - POST
+     * quizzes/:number/answer - POST
      */
     @SafeMethod
     public async answer_validation (request: APIRequest, response: Response, next: NextFunction) {
-        const { body, quiz } = request;
+        const { quiz } = request;
+        const { answer, password } = request.body;
+        
         const validator = new Validator();
+
+        // Checa se o usuário é apto para responder
+        const permission = await validator.validate({ password }, [quiz_permission], { quiz });
+        // Nega a permissão
+        if (!permission.is_valid)
+            return validator.resolve(request, response, next, 401);
 
         // Validator de resposta
         await validator.validate(
-            { answer: body },
+            { answer },
             [is_array, validate_answers],
             { questions: quiz.questions }
         );
@@ -123,7 +172,7 @@ export default class QuizValidator {
     }
 
     /**
-     * **Validação para ver as estatísticas de jogo.**
+     * Validação para ver as estatísticas de jogo.
      * 
      * topics/:number/quizzes/:number/games
      */
@@ -159,6 +208,25 @@ async function validate_name (name: string | undefined, options?: { currentName:
             return "Envie outro nome para o quiz, esse já foi escolhido anteriormente";
     }
     return;
+}
+
+/**
+ * Valida o modo do quiz
+ */
+async function validate_mode (data: string, options?: any) {
+    const valid_modes = ['public', 'private'];
+    // Checa se o modo é válido
+    if (!valid_modes.includes(data))
+        return "Envie um modo de quiz válido - public, private";
+}
+
+/**
+ * Valida a senha do quiz
+ */
+async function validate_password (data: string, options?: any) {
+    // Checa se a senha é válida
+    if (data.length < 4)
+        return "Senha muito curta";
 }
 
 /**
@@ -287,23 +355,48 @@ async function validate_right_answer (alternatives: Array<any>) {
  */
 async function validate_answers (data: Array<any>, options: { questions: Array<Questions> }) {
     const { questions } = options;
-    // Valida quanto a quantidade de questões
-    if (data.length !== questions.length)
-        return "Quantidade de resposta insuficiente";
-
     const answered_questions = [];
     const questions_ids = questions.map(question => question.id);
+    const serialized_data = data.map(res => res.question);
+    const error_message = "respostas esperadas: " + String(questions_ids) + " recebido: " + serialized_data;
+
+    // Valida quanto a quantidade de questões
+    if (data.length !== questions.length)
+    return "Quantidade de respostas não válida - " + error_message;
 
     for (const resp of data) {
         const { question, answer } = resp;
         // Certifica que há a resposta e a pergunta
-        if (!question || !answer)
-            return "Resposta mal formatada";
+        if (!question || !answer) 
+            return "Resposta mal formatada - " + error_message;
+        
         // Certifica que cada resposta terá apenas uma pergunta
         if (!questions_ids.includes(question) || answered_questions.includes(question))
-            return "Resposta inválida";
+            return "Resposta inválida - " + error_message;
+
 
         answered_questions.push(question);
     }
 
+}
+
+/**
+ * Valida a permissão de resposta do aluno
+ */
+async function quiz_permission (data: any, options: { quiz: Quizzes, user: Users | undefined }) {
+    const { quiz, user } = options;
+
+    // Checa se o usuário é o autor do quiz
+    const user_id = user ? user.id : null;
+    if (user_id === quiz.author.id)
+        return;
+
+    // Checa se o quiz é privado
+    if (quiz.mode !== 'private')
+        return;
+
+    // Checa se a senha do quiz é igual a senha dada pelo usuário
+    if (quiz.password !== data)
+        return "Senha inválida";
+    return;
 }

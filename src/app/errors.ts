@@ -7,7 +7,7 @@ import { APIRequest } from 'src/@types';
  * Método que centraliza os erros da aplicação
  */
 export default function errorHandler(error: Error, request: Request, response: Response, next: NextFunction) {
-    return response.send({
+    return response.status(500).send({
         errors: {
             name: error.name,
             message: error.message

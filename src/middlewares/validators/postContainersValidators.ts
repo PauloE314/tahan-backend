@@ -49,8 +49,8 @@ export default class PostContainersValidator {
         // Validação de usuário
         const user_validation = await validator.validate({ user }, [is_container_owner], { container });
 
-        if (user_validation)
-            return validator.resolve(request, response, next);
+        if (!user_validation.is_valid)
+            return validator.resolve(request, response, next, 401);
 
         // Validação de nome
         await validator.validate({ name }, [is_string, name_validation], { user, optional: true });
@@ -85,7 +85,7 @@ export default class PostContainersValidator {
         // Validação de user
         await validator.validate({ user }, [is_container_owner], { container });
 
-        return validator.resolve(request, response, next);
+        return validator.resolve(request, response, next, 401);
     }
 }
 

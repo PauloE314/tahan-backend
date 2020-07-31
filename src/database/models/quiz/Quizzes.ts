@@ -15,6 +15,12 @@ export class Quizzes {
     @Column()
     name: string;
 
+    @Column({ default: 'public', select: false })
+    mode: 'public' | 'private';
+
+    @Column({ nullable: true, select: false })
+    password?: string;
+
     @OneToMany(type => Questions, question => question.quiz, { cascade: true })
     questions: Questions[];
 

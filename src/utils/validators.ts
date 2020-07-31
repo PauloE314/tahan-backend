@@ -54,7 +54,11 @@ export class Validator {
         // Checa se o dado é opcional
         if (data == undefined)
             if (op.optional)
-                return;
+                return {
+                    is_valid: true,
+                    data: null,
+                    errors: null
+                }
 
         // Testa o dado em cada validator
         for(const method of methods) {
@@ -69,17 +73,25 @@ export class Validator {
                 if (save)
                     this.errors.push(err);
 
-                return err;
+                // Retorna resposta adequada
+                return {
+                    is_valid: false,
+                    data,
+                    error: err
+                }
             }
         }
-        return;
+        return {
+            is_valid: true,
+            data
+        };
     }
 
     /**
      * Retorna a resposta para o usuário
      */
-    public resolve(request: APIRequest, response: Response, next: NextFunction) {
-        
+    public resolve(request: APIRequest, response: Response, next: NextFunction, status_code?: number) {
+        const code = status_code ? status_code : 400;
         const returning_errors = {};
         // Checa se há um erro
         for (const error of this.errors) {
@@ -88,7 +100,7 @@ export class Validator {
         }
         // Retorna os errors
         if (Object.keys(returning_errors).length)
-            return response.status(400).send({
+            return response.status(code).send({
                 message: returning_errors
             });
         // Retorna para a próxima

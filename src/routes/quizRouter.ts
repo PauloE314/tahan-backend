@@ -15,7 +15,7 @@ routes.post('/', auth_require, is_teacher, validator.create_validation, controll
 
 // Leitura
 routes.get('/', controller.list);
-routes.get('/:id', getQuiz, controller.read);
+routes.get('/:id', getQuiz, validator.read_quiz_validation, controller.read);
 
 // Update
 routes.put('/:id', auth_require, is_teacher, getQuiz, validator.update_validation, controller.update);

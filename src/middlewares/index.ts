@@ -38,15 +38,25 @@ export async function getPost(request: APIRequest, response: Response, next: Nex
     return next();
 }
 
-// Tenta encontrar o quiz
+
+/**
+ * Pega o quiz usando a URL.
+ */
 export async function getQuiz(request: APIRequest, response: Response, next: NextFunction) {
     const id = Number(request.params.id);
 
     if (!isNaN(id)) {
-        const quiz = await getRepository(Quizzes).findOne({
-            relations: ["questions", 'questions.alternatives', "questions.rightAnswer", "author", "topic"],
-            where: { id }
-        });
+        const quiz = await getRepository(Quizzes)
+        .createQueryBuilder('quiz')
+        .leftJoinAndSelect('quiz.questions', 'question')
+        .leftJoinAndSelect('question.alternatives', 'alternative')
+        .leftJoinAndSelect('question.rightAnswer', 'right_answer')
+        .leftJoinAndSelect('quiz.author', 'author')
+        .leftJoinAndSelect('quiz.topic', 'topic')
+        .where('quiz.id = :id', { id })
+        .addSelect('quiz.mode')
+        .addSelect('quiz.password')
+        .getOne();
 
         if (!quiz)
             return response.send({ message: "Quiz não encontrado" });

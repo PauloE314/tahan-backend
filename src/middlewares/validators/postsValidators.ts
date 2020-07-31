@@ -32,7 +32,7 @@ export default class PostValidator {
         // Validação de usuário
         const user_validation = await validator.validate({ user }, [validate_user]);
 
-        if (user_validation)
+        if (!user_validation.is_valid)
             return validator.resolve(request, response, next);
 
         // Validação de título
@@ -70,8 +70,8 @@ export default class PostValidator {
         const user_validation = await validator.validate({ user }, [validate_user], { post, isAuthor: true});
 
         // Validação de usuário
-        if (user_validation)
-            return response.status(401).send({ user: user_validation.message});
+        if (!user_validation.is_valid)
+            return validator.resolve(request, response, next);
         
         // Validação de título
         await validator.validate(
@@ -110,7 +110,7 @@ export default class PostValidator {
         await validator.validate({ user }, [validate_user], { post, isAuthor: true });
 
         // Resposta
-        return validator.resolve(request, response, next);
+        return validator.resolve(request, response, next, 401);
     }
     
     /**
@@ -125,7 +125,7 @@ export default class PostValidator {
         
         const text_validator = await validator.validate({ text }, [is_string])
         // Certifica que o texto é válido
-        if (text_validator)
+        if (!text_validator.is_valid)
             return validator.resolve(request, response, next);
 
         // Se houver uma resposta, certifica que referencia um comentário que existe

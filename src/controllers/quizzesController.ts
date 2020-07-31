@@ -31,12 +31,12 @@ interface UserAnswer {
  */
 export default class QuizzesController {
     /**
-     * **web: quizzes/ - GET
+     * **web: quizzes/ - GET**
      * 
      * Lista os quizzes da aplicação. Permite pesquisa por:
      * 
-     * - Id do tópico: number
-     * - Id do autor: number
+     * - id do tópico: number
+     * - id do autor: number
      * - name do quizzes: number
      */
     @SafeMethod
@@ -58,7 +58,8 @@ export default class QuizzesController {
         const filtered = filter(quizzes, {
             name: { like: name },
             author: { equal: author },
-            topic: { equal: topic }
+            topic: { equal: topic },
+            mode: { equal: 'public'}
         })
 
         // Aplica paginação
@@ -69,11 +70,13 @@ export default class QuizzesController {
     }
 
     /**
-     * Cria um quiz. Apenas professores podem criar os quizzes
+     * **web: quizzes/ - POST**
+     * 
+     * Cria um quiz. Apenas professores podem criar os quizzes.
      */
     @SafeMethod
     async create(request: APIRequest, response: Response, next: NextFunction) {
-        const { name } = request.body;
+        const { name, mode, password } = request.body;
         const topic = request.topic;
         const questions : InputQuestion[] = request.body.questions;
         const user = request.user.info;
@@ -90,6 +93,8 @@ export default class QuizzesController {
             new_quiz.name = name;
             new_quiz.author = user;
             new_quiz.topic = topic;
+            new_quiz.mode = mode;
+            new_quiz.password = password;
 
             const saved_quiz = await queryRunner.manager.save(new_quiz);
 
@@ -144,15 +149,27 @@ export default class QuizzesController {
             return response.send({name: err.name, message: err.message})
         } finally {
             await queryRunner.release();
-        }        
+        }
     }
 
     /**
+     * **web: quizzes/:number - GET**
+     * 
      * Retorna todos os dados do quiz
      */
     @SafeMethod
     async read(request: APIRequest, response: Response, next: NextFunction) {
-        const { quiz } = request;
+        const { quiz, user } = request;
+
+        if (!user) {
+            delete quiz.mode;
+            delete quiz.password;
+        }
+        // Apaga a senha caso o usuário não seja seu criador
+        if (user.info.id !== quiz.author.id) {
+            delete quiz.mode;
+            delete quiz.password;
+        }
 
         return response.send(quiz);
     }
@@ -163,13 +180,24 @@ export default class QuizzesController {
      */
     @SafeMethod
     async update(request: APIRequest, response: Response, next: NextFunction) {
-        const { name, remove } = request.body;
+        const { name, remove, mode, password } = request.body;
         const add : InputQuestion[] = request.body.add;
         const { quiz } = request;
+
 
         // Renomear quiz
         if (name)
             quiz.name = name;
+
+        // Mudar senha do quiz
+        if (password)
+            quiz.password = password;
+
+        // Mudar modo do quiz
+        if (mode) {
+            quiz.mode = mode;
+            quiz.password = null;
+        }
 
         // Inicia a transaction
         const queryRunner = getConnection().createQueryRunner();
@@ -177,8 +205,12 @@ export default class QuizzesController {
 
         await queryRunner.startTransaction();
 
+        // Salva alterações no quiz
+        await queryRunner.manager.save(quiz);
+
 
         try {
+            // Remove questões
             if (remove) {
                 for (let question of remove) {
                     quiz.questions = quiz.questions.filter(quest => quest.id !== question);
@@ -186,7 +218,7 @@ export default class QuizzesController {
                 }
                 await queryRunner.manager.save(quiz);
             }
-
+            // Adiciona questões
             if (add) {
                 // Cria as novas questões
                 for (let quest of add) {
@@ -217,7 +249,7 @@ export default class QuizzesController {
                 relations: ['questions', 'questions.alternatives', 'questions.rightAnswer'],
                 where: {
                     id: quiz.id
-                }
+                },
             });
 
             return response.send(full_quiz);
@@ -251,11 +283,10 @@ export default class QuizzesController {
      */
     @SafeMethod
     async answer(request: APIRequest, response: Response, next: NextFunction) {
-        try{
         const { user, quiz } = request;
-        const body: Array<UserAnswer> = request.body;
+        const data: Array<UserAnswer> = request.body.answer;
         // Corrige as questões
-        const answers = body.map(answer => {
+        const answers = data.map(answer => {
             const question = quiz.questions.find(question => question.id === answer.question);
             return {
                 question: question.id,
@@ -283,10 +314,7 @@ export default class QuizzesController {
         await getRepository(GameHistoric).save(game);
         // Retorna os dados
         return response.send({ answers, score });
-        }
-        catch(err) {
-            return response.send(err.message)
-        }
+
     }
 
     /**
@@ -296,12 +324,17 @@ export default class QuizzesController {
     async games(request: APIRequest, response: Response, next: NextFunction) {
         const quiz = request.quiz;
         // Pega lista de jogos com o quiz especificado na URL
-        const game_historic = await getRepository(GameHistoric).find({
-            relations: ['player_1_score', 'player_1_score.player', 'player_2_score', 'player_2_score.player', 'quiz'],
-            where: {
-                quiz: { id: quiz.id }
-            }
-        });
+        const game_historic = await getRepository(GameHistoric)
+            .createQueryBuilder('game')
+            .leftJoinAndSelect('game.quiz', 'quiz')
+            .leftJoinAndSelect('game.player_1_score', 'score_1')
+            .leftJoinAndSelect('game.player_2_score', 'score_2')
+            .loadRelationIdAndMap('score_1.player', 'score_1.player')
+            .loadRelationIdAndMap('score_2.player', 'score_2.player')
+            .where('game.quiz.id = :id', { id: quiz.id })
+            .select(['game', 'score_1', 'score_2', 'quiz.id', 'quiz.created_at'])
+            .getMany()
+
 
         return response.send(game_historic);
     }

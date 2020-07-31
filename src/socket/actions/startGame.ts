@@ -6,7 +6,6 @@ import Client, { client_status } from '../helpers/client';
 import Match from '../helpers/match';
 import GameQuiz from '../helpers/game';
 import rooms_manager from '../helpers/rooms';
-import { count_runner } from '../../utils';
 import { StartGameData, GameData, GameCountData } from 'src/@types/socket';
 import next_question from './nextQuestion';
 
@@ -28,7 +27,7 @@ export default async function StartGame (io: Server, client: Client, data: Start
     // Pega o quiz
     const quiz = await getRepository(Quizzes).findOne({
         relations: ['author', 'section', 'questions', 'questions.alternatives', 'questions.rightAnswer'],
-        where: { id: data.quiz_id }
+        where: { id: data.quiz_id, mode: 'public' }
     });
 
     // Certifica que o quiz existe
@@ -44,7 +43,7 @@ export default async function StartGame (io: Server, client: Client, data: Start
         name: game.quiz.name,
         author: game.quiz.author,
         created_at: game.quiz.created_at,
-        section: game.quiz.section
+        topic: game.quiz.topic
     }
 
     // Envia dados de jogo
@@ -62,14 +61,14 @@ export default async function StartGame (io: Server, client: Client, data: Start
 
             const room = rooms_manager.get_room(game.room_key);
             // Avisa ao oponente que o jogador saiu
-            const oponent = game.room.match.players.find(p => p.user.id !== player.user.id);
-            oponent.emit(SocketEvents.OponentOut);
+            const opponent = game.room.match.players.find(p => p.user.id !== player.user.id);
+            opponent.emit(SocketEvents.OponentOut);
             // Termina o jogo
-            const data = game.endGame({ forced_winner: oponent});
+            const data = game.endGame({ forced_winner: opponent});
             // Envia o fim do jogo
-            oponent.emit(SocketEvents.EndGame, data);
+            opponent.emit(SocketEvents.EndGame, data);
             // Avisa que o oponente saiu
-            oponent.emit(SocketEvents.OponentOut);
+            opponent.emit(SocketEvents.OponentOut);
 
             // Caso o desconectado seja o player 1
             if (player.user.id === game.room.match.player_1.user.id) 

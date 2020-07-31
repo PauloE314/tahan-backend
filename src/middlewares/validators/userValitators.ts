@@ -24,7 +24,7 @@ export default class UserValidator {
         // Validação do token
         const token_validation = await validator.validate({ access_token }, [is_string]);
         // Avisa a resposta
-        if (token_validation)
+        if (!token_validation.is_valid)
             return validator.resolve(request, response, next);
             
         // Pega os dados google

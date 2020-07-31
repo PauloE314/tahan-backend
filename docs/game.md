@@ -48,7 +48,7 @@ Dados de envio:
         "quiz_id": <number> 
     }
     ```
-- **Detalhes:** Inicia o jogo. Esse evento só pode ser chamado pelo usuário que criou a sala de jogo. Esse evento irá iniciar a contagem para início de jogo.
+- **Detalhes:** Inicia o jogo. Apenas jogos públicos estão disponíveis. Esse evento só pode ser chamado pelo usuário que criou a sala de jogo. Esse evento irá iniciar a contagem para início de jogo.
 
 ### **Answer**
 - **Nome da mensagem:** ```answer```

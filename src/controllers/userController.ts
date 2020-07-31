@@ -266,6 +266,8 @@ export default class UserController {
 
   
   /**
+   * **web: /users/ - DELETE**
+   * 
    * Deleta o usuário
    */ 
   @SafeMethod

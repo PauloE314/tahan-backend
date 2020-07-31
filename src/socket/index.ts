@@ -13,7 +13,7 @@ export default function useSocket(io: Server) {
     // Aplica middlewares
     useMiddlewares(io);
 
-    // Inicia a connexão
+    // Inicia a conexão
     io.on(SocketEvents.ClientConnect, (socket: APISocket) => {
         // Cria um cliente
         const client = new Client(io, socket, socket.client.user.info);
