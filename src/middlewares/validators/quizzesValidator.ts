@@ -198,10 +198,11 @@ export default class QuizValidator {
  */
 async function validate_name (name: string | undefined, options?: { currentName: string }) {
     const currentName = options ? options.currentName : null;
-    // Validação de título
+    // Validação de tamanho
     if (name.length < 5)
         return "Envie um nome que tenha mais de 5 caracteres";
 
+    // Validação de unicidade
     const same_name_quiz = await getRepository(Quizzes).findOne({ name });
     if (same_name_quiz) {
         if (same_name_quiz.name !== currentName)

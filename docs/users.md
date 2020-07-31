@@ -4,47 +4,58 @@
 
 #### GET (Autenticação não necessária):
 
-Retorna a lista de usuários e suas informações. Permite filtro pelo ```username```, ```email``` e ```occupation``` deles.
-- base_url/users/?username=:string
-- base_url/users/?email=:string
-- base_url/users/?occupation=:string
+- **Funcionamento:**
+
+  Retorna a lista de usuários e suas informações. Permite filtro pelo ```username```, ```email``` e ```occupation``` deles.
+  - users/?username=:string
+  - users/?email=:string
+  - users/?occupation=:string
 
 
-```json
-{
-  "page": {
-    "current": "<number>",
-    "total": "<number>",
-  },
-  "count": "<number>",
-  "found": "<number>",
-  "data": [
-    {
-      "id": "<number>",
-      "username": "<string>",
-      "image_url": "<string>",
-      "email": "<string>",
-      "occupation": "student | teacher",
-      "created_at": "<Date | string>"
-    }
-  ]
-}
-```
-
+  ```json
+  {
+    "page": {
+      "current": "<number>",
+      "total": "<number>",
+    },
+    "count": "<number>",
+    "found": "<number>",
+    "data": [
+      {
+        "id": "<number>",
+        "username": "<string>",
+        "image_url": "<string>",
+        "email": "<string>",
+        "occupation": "student | teacher",
+        "created_at": "<Date | string>"
+      }
+    ]
+  }
+  ```
 <hr>
 
 ## **Path: /users/sign-in/ - POST**
 
 #### POST (Autenticação não necessária):
 
-Permite entrar na aplicação com um access_token OAuth. Caso já tenha entrado na aplicação antes, apenas atualiza o token JWT; mas caso seja o primeiro acesso, cria a conta do usuário e retorna seus dados.
+- **Funcionamento:**
 
-```json
-{
-  "access_token": "<string>",
-  "occupation": "teacher | student"
-}
-```
+  Permite entrar na aplicação com um access_token OAuth. Caso já tenha entrado na aplicação antes, apenas atualiza o token JWT; mas caso seja o primeiro acesso, cria a conta do usuário e retorna seus dados.
+
+  ```json
+  {
+    "access_token": "<string>",
+    "occupation": "teacher | student"
+  }
+  ```
+
+- **Validação**:
+
+  - ```access_token```:
+    - Precisa ser string;
+  - ```occupation```:
+    - Precisa ser string;
+    - Precisa ser ```teacher``` ou  ```student```;
 
 <hr>
 
@@ -52,18 +63,20 @@ Permite entrar na aplicação com um access_token OAuth. Caso já tenha entrado 
 
 #### GET: (Autenticação não necessária)
 
-Retorna as informações de um usuário específico.
+- **Funcionamento:**
 
-```json
-{
-  "id": "<number>",
-  "username": "<string>",
-  "email": "<string>",
-  "image_url": "<string>",
-  "occupation": "student | teacher",
-  "created_at": "<Date | string>"
-}
-```
+  Retorna as informações de um usuário específico.
+
+  ```json
+  {
+    "id": "<number>",
+    "username": "<string>",
+    "email": "<string>",
+    "image_url": "<string>",
+    "occupation": "student | teacher",
+    "created_at": "<Date | string>"
+  }
+  ```
 
 <hr>
 
@@ -71,24 +84,26 @@ Retorna as informações de um usuário específico.
 
 #### GET: (Autenticação necessária)
 
-Retorna as informações do usuário logado. 
+- **Funcionamento:**
 
-```json
-{
-  "info": {
-    "id": "<number>",
-    "username": "<string>",
-    "email": "<string>",
-    "image_url": "<string>",
-    "occupation": "student | teacher"
-  },
-  "date": {
-    "expires": "<Date | string>",
-    "starts": "<Date | string>"
+  Retorna as informações do usuário logado. 
+
+  ```json
+  {
+    "info": {
+      "id": "<number>",
+      "username": "<string>",
+      "email": "<string>",
+      "image_url": "<string>",
+      "occupation": "student | teacher"
+    },
+    "date": {
+      "expires": "<Date | string>",
+      "starts": "<Date | string>"
+    }
   }
-}
-```
-OBS: "date" se refere ao tempo de inicial e máximo do Token utilizado no momento.
+  ```
+  **OBS:** "date" se refere ao tempo de inicial e máximo do Token utilizado no momento.
 
 
 
@@ -96,69 +111,72 @@ OBS: "date" se refere ao tempo de inicial e máximo do Token utilizado no moment
 
 #### GET: (Autenticação necessária)
 
-Retorna a lista dos quizzes do usuário logado. Permite filtro por ```topic``` e ```name```:
+- **Funcionamento:**
 
-- base_url/users/self/quizzes/?topic=:number
-- base_url/users/self/quizzes/?name=:string
+  Retorna a lista dos quizzes do usuário logado. Permite filtro por ```topic``` e ```name```:
+  - users/self/quizzes/?topic=:number
+  - users/self/quizzes/?name=:string
 
-```json
-{
-  "page": {
-    "current": "<number>",
-    "total": "<number>"
-  },
-  "count": "<number>",
-  "found": "<number>",
-  "data": [
-    {
-      "id": "<number>",
-      "name": "<string>",
-      "created_at": "<Date|string>",
-      "questions": [
-        "<number>",
-        "..."
-      ]
-    }
-  ]
-}
+  ```json
+  {
+    "page": {
+      "current": "<number>",
+      "total": "<number>"
+    },
+    "count": "<number>",
+    "found": "<number>",
+    "data": [
+      {
+        "id": "<number>",
+        "name": "<string>",
+        "created_at": "<Date|string>",
+        "questions": [
+          "<number>",
+          "..."
+        ]
+      }
+    ]
+  }
 
-```
+  ```
 <hr>
 
 ## **Path: /users/self/posts - GET**
 
 #### GET: (Autenticação necessária)
 
-Retorna as informações do usuário logado. Permite filtro por ```title``` e ```topic```:
+- **Funcionamento:**
 
-- base_url/users/self/posts/?title=:string
-- base_url/users/self/posts/?topic=:number
+  Retorna as informações do usuário logado. Permite filtro por ```title``` e ```topic```:
+
+  - users/self/posts/?title=:string
+  - users/self/posts/?topic=:number
 
 
-```json
-{
-  "page": {
-    "current": "<number>",
-    "total": "<number>"
-  },
-  "count": "<number>",
-  "found": "<number>",
-  "data": [
-    {
-      "id": "<number>",
-      "title": "<string>",
-      "content": "<string>",
-      "description": "<string>",
-      "created_at": "<Date|string>",
-      "topic": {
+  ```json
+  {
+    "page": {
+      "current": "<number>",
+      "total": "<number>"
+    },
+    "count": "<number>",
+    "found": "<number>",
+    "data": [
+      {
         "id": "<number>",
-        "name": "<string>"
+        "title": "<string>",
+        "content": "<string>",
+        "description": "<string>",
+        "created_at": "<Date|string>",
+        "topic": {
+          "id": "<number>",
+          "name": "<string>"
+        }
       }
-    }
-  ]
-}
+    ]
+  }
 
-```
+  ```
 
 <hr>
 
@@ -167,41 +185,43 @@ Retorna as informações do usuário logado. Permite filtro por ```title``` e ``
 
 #### GET: (Autenticação necessária)
 
-Os containers do usuário logado. Permite filtro por ```title```:
+- **Funcionamento:**
 
-- base_url/users/self/posts/?title=:string
+  Os containers do usuário logado. Permite filtro por ```title```:
+
+  - users/self/posts/?title=:string
 
 
-```json
+  ```json
 
-{
-  "page": {
-    "current": "<number>",
-    "total": "<number>"
-  },
-  "count": "<number>",
-  "found": "<number>",
-  "data": [     
-    {
-      "id": "<number>",
-      "name": "<string>",
-      "posts": [
-        {
-          "id": "<number>",
-          "title": "<string>",
-          "description": "<string>",
-          "created_at": "<Date|string>",
-          "academic_level": "fundamental | médio | superior"
-        }
-      ]
-    }
-  ]
-}
-
-```
+  {
+    "page": {
+      "current": "<number>",
+      "total": "<number>"
+    },
+    "count": "<number>",
+    "found": "<number>",
+    "data": [     
+      {
+        "id": "<number>",
+        "name": "<string>",
+        "posts": [
+          {
+            "id": "<number>",
+            "title": "<string>",
+            "description": "<string>",
+            "created_at": "<Date|string>",
+            "academic_level": "fundamental | médio | superior"
+          }
+        ]
+      }
+    ]
+  }
+  ```
 
 #### DELETE: (Autenticação necessária)
-Apaga o usuário.
+- **Funcionamento:**
+  Apaga o usuário.
 
 
 <hr>
@@ -210,10 +230,12 @@ Apaga o usuário.
 
 #### GET: (Autenticação necessária)
 
-Retorna a lista de posts do usuário escolhido na URL. Permite filtro por ```title``` e ```topic```:
+- **Funcionamento:**
 
-- base_url/users/:id/posts/?title=:string
-- base_url/users/:id/posts/?topic=:number
+  Retorna a lista de posts do usuário escolhido na URL. Permite filtro por ```title``` e ```topic```:
+
+  - users/:id/posts/?title=:string
+  - users/:id/posts/?topic=:number
 
 <hr>
 
@@ -221,7 +243,9 @@ Retorna a lista de posts do usuário escolhido na URL. Permite filtro por ```tit
 
 #### GET: (Autenticação necessária)
 
-Retorna a lista de containers para posts do usuário escolhido na URL. Permite filtro por ```title```:
+- **Funcionamento:**
 
-- base_url/users/:id/post-containers/?title=:string
+  Retorna a lista de containers para posts do usuário escolhido na URL. Permite filtro por ```title```:
+
+  - users/:id/post-containers/?title=:string
 

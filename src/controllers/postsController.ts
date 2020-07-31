@@ -78,22 +78,27 @@ export default class PostController {
         return response.send(saved_post);
     }
 
-    // Ver um post específico
+    /**
+     * **web: /posts/:id - GET**
+     * 
+     * Permite ver um post específico
+     */
     @SafeMethod
     async read (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
-        // Pega a quantidade de likes
+
+        //Pega a quantidade de likes
         const [likes, count_likes] = await getRepository(Likes).findAndCount({
             relations: ['post'],
             where: { post: { id: post.id } }
         })
-        const comment = await getRepository(Comments)
+        const comments = await getRepository(Comments)
             .createQueryBuilder('comments')
             .loadRelationIdAndMap('comments.author', 'comments.author')
             .loadRelationIdAndMap('comments.reference', 'comments.reference')
-            .getMany()
-
-        return response.send({ ...post, likes: count_likes, comments: { list: comment }})
+            .getMany();
+            
+        return response.send({ ...post, likes: count_likes, comments })
     
     }
 
