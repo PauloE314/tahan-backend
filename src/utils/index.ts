@@ -92,10 +92,10 @@ export async function get_google_user_data(access_token: string, options?: { rai
         const { data } = await axios.get(url + access_token);
         console.log(data)
         const email = data.email;
-        const { id, displayName, picture } = data;
+        const { id, name, picture } = data;
         // Retorna os dados escolhidos
         return {
-            email, id, displayName, image_url: picture
+            email, id, name, image_url: picture
         };
     }
     // Caso token seja inválido, retorna null ou erro

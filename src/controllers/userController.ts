@@ -59,7 +59,7 @@ export default class UserController {
     // Atualiza / cria o usuário
     const actual_user = user ? user : new Users();
     actual_user.email = google_data.email;
-    actual_user.username = google_data.displayName;
+    actual_user.username = google_data.name;
     actual_user.image_url = google_data.image_url;
     // Caso o usuário não exista ainda
     if (!user) {

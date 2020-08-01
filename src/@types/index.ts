@@ -18,7 +18,7 @@ export interface user_interface {
 export interface google_data {
     email: string,
     id: string,
-    displayName: string,
+    name: string,
     image_url: string
 }
 
