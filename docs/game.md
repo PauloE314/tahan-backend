@@ -4,16 +4,10 @@
 Dados de envio:
 ```json
 {
-    "JWT": <string>,
+    "JWT": "<string>",
 }
 ```
 - JWT: Token de login do usuário.
-
-<!-- 
-// Eventos do server
-    Exception: "error",
-    
- -->
 
 <hr>
 
@@ -29,7 +23,7 @@ Dados de envio:
 - **Dados de envio:** 
     ```json
     {
-        "code": <string>
+        "code": "<string>"
     }
     ```
 - **Detalhes:** Adiciona o usuário à sala que possui o código enviado. Caso o código seja inválido ou a sala já estiver cheia, retorna um erro.
@@ -45,7 +39,7 @@ Dados de envio:
 - **Dados de envio:** 
     ```json
     {
-        "quiz_id": <number> 
+        "quiz_id": "<number>"
     }
     ```
 - **Detalhes:** Inicia o jogo. Apenas jogos públicos estão disponíveis. Esse evento só pode ser chamado pelo usuário que criou a sala de jogo. Esse evento irá iniciar a contagem para início de jogo.
@@ -55,7 +49,7 @@ Dados de envio:
 - **Dados de envio:** 
     ```json
     {
-        "answer_id": <number> 
+        "answer_id": "<number> "
     }
     ```
 - **Detalhes:** Responde a questão. Esse evento só é válido quando o usuário está em jogo e o jogo já começou. A resposta só será armazenada no primeiro envio, ou seja, não vale enviar uma resposta mais de uma vez.
@@ -72,7 +66,7 @@ Dados de envio:
 - **Dados recebidos:**
     ```json
     {
-        "match_code": <string>
+        "match_code": "<string>"
     }
     ```
 - **Detalhes:** Avisa ao usuário que a sala foi criada com sucesso.
@@ -89,10 +83,10 @@ Dados de envio:
 - **Dados recebidos:**
     ```json
     {
-        "username": <string>,
-        "email": <string>,
-        "occupation": <string>,
-        "created_at": <string>
+        "username": "<string>",
+        "email": "<string>",
+        "occupation": "<string>",
+        "created_at": "<string>"
     }
     ```
 - **Detalhes:** Avisa ao usuário (player 1) que um novo usuário (player 2) entrou na sala
@@ -120,19 +114,19 @@ Dados de envio:
 - **Dados recebidos:** 
     ```json
     {
-        "id": <number>,
-        "name": <string>,
+        "id": "<number>",
+        "name": "<string>",
         "author": { 
-            "id": <number>,
-            "username": <string>,
-            "email": <string>,
-            "occupation": <"student" | "teacher">,
-            "created_at": <Date | string>
+            "id": "<number>",
+            "username": "<string>",
+            "email": "<string>",
+            "occupation": "<student | teacher>",
+            "created_at": "<Date | string>"
         },
-        "created_at": <Date | string>,
+        "created_at": "<Date | string>",
         "section": {
-            "id": <number>,
-            "name": <string>
+            "id": "<number>",
+            "name": "<string>"
         }
     }
     ```
@@ -144,7 +138,7 @@ Dados de envio:
 - **Dados recebidos:** 
     ```json
     {
-        "count": <number>
+        "count": "<number>"
     }
     ```
 - **Detalhes:** Envia a contagem para inicio de jogo.
@@ -155,12 +149,12 @@ Dados de envio:
 - **Dados recebidos:**
     ```json
     {
-        "id": <Number>,
-        "question": <String>,
+        "id": "<Number>",
+        "question": "<String>",
         "alternatives": [
-            {"id": <Number>, "text": <String>},
-            {"id": <Number>, "text": <String>},
-            {"id": <Number>, "text": <String>}
+            {"id": "<Number>", "text": "<String>"},
+            {"id": "<Number>", "text": "<String>"},
+            {"id": "<Number>", "text": "<String>"}
         ]
     }
     ```
@@ -201,8 +195,8 @@ Dados de envio:
 - **Dados recebidos:**
     ```json
     {
-        "player1_answer": "right" | "wrong" | "no-answer",
-        "player2_answer": "right" | "wrong" | "no-answer"
+        "player1_answer": "right | wrong |no-answer",
+        "player2_answer": "right | wrong | no-answer"
     }
     ```
 - **Detalhes:** Avisa a ambos os status de suas respostas.
@@ -217,12 +211,12 @@ Dados de envio:
 - **Dados recebidos:**
     ```json
     {
-        "draw": <boolean>,
-        "winnwer": {
-            "created_at": <Date | string>,
-            "username": <string>,
-            "email": <string>, 
-            "occupation": <string>
+        "draw": "<boolean>",
+        "winner": {
+            "created_at": "<Date | string>",
+            "username": "<string>",
+            "email": "<string>", 
+            "occupation": "<string>"
         }
     }
     ```
@@ -245,9 +239,9 @@ Os erros de autenticação na conexão com os webSocket são enviados para o eve
 {
     "name": "game-error",
     "data": {
-        "name": <string>,
-        "code": <number>,
-        "message": <string>
+        "name": "<string>",
+        "code": "<number>",
+        "message": "<string>"
     }
 }
 ```
@@ -255,9 +249,9 @@ Os erros de autenticação na conexão com os webSocket são enviados para o eve
 ### **Demais erros da aplicação:**
 ```json
 {
-    "name": <string>,
-    "code": <number>,
-    "message": <string>
+    "name": "<string>",
+    "code": "<number>",
+    "message": "<string>"
 }
 ```
 
