@@ -86,16 +86,16 @@ export async function auth_user(input: { token: string, raiseError: boolean, bea
  */
 export async function get_google_user_data(access_token: string, options?: { raise: boolean }) : Promise<google_data|null>{
     const raise_error = options? options.raise : false;
-    const url = "https://www.googleapis.com/plus/v1/people/me?access_token=";
+    const url = "https://www.googleapis.com/oauth2/v1/userinfo?&access_token=";
     try {
         // Pega os dados do usuário
         const { data } = await axios.get(url + access_token);
         console.log(data)
-        const email = data.emails[0].value;
-        const { id, displayName, image } = data;
+        const email = data.email;
+        const { id, displayName, picture } = data;
         // Retorna os dados escolhidos
         return {
-            email, id, displayName, image_url: image.url
+            email, id, displayName, image_url: picture
         };
     }
     // Caso token seja inválido, retorna null ou erro
