@@ -168,30 +168,29 @@ export function random_array(array: Array<any>) {
 /**
  * Decorator que certifica que, caso ocorra um erro, o server são será quebrado. 
  */
-export function SafeMethod () {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        const original_method = descriptor.value;
+export function SafeMethod (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const original_method = descriptor.value;
 
-        descriptor.value = async function (request: APIRequest, response: Response, next: NextFunction) {
-            try {
-                await original_method.call(this, request, response, next);
-                return;
-            }
-            catch(err) {
-                return next(err);
-            }
+    descriptor.value = async function (request: APIRequest, response: Response, next: NextFunction) {
+        try {
+            await original_method.call(this, request, response, next);
+            return;
         }
-
-        // descriptor.value = async (request: APIRequest, response: Response, next: NextFunction) => {
-        //     try {
-        //         await original_method.call(this, request, response, next);
-        //         return;
-        //     }
-        //     catch(err) {
-        //         return next(err);
-        //     }
-        // }
+        catch(err) {
+            return next(err);
+        }
     }
+
+    // descriptor.value = async (request: APIRequest, response: Response, next: NextFunction) => {
+    //     try {
+    //         await original_method.call(this, request, response, next);
+    //         return;
+    //     }
+    //     catch(err) {
+    //         return next(err);
+    //     }
+    // }
+
     // descriptor.value = async (request: APIRequest, response: Response, next: NextFunction) => {
     //     this = target;
     //     try {

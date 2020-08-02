@@ -5,19 +5,19 @@ import { FriendsValidator } from '@controllers/friends/validator';
 import { FriendsRepository } from 'src/repositories/FriendsRepository';
 import { getFriendship } from '@middlewares/index';
 import { APIRequest } from 'src/@types';
-import { Routes } from 'src/utils/bases';
 
 // const router = new Routes({ mergeParams: true });
 const router = Router({ mergeParams: true });
 
-const validator = new FriendsValidator();
-const controller = new FriendsController(validator, FriendsRepository);
+const controller = new FriendsController();
 
 
 // Listagem
 // router.get('/', controller.list );
-router.get('/', (request: APIRequest, response, next) => { controller.list(request, response, next) })
-// router.get('/', controller.list)
+// router.get('/', (request: APIRequest, response, next) => { controller.list(request, response, next) })
+router.get('/', controller.list)
+router.get('/test', controller.testes)
+
 
 
 

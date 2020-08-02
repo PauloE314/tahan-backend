@@ -1,33 +1,35 @@
 import { IFriendsController, IFriendsValidator, IFriendsRepository } from './types';
 import { APIRequest } from 'src/@types';
 import { Response, NextFunction } from 'express';
-import { SafeMethod } from 'src/utils';
+// import { SafeMethod } from 'src/utils';
 import { getCustomRepository } from 'typeorm';
 import { Friendships } from '@models/friends/Friendships';
+import { nextTick } from 'process';
+import { SafeMethod } from 'src/utils';
+import { FriendsRepository } from 'src/repositories/FriendsRepository';
 
 
 /**
  * Controlador de ações para amigos
  */
 export class FriendsController implements IFriendsController {
-
-    constructor(
-        private validator: IFriendsValidator,
-        private repository: new () => IFriendsRepository
-    ) {}
+    testes = async (request: APIRequest, response: Response, next: NextFunction) => {
+        // console.log(this)
+        return response.send('ok')
+    }
 
     /**
      * **web: /friends/ - GET**
      * 
      * Lista os amigos do usuário logado. Permite o filtro de pesquisa por paginação.
      */
-
-    @SafeMethod()
+    @SafeMethod
     async list(request: APIRequest, response: Response, next: NextFunction) {
+
         const user = request.user.info;
         const params = request.params;
         // Pega lista de amigos
-        const friends = this.repo.findFriendships(user);
+        const friends = getCustomRepository(FriendsRepository).findFriendships(user);
         const data = await friends.getMany();
 
         // Aplica filtros e paginação
@@ -105,9 +107,4 @@ export class FriendsController implements IFriendsController {
 
     //     return response.send({ message: 'Não implementado ainda' });
     // }
-
-
-    get repo() {
-        return getCustomRepository(this.repository);
-    }
 }
