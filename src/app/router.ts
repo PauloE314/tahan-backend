@@ -4,12 +4,15 @@ import topicsRouter from '@routes/topicsRoutes';
 import postsRouter from '@routes/postsRouter';
 import quizRouter from '@routes/quizRouter';
 import testRouter from "@routes/testRouter";
+import friendsRouter from "@routes/friendshipsRouter";
+
 import postContainersRouter from "@routes/postsContainerRouter";
 
 const router = Router();
 
 
 router.use('/users/', userRouter);
+router.use('/friends/', friendsRouter)
 router.use('/topics/', topicsRouter);
 
 router.use('/posts/', postsRouter);

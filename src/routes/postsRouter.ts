@@ -3,7 +3,6 @@ import { getPost, getTopic } from '@middlewares/index';
 import { auth_require } from "@middlewares/auth"
 import PostsController from '@controllers/postsController';
 import PostsValidator from '@middlewares/validators/postsValidators';
-import router from 'src/app/router';
 
 const routes = Router({ mergeParams: true });
 const controller = new PostsController();

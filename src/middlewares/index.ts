@@ -100,3 +100,26 @@ export async function getContainer(request: APIRequest, response: Response, next
     }
     return next();
 }
+
+
+/**
+ * Pega uma amizade passada na URL e a salva na request
+ */
+export function getFriendship(id_name: string) {
+    return async function (request: APIRequest, response: Response, next: NextFunction) {
+        const id = Number(request.params[id_name]);
+
+        if (id) {
+            const container = await getRepository(Containers).findOne({
+                relations: ['author', 'posts'],
+                where: { id }
+            });
+            if (container) {
+                request.container = container;
+                return next();
+            }
+            return response.status(400).send({ message: "Container de posts não encontrado" })
+        }
+        return next();
+    }
+}

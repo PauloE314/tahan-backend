@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateColumn } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateColumn, ManyToMany, JoinTable } from "typeorm";
 import { Posts } from './Posts/Posts';
 import { Quizzes } from "./quiz/Quizzes";
 import { Containers } from './Posts/Containers'

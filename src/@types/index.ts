@@ -4,6 +4,7 @@ import { Topics } from '@models/Topics';
 import { Posts } from '@models/Posts/Posts';
 import { Quizzes } from '@models/quiz/Quizzes';
 import { Containers } from '@models/Posts/Containers';
+import { Friendships } from '@models/friends/Friendships';
 
 // modelo de usuário
 export interface user_interface {
@@ -30,7 +31,8 @@ export interface APIRequest extends Request{
     post?: Posts,
     post_list?: Array<Posts>,
     container?: Containers,
-    quiz?: Quizzes
+    quiz?: Quizzes,
+    friendship?: Friendships
 }
 
 
