@@ -3,18 +3,17 @@ import { Users } from "@models/User";
 import { Messages } from "./messages";
 
 @Entity()
-export class Friendships {
+export class Solicitations {
 
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => Users)
-    @JoinTable()
-    users: Users[];
-    
-    @OneToMany(type => Messages, message => message.friendship)
-    messages: Messages[];
+    @ManyToOne(type => Users, user => user.id)
+    sender: Users;
+
+    @ManyToOne(type => Users, user => user.id)
+    receiver: Users;
 
     @CreateDateColumn()
-    accepted_at: Date;
+    sended_at: Date;
 }

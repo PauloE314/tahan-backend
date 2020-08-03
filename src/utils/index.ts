@@ -168,25 +168,11 @@ export function random_array(array: Array<any>) {
 /**
  * Decorator que certifica que, caso ocorra um erro, o server são será quebrado. 
  */
-export function SafeMethod (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const original_method = descriptor.value;
-
-    descriptor.value = async function (request: APIRequest, response: Response, next: NextFunction) {
-        try {
-            await original_method.call(this, request, response, next);
-            return;
-        }
-        catch(err) {
-            return next(err);
-        }
-    }
-}
-
-/**
- * Decorator que certifica que, caso ocorra um erro, o server são será quebrado. Esse só deve ser usado em arrow functions
- */
-export function SafeArrowMethod (target: any, key:any): any {
-    let func = (...data: any) => {}
+export function SafeMethod (target: any, key:any, descriptor?: PropertyDescriptor): any {
+    let func = (...data: any) => {};
+    
+    if (descriptor)
+        func = descriptor.value;
     
     return {
         configurable: true,
@@ -197,6 +183,9 @@ export function SafeArrowMethod (target: any, key:any): any {
                     await func.call(this, request, response, next);
                 }
                 catch(err) {
+                    if (err.name === ValidationError.name)
+                        return response.status(err.code).send({ message: err.message })
+
                     next(err);
                 }
             }
@@ -206,6 +195,9 @@ export function SafeArrowMethod (target: any, key:any): any {
         }
     };
 }
+
+
+
 
 
 
@@ -261,4 +253,18 @@ export function filter<T>(query_builder: SelectQueryBuilder<T>, params: { [name:
         
     }
     return query_builder;
+}
+
+
+export class ValidationError extends Error {
+    name = 'ValidationError';
+    code = 404;
+    message: any;
+
+    constructor(message: any, code?: number) {
+        super();
+        this.message = message;
+        if (code)
+            this.code = code;
+    }
 }

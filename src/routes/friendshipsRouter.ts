@@ -9,13 +9,29 @@ import { APIRequest } from 'src/@types';
 // const router = new Routes({ mergeParams: true });
 const router = Router({ mergeParams: true });
 
-const controller = new FriendsController();
+const validator = new FriendsValidator(FriendsRepository);
+const controller = new FriendsController(FriendsRepository, validator);
 
-// Listagem
-// router.get('/', controller.list );
-// router.get('/', (request: APIRequest, response, next) => { controller.list(request, response, next) })
-router.get('/', controller.list.bind(controller))
-router.get('/test', controller.testes)
+// Listagem de amigos
+router.get(
+    '/',
+    auth_require,
+    controller.list_friends.bind(controller)
+);
+
+// Listagem de solicitações
+router.get(
+    '/solicitations/:type(sended|received|all)',
+    auth_require,
+    controller.list_solicitations.bind(controller)
+);
+
+// Envio de solicitações
+router.post(
+    '/send/:user_id([0-9]+)',
+    auth_require,
+    controller.send_solicitation.bind(controller)
+);
 
 
 

@@ -5,36 +5,58 @@ import { Response, NextFunction } from 'express';
 import { getCustomRepository } from 'typeorm';
 import { Friendships } from '@models/friends/Friendships';
 import { nextTick } from 'process';
-import { SafeMethod, SafeMethodTest } from 'src/utils';
+import { SafeMethod } from 'src/utils';
 import { FriendsRepository } from 'src/repositories/FriendsRepository';
+
 
 
 /**
  * Controlador de ações para amigos
  */
 export class FriendsController implements IFriendsController {
-
-    @SafeMethodTest
-    testes = async (request: APIRequest, response: Response, next: NextFunction) => {
-        throw new Error();
-        return response.send('ok')
-    }
+    
+    constructor(
+        private repository: new() => IFriendsRepository,
+        private validator: IFriendsValidator
+    ) { }
 
     /**
      * **web: /friends/ - GET**
      * 
      * Lista os amigos do usuário logado. Permite o filtro de pesquisa por paginação.
      */
+    // @SafeMethod
     @SafeMethod
-    async list(request: APIRequest, response: Response, next: NextFunction) {
+    async list_friends(request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
-        const params = request.params;
+        const query = request.query;
+        
         // Pega lista de amigos
-        const friends = getCustomRepository(FriendsRepository).findFriendships(user);
-        const data = await friends.getMany();
+        const friends = this.repo.findFriendships(user);
 
         // Aplica filtros e paginação
-        // const data = await this.repo.filterAndPaginate(friends, params);
+        const data = await this.repo.filterAndPaginate(friends, query);
+        
+        return response.send(data);
+        
+    }
+
+    /**
+     * **web: /friends/<sended | received | all> - GET**
+     * 
+     * Lista as solicitações do usuário logado. Permite o filtro de pesquisa por paginação.
+     */
+    // @SafeMethod
+    @SafeMethod
+    async list_solicitations(request: APIRequest, response: Response, next: NextFunction) {
+        const user = request.user.info;
+        const type = request.params.type;
+        const { query } = request;
+
+        // Pega lista de solicitações
+        const solicitations = this.repo.findSolicitations(user, type);
+        // Aplica filtros e paginação
+        const data = await this.repo.filterAndPaginate(solicitations, query);
         
         return response.send(data);
         
@@ -43,21 +65,22 @@ export class FriendsController implements IFriendsController {
     /**
      * **web: /friends/:user_id - POST**
      * 
-     * Permite a criação de uma nova amizade. Retorna erro caso a a amizade já exista.
+     * Permite enviar uma solicitação amizade. Retorna erro caso a a amizade já exista.
      */
-    // async create(request: APIRequest, response: Response) {
-    //     const  user = request.user.info;
-    //     const { user_id } = request.params;
+    @SafeMethod
+    async send_solicitation(request: APIRequest, response: Response) {
+        const  user = request.user.info;
+        const { user_id } = request.params;
         
-    //     // Valida dados
-    //     this.validator.createValidator(user, user_id);
+        // Valida dados
+        const { sender, receiver } = await this.validator.sendSolicitationValidator(user, user_id);
 
-    //     // Cria a amizade
-    //     const new_friendship = await this.repository.createFriendship(user, user_id);
+        // Cria a amizade
+        const new_friendship = await this.repo.sendSolicitation(sender, receiver);
 
-    //     // Retorna os dados da amizade
-    //     return response.send(new_friendship);
-    // }
+        // Retorna os dados da amizade
+        return response.send(new_friendship);
+    }
 
     /**
      * **web: /friends/:friendship_id - POST**
@@ -108,4 +131,7 @@ export class FriendsController implements IFriendsController {
 
     //     return response.send({ message: 'Não implementado ainda' });
     // }
+    get repo() {
+        return getCustomRepository(this.repository);
+    }
 }
