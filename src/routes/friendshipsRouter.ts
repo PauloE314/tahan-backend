@@ -11,11 +11,10 @@ const router = Router({ mergeParams: true });
 
 const controller = new FriendsController();
 
-
 // Listagem
 // router.get('/', controller.list );
 // router.get('/', (request: APIRequest, response, next) => { controller.list(request, response, next) })
-router.get('/', controller.list)
+router.get('/', controller.list.bind(controller))
 router.get('/test', controller.testes)
 
 

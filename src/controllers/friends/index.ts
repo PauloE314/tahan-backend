@@ -5,7 +5,7 @@ import { Response, NextFunction } from 'express';
 import { getCustomRepository } from 'typeorm';
 import { Friendships } from '@models/friends/Friendships';
 import { nextTick } from 'process';
-import { SafeMethod } from 'src/utils';
+import { SafeMethod, SafeMethodTest } from 'src/utils';
 import { FriendsRepository } from 'src/repositories/FriendsRepository';
 
 
@@ -13,8 +13,10 @@ import { FriendsRepository } from 'src/repositories/FriendsRepository';
  * Controlador de ações para amigos
  */
 export class FriendsController implements IFriendsController {
+
+    @SafeMethodTest
     testes = async (request: APIRequest, response: Response, next: NextFunction) => {
-        // console.log(this)
+        throw new Error();
         return response.send('ok')
     }
 
@@ -25,7 +27,6 @@ export class FriendsController implements IFriendsController {
      */
     @SafeMethod
     async list(request: APIRequest, response: Response, next: NextFunction) {
-
         const user = request.user.info;
         const params = request.params;
         // Pega lista de amigos

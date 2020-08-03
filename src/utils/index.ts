@@ -180,28 +180,33 @@ export function SafeMethod (target: any, propertyKey: string, descriptor: Proper
             return next(err);
         }
     }
-
-    // descriptor.value = async (request: APIRequest, response: Response, next: NextFunction) => {
-    //     try {
-    //         await original_method.call(this, request, response, next);
-    //         return;
-    //     }
-    //     catch(err) {
-    //         return next(err);
-    //     }
-    // }
-
-    // descriptor.value = async (request: APIRequest, response: Response, next: NextFunction) => {
-    //     this = target;
-    //     try {
-    //         await original_method(request, response, next);
-    //         return;
-    //     }
-    //     catch(err) {
-    //         return next(err);
-    //     }
-    // }
 }
+
+/**
+ * Decorator que certifica que, caso ocorra um erro, o server são será quebrado. Esse só deve ser usado em arrow functions
+ */
+export function SafeArrowMethod (target: any, key:any): any {
+    let func = (...data: any) => {}
+    
+    return {
+        configurable: true,
+        enumerable: false,
+        get() {
+            return async (request: APIRequest, response: Response, next: NextFunction) => {
+                try {
+                    await func.call(this, request, response, next);
+                }
+                catch(err) {
+                    next(err);
+                }
+            }
+        },
+        set(newFn: any) {
+            func = newFn;
+        }
+    };
+}
+
 
 
 /**
