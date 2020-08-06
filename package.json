@@ -9,7 +9,7 @@
       "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert",
       "migration:create": "ts-node ./node_modules/typeorm/cli.js migration:create",
       "seed": "ts-node -r tsconfig-paths/register src/scripts/seeds.ts",
-      "test": "ts-node -r tsconfig-paths/register src/scripts/test.ts"
+      "test": "ts-node -r tsconfig-paths/register --respawn --transpileOnly --ignore-watch node_modules src/scripts/test.ts"
    },
    "devDependencies": {
       "@types/bcrypt": "^3.0.0",

@@ -1,5 +1,6 @@
 import { APIRequest } from "../@types";
 import { Response, NextFunction } from "express";
+import { ValidationError } from ".";
 
 
 
@@ -8,7 +9,7 @@ interface validation_errors {
     message: any
 }
 
-type method = (data: any, options: any) => Promise<any>;
+type method = (data: any, options: any) => Promise<any> | any;
 
 interface method_list {
     [name: string]: method
@@ -107,6 +108,224 @@ export class Validator {
         return next();
     }
 }
+
+type IRule = (data: any, options?: any) => string | number | Array<any> | Object | null | boolean;
+interface IValidatorInput {
+    [name: string]: {
+        data: any,
+        rules: Array<IRule> | ((checker: ElementValidator) => ElementValidator),
+        optional: boolean
+    }
+}
+
+/**
+ * Validador de elementos. Permite validar campos de forma dinâmica
+ */
+export class ElementValidator {
+    rules: Array<IRule> = [];
+
+    /**
+     * Permite a criação de uma nova regra customizada.
+     */
+    custom (cb: IRule) {
+        this.rules.push(cb);
+        
+        return this;
+    }
+
+    /**
+     * Regra que certifica que o elemento existe.
+     */
+    exists(message?: string) {
+        this.rules.push(
+            (data: any) => {
+                if (data == undefined)
+                    throw new ValidationError(message || "Esse dado é obrigatório");
+
+                return data;
+            }
+        )
+        return this;
+    }
+    
+    /**
+     * Regra que certifica que o elemento é uma string
+     */
+    isString(message?: string) {
+        this.rules.push(
+            (data: any) => {
+                if (typeof data !== "string")
+                    throw new ValidationError(message || "Dado inválido");
+                return data;
+            }
+        )
+        return this;
+    }
+    
+    /**
+     * Regra que certifica que o elemento é um array. Também permite certificar que todos os elementos são de um certo tipo de dado. 
+     */
+    isArray(type: 'string' | 'number' | 'object' | 'any', message?: { array: string, items: string } ) {
+        this.rules.push(
+            (data: any) => {
+                const overrideMessage = message ? message : { array: null, items: null };
+                // Certifica que é um array
+                if (!Array.isArray(data))
+                    throw new ValidationError(overrideMessage.array ||  "Dado inválido");
+                // Certifica os tipos dos elementos
+                if (type && type !== 'any') 
+                    for(const child of data)
+                        if (typeof child !== type)
+                            throw new ValidationError(overrideMessage.items || "Elementos inválidos do array");
+                
+                return data;
+            }
+        )
+        return this;
+    }
+
+    /**
+     * Regra que certifica que o elemento é um objeto.
+     */
+    isObject(message?: string) {
+        this.rules.push(
+            (data: any) => {
+                if (!(data instanceof Object) || Array.isArray(data) || data !== null) {
+                    throw new ValidationError(message || `Dado inválido (esperado: objeto, recebido: ${typeof data}`);
+                }
+                return data;
+            }
+        )
+        return this;
+    }
+    
+    /**
+     * Regra que certifica que um elemento (array ou string) possui um tamanho mínimo
+     */
+    min(min: number, message?: string) {
+        this.rules.push(
+            (data: any) => {
+                const size = data.length ? data.length : -1;
+                    
+                if (size < min) 
+                    throw new ValidationError(message || "Tamanho mínimo atingido");
+            
+                
+                return data;
+            }
+        )
+        return this;
+    }
+
+    /**
+     * Regra que certifica que um elemento (array ou string) possui um tamanho máximo
+     */
+    max(max: number, message?: string) {
+        this.rules.push(
+            (data: any) => {
+                const size = data.length ? data.length : -1;
+                    
+                if (size > max) 
+                    throw new ValidationError(message || "Tamanho máximo atingido");
+            
+                
+                return data;
+            }
+        )
+        return this;
+    }
+
+    /**
+     * Regra que certifica se elemento possui certa propriedade. 
+     */
+    hasProperty(...properties: Array<Array<string> | string>) {
+        this.rules.push(
+            (data: any) => {
+                for (const prop of properties) {
+                    // Aplica lógica de um "or" caso seja um array
+                    if (Array.isArray(prop)) {
+                        const hasProp = prop.filter(property => data[property] !== undefined);
+                        if (!hasProp)
+                            throw new ValidationError(
+                                `Dado inválido: o elemento não apresenta nenhuma das propriedades: ${prop.map(p => String(p))}`
+                            );
+                    }
+                    // Checa se elemento possui propriedade
+                    else {
+                        if (data[prop] === undefined)
+                            throw new ValidationError(
+                                `Dado inválido: o elemento não apresenta propriedade: ${prop}`
+                            );
+                    }
+                }
+                return data;
+            }
+        )
+        return this;
+    }
+}
+
+/**
+ * Função que valida os campos passados como parâmetro. Caso ocorra alguma incongruência, o erro ValidationError é ativado. É possível criar campos customizados, mas em caso de erro, é necessário ativar um ValidationError também.
+ */
+export async function validateFields (data: IValidatorInput) {
+    const errors: any = {};
+    const response: any = {};
+
+    // Aplica função em todos os campos
+    for (const field in data) {
+        const info = data[field];
+        let rules = info.rules;
+        let value = info.data;
+        
+        // Checa se campo é opcional
+        if (info.optional === undefined)
+            if (!info.data)
+                continue;
+
+        const elementChecker = new ElementValidator();
+
+        // Lida com callbacks
+        if (typeof rules === 'function') {
+            rules = rules(elementChecker).rules;
+        }
+
+        // Array o array de regras
+        for (const rule of rules) {
+            try {
+                // Aplica a regra
+                value = rule(value);
+
+                // Espera a resposta caso seja uma Promise e armazena resposta
+                if (value instanceof Promise) 
+                    await value;
+                    
+            } catch (err) {
+                // Armazena os erros
+                if (err.name === ValidationError.name)
+                    errors[field] = err.message;
+                // Caso seja um erro desconhecido, ativa-o
+                else
+                    throw err;
+                
+                // Avança para próximo campo
+                break;
+            }
+        }
+        // Armazena os valores
+        response[field] = value;
+
+    }
+
+    // Ativa os erros caso existam
+    if (Object.keys(errors).length) 
+        throw new ValidationError(errors);
+    
+    // Retorna as respostas validadas
+    return response;
+}
+
+
 
 
 /**

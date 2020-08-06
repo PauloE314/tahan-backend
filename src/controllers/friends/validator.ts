@@ -3,6 +3,7 @@ import { Users } from '@models/User';
 import { Friendships } from '@models/friends/Friendships';
 import { getRepository } from 'typeorm';
 import { ValidationError } from 'src/utils';
+import { Solicitations } from '@models/friends/Solicitations';
 
 
 export class FriendsValidator implements IFriendsValidator {
@@ -21,6 +22,19 @@ export class FriendsValidator implements IFriendsValidator {
             throw new ValidationError({ receiver: 'Usuário inválido' });
 
         // Checa se ambos já são amigos
+        // const alreadyFriends = await getRepository(Friendships).findOne({ where: })
+
+        // Checa se há uma solicitação com o mesmo objetivo
+        const same_message = await getRepository(Solicitations).findOne({ 
+            relations: ['sender', 'receiver'],
+            where: [
+                { sender: { id: sender.id }, receiver: { id }},
+                { receiver: { id: sender.id }, sender: { id }},
+            ]
+        });
+
+        if (same_message)
+            throw new ValidationError({ solicitation: "Já existe outra solicitação com o mesmo objetivo"});
         
         const receiver = await getRepository(Users).findOne({ where: { id } });
         // Checa se o receiver existe

@@ -258,7 +258,7 @@ export function filter<T>(query_builder: SelectQueryBuilder<T>, params: { [name:
 
 export class ValidationError extends Error {
     name = 'ValidationError';
-    code = 404;
+    code = 400;
     message: any;
 
     constructor(message: any, code?: number) {
