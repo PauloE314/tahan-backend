@@ -32,23 +32,13 @@ export default class UserController implements IUsersController {
   // @APIRoute
   async list(request: APIRequest, response: Response, next: NextFunction) {
     // Pega dados dos query params
-    const { username, email, occupation } = request.query;
+    const params = request.query;
 
-    const users = getRepository(Users)
-      .createQueryBuilder('user')
-
-    // Aplica filtro
-    const filtered = filter(users, {
-      username: { like: username },
-      email: { like: email },
-      occupation: { like: occupation }
-    });
-      
-    // Aplica paginação
-    const users_data = await paginate(filtered, request);
+    // Aplica filtro e paginação
+    const users = await this.repo.findUsers(params);
 
     // Resposta
-    return response.send(users_data);
+    return response.send(users);
   }
 
   /**
@@ -80,11 +70,8 @@ export default class UserController implements IUsersController {
   @APIRoute
   async read(request: APIRequest, response: Response, next: NextFunction) {
     const id = Number(request.params.id);
-    // Tenta pegar um usuário com esse ID
-    const user = await getRepository(Users).findOne({ id });
-    // Caso ele não exista, envia erro
-    if (!user)
-        return response.status(404).send({message: "Usuário não encontrado"})
+    // Certifica que um certo usuário existe
+    const user = await this.validator.getUser(id);
     // Retorna os dados do usuário
     return response.send(user);
   }
@@ -100,25 +87,16 @@ export default class UserController implements IUsersController {
   @APIRoute
   async posts(request: APIRequest, response: Response) {
     const id = Number(request.params.id);
-    const { title, topic } = request.query;
+    const params = request.query;
 
-    // Lista de postagens
-    const posts = getRepository(Posts)
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.topic', 'topic')
-      .where('post.author = :id', { id })
+    // Certifica que o usuário existe
+    const requestedUser = await this.validator.getUser(id);
 
-    // Aplica filtros
-    const filtered = filter(posts, {
-      author: { equal: id },
-      topic: { equal: topic },
-      title: { like: title }
-    })
-    // Aplica paginação
-    const posts_data = await paginate(filtered, request);
+    // Aplica filtros e paginação
+    const posts = await this.repo.findPosts(requestedUser.id, params);
 
     // Retorna a lista
-    return response.send(posts_data)
+    return response.send(posts)
   }
 
   /**
@@ -131,24 +109,15 @@ export default class UserController implements IUsersController {
   @APIRoute
   async postContainers(request: APIRequest, response: Response) {
     const id = Number(request.params.id);
-    const { name } = request.query;
+    const params = request.query;
 
-    // Lista de containers
-    const post_containers = getRepository(Containers)
-      .createQueryBuilder('container')
-      .leftJoin('container.posts', 'posts')
-      .select(['container', 'posts'])
+    // Certifica que o usuário existe
+    const requestedUser = await this.validator.getUser(id);
 
-    // Aplica filtros
-    const filtered = filter(post_containers, {
-      name: { like: name },
-      author: { equal: id }
-    })
+    // Aplica filtros e paginação
+    const postContainers = await this.repo.findPostContainers(requestedUser.id, params);
 
-    // Aplica paginação
-    const post_containers_data = await paginate(filtered, request);
-
-    return response.send(post_containers_data);
+    return response.send(postContainers);
   }
 
   /**
@@ -175,25 +144,13 @@ export default class UserController implements IUsersController {
   @APIRoute
   async selfQuizzes(request: APIRequest, response: Response) {
       const { user } = request;
-      const { topic, name } = request.query;
+      const params = request.query;
 
       // Lista de quizzes
-      const quizzes = getRepository(Quizzes)
-        .createQueryBuilder('quiz')
-        .loadRelationIdAndMap('quiz.questions', 'quiz.questions')
-      
-      // Aplica filtro
-      const filtered = filter(quizzes, {
-        author: { equal: user.info.id },
-        topic: { equal: topic },
-        name: { like: name }
-      });
-
-      // Aplica paginação
-      const quizzes_data = await paginate(filtered, request);
+      const serializedQuizList = await this.repo.findQuizzes(user.info.id, params)
 
       // Retorna a lista
-      return response.send(quizzes_data)
+      return response.send(serializedQuizList)
   }
 
    /**
@@ -202,28 +159,18 @@ export default class UserController implements IUsersController {
    * Lista postagens feitas pelo usuário. Permite filtro por:
    * 
    * - title: string
+   * - topic: number
    */
   @APIRoute
   async selfPosts(request: APIRequest, response: Response) {
     const { user } = request;
-    const { title } = request.query;
+    const params = request.query;
 
     // Lista de postagens
-    const posts =  getRepository(Posts)
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.topic', 'topic')
-
-    // Aplica filtro
-    const filtered = filter(posts, {
-      author: { equal: user.info.id },
-      title: { like: title }
-    });
-
-    // Aplica paginação
-    const posts_data = await paginate(filtered, request);
+    const serializedPostList = await this.repo.findPosts(user.info.id, params);
 
     // Retorna a lista
-    return response.send(posts_data);
+    return response.send(serializedPostList);
   }
 
 
@@ -237,23 +184,12 @@ export default class UserController implements IUsersController {
   @APIRoute
   async selfPostContainers(request: APIRequest, response: Response) {
     const { user } = request;
-    const { name } = request.query;
+    const params = request.query;
 
     // Lista de containers
-    const post_containers = getRepository(Containers)
-      .createQueryBuilder('container')
-      .leftJoinAndSelect('container.posts', 'posts')
-    
-    // Aplica filtros
-    const filtered = filter(post_containers, {
-      author: { equal: user.info.id },
-      name: { equal: name }
-    });
+    const serializedPostContainerList = await this.repo.findPostContainers(user.info.id, params);
 
-    // Aplica paginação
-    const post_containers_data = await paginate(filtered, request);
-
-    return response.send(post_containers_data);
+    return response.send(serializedPostContainerList);
   }
 
   
@@ -264,9 +200,7 @@ export default class UserController implements IUsersController {
    */ 
   @APIRoute
   async delete(request: APIRequest, response: Response, next: NextFunction) {
-    const user = request.user.info;
-
-    await getRepository(Users).remove(user);
+    await this.repo.deleteUser(request.user.info);
 
     return response.send({ message: 'Usuário removido com sucesso' });
   }
@@ -274,6 +208,4 @@ export default class UserController implements IUsersController {
   get repo() {
     return getCustomRepository(this.repository);
   }
-
-  
 }

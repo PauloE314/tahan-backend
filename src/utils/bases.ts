@@ -5,7 +5,7 @@ import { Response, NextFunction, Router } from "express";
 import configs from '@config/server';
 
 
-interface IPaginatedData<T> {
+export interface IPaginatedData<T> {
     page: {
         current: number,
         total: number
@@ -15,20 +15,53 @@ interface IPaginatedData<T> {
     data: Array<T>
 }
 
-type IMiddleware = (request: APIRequest, response: Response, next: NextFunction) => any;
+interface IFilterInput {
+    [name: string]: {
+        like?: any,
+        equal?: any,
+        name?: string
+    }
+}
 
+interface IPaginateInput {
+    page?: any,
+    count?: any
+}
+
+export interface IFilterAndPaginateInput extends IPaginateInput  {
+    filter: IFilterInput
+}
 
 /**
  * Modelo base de repositório da aplicação
  */
 export class BaseRepository<T> extends Repository<T> {
-    filter: <new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: any) => SelectQueryBuilder<new_T>
-    paginate: <new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: any) => Promise<IPaginatedData<new_T>>
+    /**
+     * Filtra os dados de um selectQueryBuilder
+     */
+    filter <new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: IFilterInput): SelectQueryBuilder<new_T> {
+        // Seta a entidade
+        const entity = queryBuilder.alias;
+    
+        for(const fieldName in params) {
+            const data = params[fieldName];
+            const name = data.name || fieldName;
+            // Aplica like
+            if (data.like) 
+                queryBuilder.andWhere(`${entity}.${fieldName} LIKE :${name}`, { [name]: `%${data.like}%`});
+            
+            // Aplica igual
+            else if (data.equal !== undefined)
+                queryBuilder.andWhere(`${entity}.${fieldName} = :${name}`, { [name]: data.equal });
+    
+        }
+        return queryBuilder;
+    }
 
     /**
-     * Filtra a aplica paginação nos dados de um selectQueryBuilder.
+     * Aplica a paginação nos dados de um selectQueryBuilder.
      */
-    async filterAndPaginate<new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: any): Promise<IPaginatedData<new_T>> {
+    async paginate<new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: IPaginateInput): Promise<IPaginatedData<new_T>> {
         // Dados de entrada
         const request_page = Number(params.page);
         const request_count = Number(params.count);
@@ -53,5 +86,21 @@ export class BaseRepository<T> extends Repository<T> {
         }
 
     }
+
+    /**
+     * Aplica a paginação e o filtro
+     */
+    async filterAndPaginate <new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: IFilterAndPaginateInput): Promise<IPaginatedData<new_T>> {
+        // Separa os parâmetros
+        const { filter, ...paginationParams } = params;
+        // Aplica filtro
+        const filtered = this.filter(queryBuilder, filter);
+
+        // Aplica paginação
+        const paginated = await this.paginate(filtered, paginationParams);
+        // Retorna dados formatados
+        return paginated;
+    }
+
 }
 

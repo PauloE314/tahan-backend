@@ -456,8 +456,6 @@ export class BaseValidator {
      * Permite enviar erro
      */
     RaiseError(data: any) {
-        const message = data.message ? data.message : { message: data };
-        throw new ValidationError({ message });
+        throw new ValidationError(data);
     }
-    
 }

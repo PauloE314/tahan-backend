@@ -50,9 +50,21 @@ export default class UserValidator extends BaseValidator implements IUsersValida
         return {
             google_data,
             occupation: validated_data.occupation
-        }
-        
+        } 
     }
+
+    /**
+     * Certifica que um usuário existe
+     */
+    public async getUser(id: any, message?: string) {
+        const user = await getRepository(Users).findOne(id);
+
+        if (!user)
+            this.RaiseError(message || "Usuário não encontrado");
+
+        return user;
+    }
+
 }
 
 /**
@@ -65,4 +77,3 @@ async function validate_email(data: string) {
     // if (email_end !== 'academico.ifpb.edu.br' && email_end !== 'ifpb.edu.br')
     //     return 'Envie um email acadêmico do IFPB'
 }
-

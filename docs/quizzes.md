@@ -101,6 +101,10 @@
         "id": "<number>",
         "question": "<string>",
         "alternatives": [
+          {
+            "id": "<number>",
+            "text": "<string>"
+          },
           "..."
         ],
         "rightAnswer": {
