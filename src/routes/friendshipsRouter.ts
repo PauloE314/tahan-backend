@@ -1,7 +1,7 @@
 import { Router, NextFunction, Response, response } from 'express';
 import { auth_require, is_student, is_teacher } from "@middlewares/auth"
-import { FriendsController } from '@controllers/friends';
-import { FriendsValidator } from '@controllers/friends/validator';
+import { FriendsController } from '@controllers/friends/friendsController';
+import { FriendsValidator } from '@controllers/friends/friendsValidator';
 import { FriendsRepository } from 'src/repositories/FriendsRepository';
 import { getFriendship } from '@middlewares/index';
 import { APIRequest } from 'src/@types';

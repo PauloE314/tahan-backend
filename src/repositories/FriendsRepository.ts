@@ -3,7 +3,7 @@ import { Users } from "@models/User";
 import { BaseRepository } from "src/utils/bases";
 import { Friendships } from "@models/friends/Friendships";
 import { Messages } from "@models/friends/messages";
-import { IFriendsRepository } from "@controllers/friends/types";
+import { IFriendsRepository } from "@controllers/friends/friendsTypes";
 import { Solicitations } from "@models/friends/Solicitations";
 
 @EntityRepository(Friendships)

@@ -7,7 +7,7 @@ import { Users } from "@models/User";
 import { Validator, is_string, is_array, is_number } from "src/utils/validators";
 import { Comments } from "@models/Posts/Comments";
 import { Contents } from "@models/Posts/Contents";
-import { SafeMethod } from "src/utils";
+import { APIRoute } from "src/utils";
 import { Topics } from "@models/Topics";
 import { request } from "http";
 
@@ -23,7 +23,7 @@ export default class PostValidator {
      * 
      * topics/:number/posts/ - POST
      */
-    @SafeMethod
+    @APIRoute
     public async create_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { title, contents, academic_level, description, topic } = request.body;
         const user = request.user.info;
@@ -59,7 +59,7 @@ export default class PostValidator {
      * 
      * topics/:number/posts/:number/ - PUT
      */
-    @SafeMethod
+    @APIRoute
     public async update_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { title, add, remove, academic_level, description } = request.body;
         const { post } = request;
@@ -100,7 +100,7 @@ export default class PostValidator {
      * 
      * topics/:number/posts/:number/ - DELETE
      */
-    @SafeMethod
+    @APIRoute
     public async delete_validation (request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const post = request.post;
@@ -118,7 +118,7 @@ export default class PostValidator {
      * 
      * topics/:number/posts/:number/comment - POST
      */
-    @SafeMethod
+    @APIRoute
     public async comment_validation(request: APIRequest, response: Response, next: NextFunction) {
         const { text, reference } = request.body;
         const validator = new Validator();

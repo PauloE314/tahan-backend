@@ -6,7 +6,7 @@ import { Validator, is_string, is_array, is_number } from "src/utils/validators"
 import { Quizzes } from "@models/quiz/Quizzes";
 import configs from "@config/server";
 import { Questions } from "@models/quiz/Questions";
-import { SafeMethod } from "src/utils";
+import { APIRoute } from "src/utils";
 import { Topics } from "@models/Topics";
 import { Users } from "@models/User";
 
@@ -20,7 +20,7 @@ export default class QuizValidator {
      * 
      * quizzes/ - POST
      */
-    @SafeMethod
+    @APIRoute
     public async create_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { name, questions, topic, mode, password } = request.body;
         const validator = new Validator();
@@ -50,7 +50,7 @@ export default class QuizValidator {
      * 
      * quizzes/:number - PUT
      */
-    @SafeMethod
+    @APIRoute
     public async update_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { name, remove, add, mode, password } = request.body;
         const quiz = request.quiz;
@@ -113,7 +113,7 @@ export default class QuizValidator {
      * 
      * quizzes/:number - DELETE
      */
-    @SafeMethod
+    @APIRoute
     public async delete_validation (request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const { quiz } = request;
@@ -130,7 +130,7 @@ export default class QuizValidator {
      * 
      * quizzes/:number - GET
      */
-    @SafeMethod
+    @APIRoute
     public async read_quiz_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { quiz, user } = request;
         const { password } = request.query;
@@ -147,7 +147,7 @@ export default class QuizValidator {
      * 
      * quizzes/:number/answer - POST
      */
-    @SafeMethod
+    @APIRoute
     public async answer_validation (request: APIRequest, response: Response, next: NextFunction) {
         const { quiz } = request;
         const { answer, password } = request.body;
@@ -176,7 +176,7 @@ export default class QuizValidator {
      * 
      * topics/:number/quizzes/:number/games
      */
-    @SafeMethod
+    @APIRoute
     public async games_validation (request: APIRequest, response: Response, next: NextFunction) {
         // Checa se o professor é o criador do quiz
         if (request.user.info.id !== request.quiz.author.id)

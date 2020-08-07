@@ -1,4 +1,4 @@
-import { IFriendsValidator, IFriendsRepository } from './types';
+import { IFriendsValidator, IFriendsRepository } from './friendsTypes';
 import { Users } from '@models/User';
 import { Friendships } from '@models/friends/Friendships';
 import { getRepository } from 'typeorm';

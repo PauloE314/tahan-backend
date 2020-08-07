@@ -1,11 +1,11 @@
-import { IFriendsController, IFriendsValidator, IFriendsRepository } from './types';
+import { IFriendsController, IFriendsValidator, IFriendsRepository } from './friendsTypes';
 import { APIRequest } from 'src/@types';
 import { Response, NextFunction } from 'express';
-// import { SafeMethod } from 'src/utils';
+// import { APIRoute } from 'src/utils';
 import { getCustomRepository } from 'typeorm';
 import { Friendships } from '@models/friends/Friendships';
 import { nextTick } from 'process';
-import { SafeMethod } from 'src/utils';
+import { APIRoute } from 'src/utils';
 import { FriendsRepository } from 'src/repositories/FriendsRepository';
 
 
@@ -25,8 +25,8 @@ export class FriendsController implements IFriendsController {
      * 
      * Lista os amigos do usuário logado. Permite o filtro de pesquisa por paginação.
      */
-    // @SafeMethod
-    @SafeMethod
+    // @APIRoute
+    @APIRoute
     async list_friends(request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const query = request.query;
@@ -46,8 +46,8 @@ export class FriendsController implements IFriendsController {
      * 
      * Lista as solicitações do usuário logado. Permite o filtro de pesquisa por paginação.
      */
-    // @SafeMethod
-    @SafeMethod
+    // @APIRoute
+    @APIRoute
     async list_solicitations(request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const type = request.params.type;
@@ -67,7 +67,7 @@ export class FriendsController implements IFriendsController {
      * 
      * Permite enviar uma solicitação amizade. Retorna erro caso a a amizade já exista.
      */
-    @SafeMethod
+    @APIRoute
     async send_solicitation(request: APIRequest, response: Response) {
         const  user = request.user.info;
         const { user_id } = request.params;

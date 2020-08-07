@@ -109,14 +109,6 @@ export class Validator {
     }
 }
 
-type IRule = (data: any, options?: any) => string | number | Array<any> | Object | null | boolean;
-interface IValidatorInput {
-    [name: string]: {
-        data: any,
-        rules: Array<IRule> | ((checker: ElementValidator) => ElementValidator),
-        optional: boolean
-    }
-}
 
 /**
  * Validador de elementos. Permite validar campos de forma dinâmica
@@ -147,6 +139,21 @@ export class ElementValidator {
         )
         return this;
     }
+
+    /**
+     * Regra que certifica que o elemento não existe.
+     */
+    notExists(message?: string) {
+        this.rules.push(
+            (data: any) => {
+                if (data != undefined)
+                    throw new ValidationError(message || "Esse dado não deveria existir");
+
+                return data;
+            }
+        )
+        return this;
+    }
     
     /**
      * Regra que certifica que o elemento é uma string
@@ -155,6 +162,20 @@ export class ElementValidator {
         this.rules.push(
             (data: any) => {
                 if (typeof data !== "string")
+                    throw new ValidationError(message || "Dado inválido");
+                return data;
+            }
+        )
+        return this;
+    }
+
+    /**
+     * Regra que certifica que o elemento é um número
+     */
+    isNumber(message?: string) {
+        this.rules.push(
+            (data: any) => {
+                if (typeof data !== "number")
                     throw new ValidationError(message || "Dado inválido");
                 return data;
             }
@@ -263,32 +284,79 @@ export class ElementValidator {
         )
         return this;
     }
+
+    
+    /**
+     * Regra simples que checa se um elemento é um dos elementos passados como parâmetro.
+     */
+    isEqualTo(values: Array<any>, message?: string) {
+        this.rules.push(
+            (data: any) => {
+                if (!values.includes(data))
+                    throw new ValidationError(message || `Dado inválido`);
+                
+                return data;
+            }
+        );
+        return this;
+    }
+
+    /**
+     * Regra simples que checa se um elemento não é um dos elementos passados como parâmetro.
+     */
+    isDifferentFrom(values: Array<any>, message?: string) {
+        this.rules.push(
+            (data: any) => {
+                if (values.includes(data))
+                    throw new ValidationError(message || `Dado inválido`);
+                
+                return data;
+            }
+        );
+        return this;
+    }
 }
 
+
+type IRule = (data: any, options?: any) => string | number | Array<any> | Object | null | boolean;
+
+interface IValidatorInput {
+    [name: string]: {
+        data?: any,
+        rules: Array<IRule> | ((checker: ElementValidator) => ElementValidator),
+        optional?: boolean
+    }
+}
+
+type IValidatedOutput<T> = Promise<{
+    [name in keyof T]: any
+}>
 /**
  * Função que valida os campos passados como parâmetro. Caso ocorra alguma incongruência, o erro ValidationError é ativado. É possível criar campos customizados, mas em caso de erro, é necessário ativar um ValidationError também.
  */
-export async function validateFields (data: IValidatorInput) {
+// Func<T>(input: IInput & T): IOutput<T>
+export async function validateFields <T>(data: IValidatorInput & T): IValidatedOutput<T> {
     const errors: any = {};
-    const response: any = {};
+    const response: any  = {};
 
     // Aplica função em todos os campos
     for (const field in data) {
         const info = data[field];
         let rules = info.rules;
-        let value = info.data;
+        let value = info.data !== undefined ? info.data : null;
+        let optional = info.optional !== undefined ? info.optional : false
         
         // Checa se campo é opcional
-        if (info.optional === undefined)
-            if (!info.data)
+        if (optional)
+            if (!value)
                 continue;
 
         const elementChecker = new ElementValidator();
 
         // Lida com callbacks
-        if (typeof rules === 'function') {
+        if (typeof rules === 'function') 
             rules = rules(elementChecker).rules;
-        }
+        
 
         // Array o array de regras
         for (const rule of rules) {
@@ -376,4 +444,20 @@ export async function is_number (data: any, options: any) {
     if (typeof data !== 'number' && !(data instanceof Number)) {
         return `Esse formato de dado não é válido (esperado: number, obtido: ${typeof data})`;
     }
+}
+
+
+/**
+ * Classe base para validators
+ */
+export class BaseValidator {
+
+    /**
+     * Permite enviar erro
+     */
+    RaiseError(data: any) {
+        const message = data.message ? data.message : { message: data };
+        throw new ValidationError({ message });
+    }
+    
 }

@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Request, NextFunction, Response } from 'express';
 import { Users } from '@models/User';
 import { Topics } from '@models/Topics';
 import { Posts } from '@models/Posts/Posts';
@@ -35,7 +35,7 @@ export interface APIRequest extends Request{
     friendship?: Friendships
 }
 
-
+export type APIRoute = (request: APIRequest, response: Response, next?: NextFunction) => Response | Promise<Response>
 
 
 

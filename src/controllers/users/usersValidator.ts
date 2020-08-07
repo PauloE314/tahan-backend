@@ -1,0 +1,68 @@
+import { Users } from '@models/User';
+import { APIRequest } from 'src/@types';
+import { Validator, is_string, validateFields } from 'src/utils/validators';
+import { Response, NextFunction } from 'express';
+import { getRepository } from 'typeorm';
+import { get_google_user_data, APIRoute, ValidationError } from 'src/utils';
+import { BaseValidator } from 'src/utils/validators';
+import { IUsersValidator } from './usersTypes';
+
+
+/**
+ * Classe de validação de rotas do usuário
+ */
+export default class UserValidator extends BaseValidator implements IUsersValidator {
+
+    /**
+     * **Validação de entrada na aplicação, tanto para login, quanto para criação de usuário.**
+     * 
+     * users/ - POST
+     */
+    public async signIn (access_token: any, occupation: any) {
+        
+        // Pega os dados do google
+        const google_data = await get_google_user_data(access_token);
+
+        // Certifica que ele existe
+        if (!google_data)
+            this.RaiseError("Algum erro ocorreu e não foi possível pegar os dados do usuário");
+
+        // Validação de email e ocupação
+        const validated_data = await validateFields({
+            // Validação de email (nada por enquanto)
+            email: {
+                data: google_data.email,
+                rules: checker => checker.custom(validate_email)
+            },
+            // Validação de ocupação
+            occupation: {
+                data: occupation,
+                rules: (checker => (
+                    checker
+                        .exists("Esse campo é obrigatório [temporário]")
+                        .isString("Dado inválido [temporário]")
+                        .isEqualTo(['student', 'teacher'], "Ocupação inválida")
+                ))
+            }
+        });
+
+        // Retorna a resposta
+        return {
+            google_data,
+            occupation: validated_data.occupation
+        }
+        
+    }
+}
+
+/**
+ * Validação de email
+ */
+async function validate_email(data: string) {
+    // // Pega a terminação do email
+    // const email_end = email.split('@')[1];
+    // // Checa se o email é acadêmico
+    // if (email_end !== 'academico.ifpb.edu.br' && email_end !== 'ifpb.edu.br')
+    //     return 'Envie um email acadêmico do IFPB'
+}
+

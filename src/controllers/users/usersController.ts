@@ -1,6 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { getRepository, Like } from 'typeorm';
-import jwt from 'jsonwebtoken';
+import { getRepository, Like, getCustomRepository } from 'typeorm';
 
 import { APIRequest } from 'src/@types';
 import { Users } from '@models/User';
@@ -8,12 +7,19 @@ import configs from '@config/server';
 import { Quizzes } from '@models/quiz/Quizzes';
 import { Posts } from '@models/Posts/Posts';
 import { Containers } from '@models/Posts/Containers';
-import { SafeMethod, paginate, filter } from 'src/utils';
+import { APIRoute, paginate, filter } from 'src/utils';
+import { IUsersController, IUsersValidator, IUsersRepository } from './usersTypes';
 
 /**
  * Controlador de rotas do usuário. Essa classe concatena as funções necessárias para listagem, update, criação e delete de contas na aplicação
  */
-export default class UserController {
+export default class UserController implements IUsersController {
+
+  constructor(
+    public validator: IUsersValidator,
+    public repository: new () => IUsersRepository,
+  ) {  }
+
   /**
    * **web: /users/ - GET**
    * 
@@ -23,7 +29,7 @@ export default class UserController {
    * - email: string
    * - occupation: string
    */
-  @SafeMethod
+  // @APIRoute
   async list(request: APIRequest, response: Response, next: NextFunction) {
     // Pega dados dos query params
     const { username, email, occupation } = request.query;
@@ -50,33 +56,19 @@ export default class UserController {
    * 
    * Permite acesso à aplicação utilizando OAuth. Caso o usuário já não estiver cadastrado, cria a conta.
    */
-  @SafeMethod
-  async sign_in (request: APIRequest, response: Response, next: NextFunction) {
+  @APIRoute
+  async signIn (request: APIRequest, response: Response, next: NextFunction) {
     const { secret_key, jwtTime } = configs;
-    const { google_data, body } = request;
-    // Tenta pegar o usuário
-    const user = await getRepository(Users).findOne({ googleID: google_data.id });
-    // Atualiza / cria o usuário
-    const actual_user = user ? user : new Users();
-    actual_user.email = google_data.email;
-    actual_user.username = google_data.name;
-    actual_user.image_url = google_data.image_url;
-    // Caso o usuário não exista ainda
-    if (!user) {
-      actual_user.googleID = google_data.id
-      actual_user.occupation = body.occupation;
-    }
+    const { access_token, occupation } = request.body;
 
-    // Atualiza ou cria o usuário
-    const saved_user = await getRepository(Users).save(actual_user);
-    // Cria um token JWT para o usuário
-    const login_token = jwt.sign({ id: saved_user.id }, secret_key, { expiresIn: jwtTime });
-    
-    // Certifica que o google_id do usuário não será enviado
-    if (saved_user.googleID)
-      delete saved_user.googleID;
-    // Retorna seus dados
-    return response.send({ user: saved_user, login_token });
+    // Valida os dados
+    const validatedData = await this.validator.signIn(access_token, occupation);
+    // Cria ou atualiza o usuário
+    const user = await this.repo.createOrUpdate(validatedData.google_data, occupation);
+    // Cria JWT
+    const login_token = this.repo.createLoginToken(user.id, secret_key, jwtTime);
+
+    return response.send({ user, login_token });
   }
 
 
@@ -85,7 +77,7 @@ export default class UserController {
    * 
    * Retorna as informações de um usuário.
    */
-  @SafeMethod
+  @APIRoute
   async read(request: APIRequest, response: Response, next: NextFunction) {
     const id = Number(request.params.id);
     // Tenta pegar um usuário com esse ID
@@ -105,7 +97,7 @@ export default class UserController {
    * - title: string
    * - topic: string
    */
-  @SafeMethod
+  @APIRoute
   async posts(request: APIRequest, response: Response) {
     const id = Number(request.params.id);
     const { title, topic } = request.query;
@@ -136,8 +128,8 @@ export default class UserController {
    * 
    * - name: string
    */
-  @SafeMethod
-  async post_containers(request: APIRequest, response: Response) {
+  @APIRoute
+  async postContainers(request: APIRequest, response: Response) {
     const id = Number(request.params.id);
     const { name } = request.query;
 
@@ -164,8 +156,8 @@ export default class UserController {
    * 
    * Retorna todos os dados do usuário logado.
    */
-  @SafeMethod
-  async read_self(request: APIRequest, response: Response, next: NextFunction) {
+  @APIRoute
+  async readSelf(request: APIRequest, response: Response, next: NextFunction) {
     // Retorna as informações do usuário
       const { user } = request;
 
@@ -180,8 +172,8 @@ export default class UserController {
    * - topic: number
    * - name: string
    */
-  @SafeMethod
-  async self_quizzes(request: APIRequest, response: Response) {
+  @APIRoute
+  async selfQuizzes(request: APIRequest, response: Response) {
       const { user } = request;
       const { topic, name } = request.query;
 
@@ -211,8 +203,8 @@ export default class UserController {
    * 
    * - title: string
    */
-  @SafeMethod
-  async self_posts(request: APIRequest, response: Response) {
+  @APIRoute
+  async selfPosts(request: APIRequest, response: Response) {
     const { user } = request;
     const { title } = request.query;
 
@@ -242,8 +234,8 @@ export default class UserController {
    * 
    * - name: string
    */
-  @SafeMethod
-  async self_post_containers(request: APIRequest, response: Response) {
+  @APIRoute
+  async selfPostContainers(request: APIRequest, response: Response) {
     const { user } = request;
     const { name } = request.query;
 
@@ -270,7 +262,7 @@ export default class UserController {
    * 
    * Deleta o usuário
    */ 
-  @SafeMethod
+  @APIRoute
   async delete(request: APIRequest, response: Response, next: NextFunction) {
     const user = request.user.info;
 
@@ -278,20 +270,10 @@ export default class UserController {
 
     return response.send({ message: 'Usuário removido com sucesso' });
   }
+  
+  get repo() {
+    return getCustomRepository(this.repository);
+  }
 
   
-}
-
-/**
- * Retorna a ocupação do usuário dado o seu email acadêmico.
- */
-function get_occupation(email: string): 'student' | 'teacher' {
-  // Pega a terminação do email
-  const email_end = email.split('@')[1];
-  // Checa se é estudante
-  if (email_end == 'academico.ifpb.edu.br')
-    return 'student'
-  // Ou professor
-  else
-    return 'teacher'
 }

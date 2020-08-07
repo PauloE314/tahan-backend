@@ -90,7 +90,6 @@ export async function get_google_user_data(access_token: string, options?: { rai
     try {
         // Pega os dados do usuário
         const { data } = await axios.get(url + access_token);
-        console.log(data)
         const email = data.email;
         const { id, name, picture } = data;
         // Retorna os dados escolhidos
@@ -100,10 +99,6 @@ export async function get_google_user_data(access_token: string, options?: { rai
     }
     // Caso token seja inválido, retorna null ou erro
     catch(err) {
-        console.log('ERR');
-        console.log('    ' + err.name);
-        console.log('    ' + err.message);
-
         if (raise_error)
             throw err;
         
@@ -168,7 +163,7 @@ export function random_array(array: Array<any>) {
 /**
  * Decorator que certifica que, caso ocorra um erro, o server são será quebrado. 
  */
-export function SafeMethod (target: any, key:any, descriptor?: PropertyDescriptor): any {
+export function APIRoute (target: any, key:any, descriptor?: PropertyDescriptor): any {
     let func = (...data: any) => {};
     
     if (descriptor)

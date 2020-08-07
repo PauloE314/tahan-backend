@@ -9,7 +9,7 @@ import { Questions } from '@models/quiz/Questions';
 import { SingleGames } from '@models/games/SingleGames';
 import { GameHistoric } from '@models/games/GameHistoric';
 import { PlayerScore } from '@models/games/PlayerScore';
-import { SafeMethod, paginate, filter } from 'src/utils';
+import { APIRoute, paginate, filter } from 'src/utils';
 import configs from "@config/server";
 
 
@@ -39,7 +39,7 @@ export default class QuizzesController {
      * - id do autor: number
      * - name do quizzes: number
      */
-    @SafeMethod
+    @APIRoute
     async list(request: APIRequest, response: Response, next: NextFunction) {
         // Pega dados dos query params
         const { topic, author, name } = request.query;
@@ -74,7 +74,7 @@ export default class QuizzesController {
      * 
      * Cria um quiz. Apenas professores podem criar os quizzes.
      */
-    @SafeMethod
+    @APIRoute
     async create(request: APIRequest, response: Response, next: NextFunction) {
         const { name, mode, password } = request.body;
         const topic = request.topic;
@@ -157,7 +157,7 @@ export default class QuizzesController {
      * 
      * Retorna todos os dados do quiz
      */
-    @SafeMethod
+    @APIRoute
     async read(request: APIRequest, response: Response, next: NextFunction) {
         const { quiz, user } = request;
 
@@ -178,7 +178,7 @@ export default class QuizzesController {
     /**
      * Permite atualizar os dados do quiz. Apenas o criador pode fazê-lo.
      */
-    @SafeMethod
+    @APIRoute
     async update(request: APIRequest, response: Response, next: NextFunction) {
         const { name, remove, mode, password } = request.body;
         const add : InputQuestion[] = request.body.add;
@@ -268,7 +268,7 @@ export default class QuizzesController {
     /**
      * Permite deletar o quiz. Apenas o criador pode fazê-lo.
      */
-    @SafeMethod
+    @APIRoute
     async delete(request: APIRequest, response: Response, next: NextFunction) {
         const { quiz } = request;
 
@@ -281,7 +281,7 @@ export default class QuizzesController {
     /**
      * Permite um aluno responder o quiz. A resposta será salva num banco de dados.
      */
-    @SafeMethod
+    @APIRoute
     async answer(request: APIRequest, response: Response, next: NextFunction) {
         const { user, quiz } = request;
         const data: Array<UserAnswer> = request.body.answer;
@@ -320,7 +320,7 @@ export default class QuizzesController {
     /**
      * Retorna o histórico de partidas do quiz. Somente o autor do quiz pode acessá-lo.
      */
-    @SafeMethod
+    @APIRoute
     async games(request: APIRequest, response: Response, next: NextFunction) {
         const quiz = request.quiz;
         // Pega lista de jogos com o quiz especificado na URL

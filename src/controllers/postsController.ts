@@ -6,7 +6,7 @@ import { getRepository, Like } from 'typeorm';
 import { Likes } from '@models/Posts/Likes';
 import { Comments } from '@models/Posts/Comments';
 import { Contents } from '@models/Posts/Contents';
-import { SafeMethod, paginate, filter } from 'src/utils';
+import { APIRoute, paginate, filter } from 'src/utils';
 
 /**
  * Controlador de rotas dos posts
@@ -20,7 +20,7 @@ export default class PostController {
      * - Id do author: number
      * - Título: string
      */
-    @SafeMethod
+    @APIRoute
     async list (request: APIRequest, response: Response, next: NextFunction) {
         const { topic, title, author } = request.query;
 
@@ -51,7 +51,7 @@ export default class PostController {
     }
 
     // Cria um post para o tópico
-    @SafeMethod
+    @APIRoute
     async create (request: APIRequest, response: Response, next: NextFunction) {
         const new_post = new Posts();
         const topic = request.topic;
@@ -83,7 +83,7 @@ export default class PostController {
      * 
      * Permite ver um post específico
      */
-    @SafeMethod
+    @APIRoute
     async read (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
 
@@ -103,7 +103,7 @@ export default class PostController {
     }
 
     // Dá update no post (título e conteúdo)
-    @SafeMethod
+    @APIRoute
     async update (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
         const { title, remove, add, academic_level, description } = request.body;
@@ -142,7 +142,7 @@ export default class PostController {
     /**
      * Permite dar like em post
      */
-    @SafeMethod
+    @APIRoute
     async like(request: APIRequest, response: Response) {
         const { post, user } = request;
         // Tenta pegar o like anterior
@@ -168,7 +168,7 @@ export default class PostController {
     /**
      * Permite o usuário comentar no post
      */
-    @SafeMethod
+    @APIRoute
     async comment (request: APIRequest, response: Response) {
         const { text, reference } = request.body;
         const { user, post } = request;
@@ -194,7 +194,7 @@ export default class PostController {
     /**
      * Permite deletar o post
      */
-    @SafeMethod
+    @APIRoute
     async delete (request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
 
