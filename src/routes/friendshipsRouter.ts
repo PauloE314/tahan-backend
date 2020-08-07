@@ -2,7 +2,7 @@ import { Router, NextFunction, Response, response } from 'express';
 import { auth_require, is_student, is_teacher } from "@middlewares/auth"
 import { FriendsController } from '@controllers/friends/friendsController';
 import { FriendsValidator } from '@controllers/friends/friendsValidator';
-import { FriendsRepository } from 'src/repositories/FriendsRepository';
+import { FriendsRepository } from '@controllers/friends/FriendsRepository';
 import { getFriendship } from '@middlewares/index';
 import { APIRequest } from 'src/@types';
 
@@ -13,24 +13,17 @@ const validator = new FriendsValidator(FriendsRepository);
 const controller = new FriendsController(FriendsRepository, validator);
 
 // Listagem de amigos
-router.get(
-    '/',
-    auth_require,
-    controller.list_friends.bind(controller)
-);
+router.get('/', auth_require, controller.listFriends.bind(controller));
 
 // Listagem de solicitações
 router.get(
     '/solicitations/:type(sended|received|all)',
     auth_require,
-    controller.list_solicitations.bind(controller)
+    controller.listSolicitations.bind(controller)
 );
 
 // Envio de solicitações
-router.post(
-    '/send/:user_id([0-9]+)',
-    auth_require,
-    controller.send_solicitation.bind(controller)
+router.post('/send/:user_id([0-9]+)', auth_require, controller.sendSolicitation.bind(controller)
 );
 
 

@@ -35,9 +35,9 @@ export interface IFriendsValidator {
  * Interface do controlador de rotas dos amigos
  */
 export interface IFriendsController {
-    list_friends: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
-    list_solicitations: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
-    send_solicitation: (request: APIRequest, response: Response) => Promise<Response>,
+    listFriends: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
+    listSolicitations: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
+    sendSolicitation: (request: APIRequest, response: Response) => Promise<Response>,
     // accept: (request: APIRequest, response: Response) => Promise<Response>,
     // delete: (request: APIRequest, response: Response) => Promise<Response>,
 

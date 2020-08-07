@@ -6,7 +6,7 @@ import { getCustomRepository } from 'typeorm';
 import { Friendships } from '@models/friends/Friendships';
 import { nextTick } from 'process';
 import { APIRoute } from 'src/utils';
-import { FriendsRepository } from 'src/repositories/FriendsRepository';
+import { FriendsRepository } from '@controllers/friends/FriendsRepository';
 
 
 
@@ -27,15 +27,18 @@ export class FriendsController implements IFriendsController {
      */
     // @APIRoute
     @APIRoute
-    async list_friends(request: APIRequest, response: Response, next: NextFunction) {
+    async listFriends(request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
-        const query = request.query;
+        const params = request.query;
         
         // Pega lista de amigos
         const friends = this.repo.findFriendships(user);
 
         // Aplica filtros e paginação
-        const data = await this.repo.filterAndPaginate(friends, query);
+        const data = await this.repo.paginate(friends, {
+            page: params.page,
+            count: params.count
+        });
         
         return response.send(data);
         
@@ -48,15 +51,18 @@ export class FriendsController implements IFriendsController {
      */
     // @APIRoute
     @APIRoute
-    async list_solicitations(request: APIRequest, response: Response, next: NextFunction) {
+    async listSolicitations(request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const type = request.params.type;
-        const { query } = request;
+        const params = request.query;
 
         // Pega lista de solicitações
         const solicitations = this.repo.findSolicitations(user, type);
         // Aplica filtros e paginação
-        const data = await this.repo.filterAndPaginate(solicitations, query);
+        const data = await this.repo.paginate(solicitations, {
+            count: params.count,
+            page: params.page
+        });
         
         return response.send(data);
         
@@ -68,7 +74,7 @@ export class FriendsController implements IFriendsController {
      * Permite enviar uma solicitação amizade. Retorna erro caso a a amizade já exista.
      */
     @APIRoute
-    async send_solicitation(request: APIRequest, response: Response) {
+    async sendSolicitation(request: APIRequest, response: Response) {
         const  user = request.user.info;
         const { user_id } = request.params;
         
