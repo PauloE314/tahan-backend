@@ -1,37 +1,48 @@
 # **Users**
 
-## **PATH: /users/ - GET**
+Esse arquivo é destinado à documentação de funcionalidades que envolvem principalmente ações do usuário. Os usuários incluem professores e alunos, embora algumas ações sejam destinadas à apenas um dos dois grupos.
 
-#### GET (Autenticação não necessária):
-
-- **Funcionamento:**
-
-  Retorna a lista de usuários e suas informações. Permite filtro pelo ```username```, ```email``` e ```occupation``` deles.
-  - users/?username=:string
-  - users/?email=:string
-  - users/?occupation=:string
+## **Listagem de usuários**
+- **Autenticação**:  não necessária
+- **Grupo de usuários**:  todos
+- **Rota**: ```/users/```
 
 
-  ```json
-  {
-    "page": {
-      "current": "<number>",
-      "total": "<number>",
-    },
-    "count": "<number>",
-    "found": "<number>",
-    "data": [
-      {
-        "id": "<number>",
-        "username": "<string>",
-        "image_url": "<string>",
-        "email": "<string>",
-        "occupation": "student | teacher",
-        "created_at": "<Date | string>"
-      }
-    ]
-  }
-  ```
+Possibilita a listagem de usuários por meio de uma requisição **GET** simples. É permitido o filtro de dados através dos seguintes parâmetros (query params):
+- ```username```: nome de um usuário. Não procura pelo valor exato, mas por um aproximado.
+- ```email```: email de um usuário. Como o username, retornará usuários que possuam emails parecidos com o digitado.
+```occupation```: ocupação do usuário, isto é, se são professores ou alunos. Procura por valores semelhantes.
+
+Lembrando que, como a maioria das outras listagens dessa API, é permitida a manipulação da paginação e a quantidade de objetos (usuários, no caso) retornados em uma requisição. Para mais informações, clique [qui](../README.md).
+
+
+Modelo de requisição:
+```HTTP
+GET /users/ HTTP/1.1
+Host: tahan_api.com
+```
+
+Modelo de resposta: 
+```json
+{
+  "page": {
+    "current": "<number>",
+    "total": "<number>",
+  },
+  "count": "<number>",
+  "found": "<number>",
+  "data": [
+    {
+      "id": "<number>",
+      "username": "<string>",
+      "image_url": "<string>",
+      "email": "<string>",
+      "occupation": "student | teacher",
+      "created_at": "<Date | string>"
+    }
+  ]
+}
+```
 <hr>
 
 ## **Path: /users/sign-in/ - POST**
