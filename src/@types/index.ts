@@ -35,7 +35,7 @@ export interface APIRequest extends Request{
     friendship?: Friendships
 }
 
-export type APIRoute = (request: APIRequest, response: Response, next?: NextFunction) => Response | Promise<Response>
+export type IApiResponse = (request: APIRequest, response: Response, next?: NextFunction) => Response | Promise<Response>
 
 
 

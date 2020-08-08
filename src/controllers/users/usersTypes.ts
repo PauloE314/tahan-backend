@@ -1,12 +1,28 @@
-import { google_data, APIRoute } from "src/@types";
+import { google_data, IApiResponse } from "src/@types";
 import { Users } from "@models/User";
 import { BaseRepository, IPaginatedData } from "src/utils/bases";
 import { Posts } from "@models/Posts/Posts";
 import { Containers } from "@models/Posts/Containers";
 import { Quizzes } from "@models/quiz/Quizzes";
 
+/**
+ * Interface do controlador de rotas dos usuários da aplicação.
+ */
+export interface IUsersController {
+    signIn: IApiResponse,
+    read: IApiResponse,
+    posts: IApiResponse,
+    postContainers: IApiResponse,
+    readSelf: IApiResponse,
+    selfQuizzes: IApiResponse,
+    selfPosts: IApiResponse,
+    selfPostContainers: IApiResponse
+    delete: IApiResponse
+}
 
-
+/**
+ * Interface do repositório dos usuários.
+ */
 export interface IUsersRepository extends BaseRepository<Users> {
     createOrUpdate(data: google_data, occupation: string): Promise<Users>;
     createLoginToken(id: number, secret_key: string, expireTime: any): string;
@@ -17,18 +33,9 @@ export interface IUsersRepository extends BaseRepository<Users> {
     deleteUser(user: Users): Promise<void>
 }
 
-export interface IUsersController {
-    signIn: APIRoute,
-    read: APIRoute,
-    posts: APIRoute,
-    postContainers: APIRoute,
-    readSelf: APIRoute,
-    selfQuizzes: APIRoute,
-    selfPosts: APIRoute,
-    selfPostContainers: APIRoute
-    delete: APIRoute
-}
-
+/**
+ * Validador de ações do controlador de usuários.
+ */
 export interface IUsersValidator {
     signIn: (access_token: any, occupation: any) => Promise<{
         google_data: google_data,

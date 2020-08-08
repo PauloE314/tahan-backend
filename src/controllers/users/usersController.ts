@@ -2,11 +2,7 @@ import { Response, NextFunction } from 'express';
 import { getRepository, Like, getCustomRepository } from 'typeorm';
 
 import { APIRequest } from 'src/@types';
-import { Users } from '@models/User';
 import configs from '@config/server';
-import { Quizzes } from '@models/quiz/Quizzes';
-import { Posts } from '@models/Posts/Posts';
-import { Containers } from '@models/Posts/Containers';
 import { APIRoute, paginate, filter } from 'src/utils';
 import { IUsersController, IUsersValidator, IUsersRepository } from './usersTypes';
 
@@ -29,7 +25,7 @@ export default class UserController implements IUsersController {
    * - email: string
    * - occupation: string
    */
-  // @APIRoute
+  @APIRoute
   async list(request: APIRequest, response: Response, next: NextFunction) {
     // Pega dados dos query params
     const params = request.query;

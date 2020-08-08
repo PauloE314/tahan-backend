@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import TopicController from '@controllers/topicsController';
+import { TopicsController } from '@controllers/topics/topicsController';
 
 const routes = Router({ mergeParams: true });
-const controller = new TopicController();
+const controller = new TopicsController();
 
 // Leitura
 routes.get('/', controller.list);

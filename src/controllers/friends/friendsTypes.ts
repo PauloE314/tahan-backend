@@ -9,6 +9,20 @@ import { Solicitations } from "@models/friends/Solicitations";
 
 
 /**
+ * Interface do controlador de rotas dos amigos
+ */
+export interface IFriendsController {
+    listFriends: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
+    listSolicitations: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
+    sendSolicitation: (request: APIRequest, response: Response) => Promise<Response>,
+    // accept: (request: APIRequest, response: Response) => Promise<Response>,
+    // delete: (request: APIRequest, response: Response) => Promise<Response>,
+    
+    // message: (request: APIRequest, response: Response) => Promise<Response>,
+}
+
+
+/**
  * Interface do repositório dos amigos
  */
 export interface IFriendsRepository extends BaseRepository<Friendships> {
@@ -20,7 +34,6 @@ export interface IFriendsRepository extends BaseRepository<Friendships> {
     // sendMessage: (user: Users, friendship: any) => Promise<Messages>,
 }
 
-
 /**
  * Interface do validator das rotas dos amigos
  */
@@ -30,20 +43,6 @@ export interface IFriendsValidator {
     // deleteValidator: (user: Users, friendship: any) => Promise<void>,
     // sendValidator: (user: Users, friendship: Friendships, text: string) => Promise<void>
 }
-
-/**
- * Interface do controlador de rotas dos amigos
- */
-export interface IFriendsController {
-    listFriends: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
-    listSolicitations: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
-    sendSolicitation: (request: APIRequest, response: Response) => Promise<Response>,
-    // accept: (request: APIRequest, response: Response) => Promise<Response>,
-    // delete: (request: APIRequest, response: Response) => Promise<Response>,
-
-    // message: (request: APIRequest, response: Response) => Promise<Response>,
-}
-
 
 
 interface ISendSolicitation {

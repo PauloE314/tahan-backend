@@ -6,7 +6,7 @@ import { getCustomRepository } from 'typeorm';
 import { Friendships } from '@models/friends/Friendships';
 import { nextTick } from 'process';
 import { APIRoute } from 'src/utils';
-import { FriendsRepository } from '@controllers/friends/FriendsRepository';
+import { FriendsRepository } from '@controllers/friends/friendsRepository';
 
 
 
