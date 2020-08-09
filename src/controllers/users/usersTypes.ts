@@ -27,9 +27,9 @@ export interface IUsersRepository extends BaseRepository<Users> {
     createOrUpdate(data: google_data, occupation: string): Promise<Users>;
     createLoginToken(id: number, secret_key: string, expireTime: any): string;
     findUsers(params: any): Promise<IPaginatedData<Users>>;
-    findPosts(authorId: any, params: any): Promise<IPaginatedData<Posts>>;
-    findPostContainers(authorId: any, params: any): Promise<IPaginatedData<Containers>>;
-    findQuizzes(authorId: any, params: any): Promise<IPaginatedData<Quizzes>>;
+    findUserPosts(authorId: any, params: any): Promise<IPaginatedData<Posts>>;
+    findUserPostContainers(authorId: any, params: any): Promise<IPaginatedData<Containers>>;
+    findUserQuizzes(authorId: any, params: any): Promise<IPaginatedData<Quizzes>>;
     deleteUser(user: Users): Promise<void>
 }
 

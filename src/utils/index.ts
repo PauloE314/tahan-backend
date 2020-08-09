@@ -178,9 +178,6 @@ export function APIRoute (target: any, key:any, descriptor?: PropertyDescriptor)
                     await func.call(this, request, response, next);
                 }
                 catch(err) {
-                    if (err.name === ValidationError.name)
-                        return response.status(err.code).send({ message: err.message })
-
                     next(err);
                 }
             }

@@ -70,7 +70,7 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
     /**
      * Encontra os posts de um usuário.
      */
-    async findPosts(authorId: any, params: any) {
+    async findUserPosts(authorId: any, params: any) {
         // Lista de postagens
         const postsQueryBuilder = getRepository(Posts)
             .createQueryBuilder('post')
@@ -93,7 +93,7 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
     /**
      * Encontra containers do usuário
      */
-    async findPostContainers(authorId: any, params: any) {
+    async findUserPostContainers(authorId: any, params: any) {
         // Lista de containers
         const post_containers = getRepository(Containers)
             .createQueryBuilder('container')
@@ -115,7 +115,7 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
         return serializedPostContainerList
     }
    
-    async findQuizzes(authorId: any, params: any) {
+    async findUserQuizzes(authorId: any, params: any) {
         
         // Lista de quizzes
         const quizzes = getRepository(Quizzes)

@@ -89,7 +89,7 @@ export default class UserController implements IUsersController {
     const requestedUser = await this.validator.getUser(id);
 
     // Aplica filtros e paginação
-    const posts = await this.repo.findPosts(requestedUser.id, params);
+    const posts = await this.repo.findUserPosts(requestedUser.id, params);
 
     // Retorna a lista
     return response.send(posts)
@@ -111,7 +111,7 @@ export default class UserController implements IUsersController {
     const requestedUser = await this.validator.getUser(id);
 
     // Aplica filtros e paginação
-    const postContainers = await this.repo.findPostContainers(requestedUser.id, params);
+    const postContainers = await this.repo.findUserPostContainers(requestedUser.id, params);
 
     return response.send(postContainers);
   }
@@ -143,7 +143,7 @@ export default class UserController implements IUsersController {
       const params = request.query;
 
       // Lista de quizzes
-      const serializedQuizList = await this.repo.findQuizzes(user.info.id, params)
+      const serializedQuizList = await this.repo.findUserQuizzes(user.info.id, params)
 
       // Retorna a lista
       return response.send(serializedQuizList)
@@ -163,7 +163,7 @@ export default class UserController implements IUsersController {
     const params = request.query;
 
     // Lista de postagens
-    const serializedPostList = await this.repo.findPosts(user.info.id, params);
+    const serializedPostList = await this.repo.findUserPosts(user.info.id, params);
 
     // Retorna a lista
     return response.send(serializedPostList);
@@ -183,7 +183,7 @@ export default class UserController implements IUsersController {
     const params = request.query;
 
     // Lista de containers
-    const serializedPostContainerList = await this.repo.findPostContainers(user.info.id, params);
+    const serializedPostContainerList = await this.repo.findUserPostContainers(user.info.id, params);
 
     return response.send(serializedPostContainerList);
   }

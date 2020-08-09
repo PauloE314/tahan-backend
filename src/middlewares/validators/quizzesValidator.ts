@@ -271,7 +271,7 @@ async function validate_questions(questions: Array<any> | undefined, options?: {
 
     // Verifica o número mínimo durante a criação
     if (questions.length < configs.quizzes.min_questions && creating) {
-        return `Cada questão deve ter, no mínimo, ${configs.quizzes.min_questions} alternativas`;
+        return `O quiz deve ter, no mínimo, ${configs.quizzes.min_questions} questões`;
     }
     
     // Valida cada questão
