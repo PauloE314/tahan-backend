@@ -82,6 +82,7 @@ Modelo de listagem:
 
 - **Data:** é a lista de elementos da aplicação. A natureza desses elementos, obviamente, depende da rota requerida; no geral, sempre haverá alguma documentação que explique o funcionamento da natureza dos elementos. Para manter a estrutura RESTful, todos os elementos possuirão o mesmo modelo (literalmente, objetos da mesma classe).
 
+Durante a documentação desta API serão usados os termos **filtro relativo** e **filtro absoluto** - principalmente para filtros de strings (não numéricos). O primeiro se refere à filtros em que os resultados possuirão valores apenas parecido com o valor passado como input. Já o segundo é o caso em que os resultados possuirão valores iguais ao passado como input (por exemplo, o filtro de usuários por seu ```username``` é relativo, enquanto que o filtro de quizzes pelo ID do autor é absoluto). 
 
 ## **Formato de erros**
 
