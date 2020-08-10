@@ -12,11 +12,11 @@ import { BaseValidator } from "src/utils/validators";
 export interface IUsersController {
     signIn: IApiResponse,
     refresh: IApiResponse,
+    
     read: IApiResponse,
     posts: IApiResponse,
     quizzes: IApiResponse,
     postContainers: IApiResponse,
-    readSelf: IApiResponse,
 
     delete: IApiResponse
 }

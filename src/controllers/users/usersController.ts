@@ -141,17 +141,6 @@ export default class UserController implements IUsersController {
     return response.send(postContainers);
   }
 
-  /**
-   * **web: /users/self - GET**
-   * 
-   * Retorna todos os dados do usuário logado.
-   */
-  @APIRoute
-  async readSelf(request: APIRequest, response: Response, next: NextFunction) {
-      const { user } = request;
-
-      return response.send(user);
-  }
 
 
   
