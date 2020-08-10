@@ -19,7 +19,8 @@ interface IFilterInput {
     [name: string]: {
         like?: any,
         equal?: any,
-        name?: string
+        name?: string,
+        getFromEntity?: boolean,
     }
 }
 
@@ -45,14 +46,19 @@ export class BaseRepository<T> extends Repository<T> {
     
         for(const fieldName in params) {
             const data = params[fieldName];
+            const getFromEntity = data.getFromEntity !== undefined? data.getFromEntity: true;
             const name = data.name || fieldName;
+
+            // Primeiro lado da equação
+            const firstEqualSide = getFromEntity ? `${entity}.${fieldName}`: `${fieldName}`;
+
             // Aplica like
             if (data.like) 
-                queryBuilder.andWhere(`${entity}.${fieldName} LIKE :${name}`, { [name]: `%${data.like}%`});
+                queryBuilder.andWhere(`${firstEqualSide} LIKE :${name}`, { [name]: `%${data.like}%`});
             
             // Aplica igual
             else if (data.equal !== undefined)
-                queryBuilder.andWhere(`${entity}.${fieldName} = :${name}`, { [name]: data.equal });
+                queryBuilder.andWhere(`${firstEqualSide} = :${name}`, { [name]: data.equal });
     
         }
         return queryBuilder;
@@ -88,7 +94,7 @@ export class BaseRepository<T> extends Repository<T> {
     }
 
     /**
-     * Aplica a paginação e o filtro
+     * Aplica a paginação e o filtro em seleções no banco de dados
      */
     async filterAndPaginate <new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: IFilterAndPaginateInput): Promise<IPaginatedData<new_T>> {
         // Separa os parâmetros

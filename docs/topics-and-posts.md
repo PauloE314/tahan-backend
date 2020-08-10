@@ -1,24 +1,100 @@
-# **Tópicos**
+# **Postagens e Tópicos**
 
-## **PATH: /topics/ - GET**
+Esse arquivo é destinado a explicar e exemplificar o funcionamento da API em relação aos postagens e tópicos.
 
-#### GET (Autenticação não necessária):
+## **Tópicos**
 
-- **Funcionamento:**
+Os tópicos são divisões didáticas que serão úteis para a criação de postagens e quizzes. Como possuem um funcionamento muito simples, não havia a necessidade de criar uma documentação exclusiva para eles (afinal, essa entidade só possui uma rota).
 
-  Retorna a lista dos tópicos ("matérias", tipo matemática, física, etc).
+Os tópicos, a grosso modo, são as "matérias" didáticas da escola - matemática, português, etc. Como o projeto Tahan (o qual essa API é destinada) é voltado para o mundo educacional, era imprescindível que as divisões do conhecimento aparecem.
 
-  ```json
-  [
-    {
-      "id": "<number>",
-      "name": "<string>"
-    },
-    "..."
+É possível obter a lista de tópicos através de uma requisição **GET** simples na rota ```/topics/```, como são poucos tópicos e estes são registrados através de uma seed (isto é, no primeiro uso da API é necessário rodar um comando que vai criar os tópicos no banco de dados), não há necessidade de listagem com paginação e filtro.
+
+Exemplo de requisição:
+```HTTP
+GET /topics/ HTTP/1.1
+Host: tahan_api.com
+```
+
+Exemplo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+[
+  {
+    "id": 1,
+    "name": "Matemática"
+  },
+  {
+    "id": 2,
+    "name": "Português"
+  },
+  "..."
+]
+```
+
+
+## **Postagens**
+
+As postagens são formas do professor gerar arquivos que auxiliem em aulas ou no estudo individual do aluno. Por motivos óbvios, apenas os professores podem criar postagens e é necessário autenticação para tal.
+
+## **Visualização de postagens**
+
+### **Listagem**
+- **Autenticação**:  não necessária
+- **Grupo de usuários**:  todos
+- **Rota**: ```/posts/```
+
+Para listar as postagens, basta fazer uma requisição **GET** simples para a rota ```/posts/```. A listagem pode ser filtrada pelos campos (query params):
+
+- ```title```: o título da postagem. É um filtro relativo.
+- ```author_id```: o id do autor da postagem. É um filtro absoluto.
+- ```author```: o nome de usuário do autor da postagem. É um filtro relativo e só é válido caso não haja o campo ```author_id```.
+- ```topic```: o id do tópico a qual a postagem pertence. É um filtro absoluto.
+
+Modelo de requisição:
+```HTTP
+GET /posts/?title=foo HTTP/1.1
+Host: tahan_api.com
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "..."
+  "data": [
+      {
+        "id": "<number>",
+        "title": "fooPost",
+        "description": "<string>",
+        "created_at": "<Date | string>",
+        "academic_level": "fundamental | médio | superior",
+        "topic": {
+          "id": 1,
+          "name": "Matemática"
+        },
+        "author": {
+          "id": "<number>",
+          "username": "<string>"
+        },
+        "likes": "<number>"
+      },
+      "..."
   ]
-  ```
+}
+```
 
-<hr>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
 
 ## **PATH: /posts/ - GET, POST**
 

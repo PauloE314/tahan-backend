@@ -9,7 +9,7 @@ A forma de autenticação da API é um misto entre OAuth2 (Google) e o JWT. Vale
 
 Para facilitar a criação e validação de email (além de trazer uma ótima experiência ao usuário), utilizamos como forma de cadastro inicial e login o OAuth.
 
-Depois da geração de um access_token válido (deve ser gerados com os scopes de ```profile``` e ```email```), basta enviá-lo em uma requisição **POST** na rota ```/users/sign-in/```. O login da API server para autenticação em si, quanto para cadastrar o usuário, caso não haja um usuário com seu ```id```.
+Depois da geração de um access_token válido (deve ser gerados com os scopes de ```profile``` e ```email```), basta enviá-lo em uma requisição **POST** na rota ```/users/sign-in/```. O login da API serve tanto para autenticação em si, quanto para cadastrar o usuário - caso seja a primeira vez que ele entra na aplicação.
 
 Na aplicação final, a própria API irá se responsar pelo caráter do usuário por meio de seu e-mail (e-mails que terminem em ```@academico.ifpb.edu.br``` serão alunos e os que terminarem em ```@ifpb.edu.br``` serão professores),  entretanto, para facilitar a fazer de desenvolvimento, a ocupação deverá ser enviada na requisição.
 
