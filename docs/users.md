@@ -107,13 +107,15 @@ Lembrando que, como a maioria das outras listagens dessa API, é permitida a man
 <br>
 
 ## **Dados de usuários individuais**
-- **Autenticação**:  não necessária | necessária
+- **Autenticação**: necessária
 - **Grupo de usuários**:  todos | professores
 - **Rota**: ```/users/:id/<action>``` | ```/users/self/<action>```
 
 É possível ver alguns dos dados de um outro usuário da aplicação, seja professores ou alunos (embora alguns desses dados só esteja disponíveis para professores). Como a API não possui muitos dados sensíveis - estes ficando a cargo do sistema de OAuth do google, os dados de resposta de um outro usuário serão bem parecidos com os dados de resposta de um usuário da aplicação. Para acessar os dados do próprio usuário que está logado, no geral, apenas basta realizar as operações descritas abaixo substituindo o ```id``` do usuário requerido pela palavra ```self``` . Algumas rotas são abertas apenas para professores e/ou visíveis no ```self```.
 
 Vale a pena lembrar que é possível, através das rotas dos usuários, ver quizzes, postagens, etc., relativas ao usuário passado na requisição, mas cada uma dessas entidades possuirão suas rotas e documentações específicas; as rotas descritas nesse documento são apenas para facilitar a busca dos dados de um usuário (ao invés enviar uma requisição ```/quizzes/?author=1```, é possível ter o mesmo resultado na rota ```/users/1/quizzes```).
+
+Por motivos performáticos e de segurança, para acessar essas rotas é necessário estar autenticado.
 
 
 ### **1. Dados gerais de um usuário**
@@ -126,6 +128,7 @@ Modelo de requisição:
 ```HTTP
 GET /users/1 HTTP/1.1
 Host: tahan_api.com
+Authorization: Bearer <string>
 ```
 
 
@@ -152,6 +155,7 @@ Modelo de requisição:
 ```HTTP
 GET /users/self/ HTTP/1.1
 Host: tahan_api.com
+Authorization: Bearer <string>
 ```
 
 
@@ -209,6 +213,10 @@ Content-Type: application/json
       "id": "<number>",
       "name": "fooBar",
       "created_at": "<Date | string>",
+      "topic": {
+        "id": "<number>",
+        "name": "<string>"
+      },
       "questions": [
         "<number>"
         "<number>"
@@ -236,6 +244,7 @@ Modelo de requisição:
 ```HTTP
 GET /users/1/posts HTTP/1.1
 Host: tahan_api.com
+Authorization: Bearer <string>
 ```
 
 Modelo de resposta:

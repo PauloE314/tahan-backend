@@ -97,8 +97,8 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
         // Lista de containers
         const post_containers = getRepository(Containers)
             .createQueryBuilder('container')
-            .leftJoin('container.posts', 'posts')
-            .leftJoinAndSelect('container.author', 'author')
+            .loadRelationIdAndMap('container.posts', 'container.posts')
+            .leftJoin('container.author', 'author')
             // .select(['container', 'posts'])
 
 
@@ -120,6 +120,7 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
         // Lista de quizzes
         const quizzes = getRepository(Quizzes)
             .createQueryBuilder('quiz')
+            .leftJoinAndSelect('quiz.topic', 'topic')
             .loadRelationIdAndMap('quiz.questions', 'quiz.questions')
         
         // Aplica filtro e paginação

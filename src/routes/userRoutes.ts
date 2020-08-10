@@ -18,15 +18,13 @@ routes.post('/self/refresh', auth_require, controller.refresh.bind(controller));
 routes.get('/', controller.list.bind(controller));
 
 // Outros usuários
-routes.get('/:id([0-9]+)/', controller.read.bind(controller));
-routes.get('/:id([0-9]+)/posts', controller.posts.bind(controller));
-routes.get('/:id([0-9]+)/post-containers', controller.postContainers.bind(controller));
+routes.get('/:target([0-9]+|self)/', auth_require, controller.read.bind(controller));
+routes.get('/:target([0-9]+|self)/quizzes', auth_require, controller.quizzes.bind(controller));
+routes.get('/:target([0-9]+|self)/posts', auth_require, controller.posts.bind(controller));
+routes.get('/:target([0-9]+|self)/post-containers', auth_require, controller.postContainers.bind(controller));
 
 // Dados do usuário logado
-routes.get('/self/', auth_require, controller.readSelf.bind(controller));
-routes.get('/self/quizzes', auth_require, is_teacher, controller.selfQuizzes.bind(controller));
-routes.get('/self/posts', auth_require, is_teacher, controller.selfPosts.bind(controller));
-routes.get('/self/post-containers', auth_require, is_teacher, controller.selfPostContainers.bind(controller))
+// routes.get('/self/', auth_require, controller.readSelf.bind(controller));
 
 
 // Delete

@@ -67,36 +67,58 @@ export default class UserController implements IUsersController {
 
 
   /**
-   * **web: /users/:id - GET**
+   * **web: /users/(:id|self) - GET**
    * 
    * Retorna as informações de um usuário.
    */
   @APIRoute
   async read(request: APIRequest, response: Response, next: NextFunction) {
-    const id = Number(request.params.id);
-    const user = await this.validator.getUser(id);
+    const { target } = request.params;
+    const user = target == 'self' ? request.user: await this.validator.getUser(Number(target));
 
     return response.send(user);
   }
 
   /**
-   * **web: /users/:id/posts - GET**
+   * **web: /users/(:id|self)/posts - GET**
    * 
-   * Lista as postagens feitas por outro usuário. Permite filtro por:
+   * Lista as postagens feitas por um usuário. Permite filtro por:
    * 
    * - title: string
    * - topic: string
    */
   @APIRoute
   async posts(request: APIRequest, response: Response) {
-    const id = Number(request.params.id);
+    const { target } = request.params;
     const params = request.query;
 
-    const requestedUser = await this.validator.getUser(id);
+    const requestedUser = target === 'self' ? request.user.info: await this.validator.getUser(Number(target));
+    const teacher = await this.validator.isTeacher(requestedUser);
 
-    const posts = await this.repo.findUserPosts(requestedUser.id, params);
+    const posts = await this.repo.findUserPosts(teacher.id, params);
 
     return response.send(posts);
+  }
+
+  /**
+   * **web: /users/(:id|self)/quizzer - GET**
+   * 
+   * Lista as quizzes feitas por um usuário. Permite filtro por:
+   * 
+   * - topic: number
+   * - name: string
+   */
+  @APIRoute
+  async quizzes(request: APIRequest, response: Response) {
+    const { target } = request.params;
+    const params = request.query;
+
+    const requestedUser = target == 'self' ? request.user.info: await this.validator.getUser(Number(target));
+    const teacher = await this.validator.isTeacher(requestedUser);
+
+    const quizzes = await this.repo.findUserQuizzes(teacher.id, params);
+
+    return response.send(quizzes);
   }
 
   /**
@@ -108,12 +130,13 @@ export default class UserController implements IUsersController {
    */
   @APIRoute
   async postContainers(request: APIRequest, response: Response) {
-    const id = Number(request.params.id);
+    const { target } = request.params;
     const params = request.query;
 
-    const requestedUser = await this.validator.getUser(id);
+    const requestedUser = target == 'self' ? request.user.info: await this.validator.getUser(Number(target));
+    const teacher = await this.validator.isTeacher(requestedUser);
 
-    const postContainers = await this.repo.findUserPostContainers(requestedUser.id, params);
+    const postContainers = await this.repo.findUserPostContainers(teacher.id, params);
 
     return response.send(postContainers);
   }
@@ -130,59 +153,6 @@ export default class UserController implements IUsersController {
       return response.send(user);
   }
 
-  /**
-   * **web: /users/self/quizzes - GET**
-   * 
-   * Lista os quizzes feitos pelo usuário. Permite filtro por:
-   * 
-   * - topic: number
-   * - name: string
-   */
-  @APIRoute
-  async selfQuizzes(request: APIRequest, response: Response) {
-      const { user } = request;
-      const params = request.query;
-
-      const serializedQuizList = await this.repo.findUserQuizzes(user.info.id, params)
-
-      return response.send(serializedQuizList)
-  }
-
-   /**
-   * **web: /users/self/posts - GET**
-   * 
-   * Lista postagens feitas pelo usuário. Permite filtro por:
-   * 
-   * - title: string
-   * - topic: number
-   */
-  @APIRoute
-  async selfPosts(request: APIRequest, response: Response) {
-    const { user } = request;
-    const params = request.query;
-
-    const serializedPostList = await this.repo.findUserPosts(user.info.id, params);
-
-    return response.send(serializedPostList);
-  }
-
-
-  /**
-   * **web: /users/self/posts - GET**
-   * 
-   * Lista containers de postagens feitos por um usuário. Permite filtro por:
-   * 
-   * - name: string
-   */
-  @APIRoute
-  async selfPostContainers(request: APIRequest, response: Response) {
-    const { user } = request;
-    const params = request.query;
-
-    const serializedPostContainerList = await this.repo.findUserPostContainers(user.info.id, params);
-
-    return response.send(serializedPostContainerList);
-  }
 
   
   /**

@@ -65,6 +65,17 @@ export default class UserValidator extends BaseValidator implements IUsersValida
         return user;
     }
 
+    /**
+     * Certifica que o usuário é um professor
+     */
+    public async isTeacher(target: Users | number) {
+        const user = typeof target === 'number' ? await this.getUser(target) : target;
+        
+        if (user.occupation !== 'teacher')
+            this.RaiseError("O usuário não é um professor", 400);
+
+        return user;
+    }
 }
 
 /**

@@ -4,6 +4,7 @@ import { BaseRepository, IPaginatedData } from "src/utils/bases";
 import { Posts } from "@models/Posts/Posts";
 import { Containers } from "@models/Posts/Containers";
 import { Quizzes } from "@models/quiz/Quizzes";
+import { BaseValidator } from "src/utils/validators";
 
 /**
  * Interface do controlador de rotas dos usuários da aplicação.
@@ -13,11 +14,10 @@ export interface IUsersController {
     refresh: IApiResponse,
     read: IApiResponse,
     posts: IApiResponse,
+    quizzes: IApiResponse,
     postContainers: IApiResponse,
     readSelf: IApiResponse,
-    selfQuizzes: IApiResponse,
-    selfPosts: IApiResponse,
-    selfPostContainers: IApiResponse
+
     delete: IApiResponse
 }
 
@@ -37,12 +37,13 @@ export interface IUsersRepository extends BaseRepository<Users> {
 /**
  * Validador de ações do controlador de usuários.
  */
-export interface IUsersValidator {
+export interface IUsersValidator extends BaseValidator {
     signIn: (access_token: any, occupation: any) => Promise<{
         google_data: google_data,
         occupation: IOccupation
     }>,
-    getUser: (id: any) => Promise<Users>
+    getUser: (id: any) => Promise<Users>,
+    isTeacher: (target: number | Users) => Promise<Users>
 }
 
 type IOccupation = 'teacher' | 'student';

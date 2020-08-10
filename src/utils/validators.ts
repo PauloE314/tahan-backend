@@ -1,6 +1,6 @@
 import { APIRequest } from "../@types";
 import { Response, NextFunction } from "express";
-import { ValidationError } from ".";
+import { ValidationError, auth_user } from ".";
 
 
 
@@ -455,7 +455,25 @@ export class BaseValidator {
     /**
      * Permite enviar erro
      */
-    RaiseError(data: any) {
-        throw new ValidationError(data);
+    RaiseError(data: any, code?: number) {
+        throw new ValidationError(data, code);
+    }
+
+    // Autenticação necessária
+    async authRequire(request: APIRequest) {
+        const token = request.headers.authorization;
+        const valid_error_names = ['TokenExpiredError', "JsonWebTokenError", "Error"];
+
+        try {
+            const user = await auth_user({ token, raiseError: true});
+            if (user)
+                return user;
+        }
+        catch(err) {
+            if (valid_error_names.includes(err.name))
+                this.RaiseError({ [err.name]: err.message });
+
+            throw err;
+        }
     }
 }
