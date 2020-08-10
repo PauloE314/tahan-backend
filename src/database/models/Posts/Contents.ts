@@ -14,10 +14,10 @@ export class Contents {
     post: Posts;
 
     @Column()
-    subtitle: string;
+    type: TContentType;
 
     @Column()
-    text: string;
+    data: string;
 }
 
-
+export type TContentType = 'title' | 'subtitle' | 'paragraph' | 'topic'; 

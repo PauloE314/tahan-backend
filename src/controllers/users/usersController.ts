@@ -93,7 +93,7 @@ export default class UserController implements IUsersController {
     const params = request.query;
 
     const requestedUser = target === 'self' ? request.user.info: await this.validator.getUser(Number(target));
-    const teacher = await this.validator.isTeacher(requestedUser);
+    const teacher = this.validator.isTeacher(requestedUser);
 
     const posts = await this.repo.findUserPosts(teacher.id, params);
 
@@ -114,7 +114,7 @@ export default class UserController implements IUsersController {
     const params = request.query;
 
     const requestedUser = target == 'self' ? request.user.info: await this.validator.getUser(Number(target));
-    const teacher = await this.validator.isTeacher(requestedUser);
+    const teacher = this.validator.isTeacher(requestedUser);
 
     const quizzes = await this.repo.findUserQuizzes(teacher.id, params);
 
@@ -134,7 +134,7 @@ export default class UserController implements IUsersController {
     const params = request.query;
 
     const requestedUser = target == 'self' ? request.user.info: await this.validator.getUser(Number(target));
-    const teacher = await this.validator.isTeacher(requestedUser);
+    const teacher = this.validator.isTeacher(requestedUser);
 
     const postContainers = await this.repo.findUserPostContainers(teacher.id, params);
 

@@ -67,24 +67,251 @@ Content-Type: application/json
 {
   "..."
   "data": [
+    {
+      "id": "<number>",
+      "title": "fooPost",
+      "description": "<string>",
+      "created_at": "<Date | string>",
+      "academic_level": "fundamental | médio | superior",
+      "topic": {
+        "id": "<number>",
+        "name": "<string>"
+      },
+      "author": {
+        "id": "<number>",
+        "username": "<string>"
+      },
+      "likes": "<number>"
+    },
+    "..."
+  ]
+}
+```
+
+### **Postagem individual**
+- **Autenticação**:  necessária
+- **Grupo de usuários**:  todos
+- **Rota**: ```/posts/:id```
+
+Assim como as demais entidades, é possível ver uma postagem individual através de seu ID numérico. Para fazê-lo, basta realizar uma requisição **GET** para a rota ```/posts/:id``` sendo ```:id``` o id numérico da postagem. Por enquanto, não é possível a criação de postagens privadas, então todas as postagens vão poder ser vistos.
+
+
+
+Modelo de requisição:
+```HTTP
+GET /posts/1 HTTP/1.1
+Host: tahan_api.com
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "id": "<number>",
+  "title": "<string>",
+  "contents": [
+    {
+      "id": "<number>",
+      "type": "title | subtitle | topic | paragraph",
+      "data": "<string>"
+    },
+    "..."
+  ],
+  "description": "<string>",
+  "created_at": "<Date | string>",
+  "author": {
+    "id": "<number>",
+    "username": "<string>",
+    "image_url": "<string>",
+  },
+  "topic": {
+    "id": "<number>",
+    "name": "<string>"
+  },
+  "likes": {
+    "count": "<number>",
+    "user_liked": "<boolean>"
+  },
+  "comments": {
+    "page": {
+      "current": "<number>",
+      "total": "<number>"
+    },
+    "count": "<number>",
+    "found": "<number>",
+    "data": [
       {
         "id": "<number>",
-        "title": "fooPost",
-        "description": "<string>",
-        "created_at": "<Date | string>",
-        "academic_level": "fundamental | médio | superior",
-        "topic": {
-          "id": 1,
-          "name": "Matemática"
-        },
-        "author": {
-          "id": "<number>",
-          "username": "<string>"
-        },
-        "likes": "<number>"
+        "text": "<string>",
       },
+      {
+        "id": "<number>",
+        "text": "<string>",
+        "reference": "<number>"
+      }
       "..."
+    ]
+  }
+}
+```
+
+Os campos ```like.count``` e ```like.user_liked``` são, respectivamente, a quantidade de likes da postagem e um booleano que diz se o usuário (no caso de estar logado) curtiu a postagem.
+
+Como os comentários podem tender ao infinito, elas possuem paginação semelhante à padrão para listagens. A diferença é o prefixo ```comment_``` antes das propriedades de configuração de paginação (```comment_count``` e ```comment_page```). Não é permitido a aplicação de filtro.
+
+
+### **Criação de postagens**
+- **Autenticação**:  necessária
+- **Grupo de usuários**: professores
+- **Rota**: ```/posts/```
+
+A criação de postagens é feita por uma requisição **POST** na rota ```/posts```, os dados de envio são:
+- ```title```: o título da postagem. Deve ter no mínimo 5 caracteres.
+- ```description```: a descrição principal da postagem. Deve ter no mínimo 10 caracteres.
+- ```academic_level```: o nível de dificuldade da postagem. São aceitos os valores ```fundamental```, ```médio``` e ```superior```.
+- ```contents```: a lista de conteúdos da postagem. Deve ser um array de objetos que possuam uma propriedade ```type``` (que represente o tipo do conteúdo) e ```data``` (que será o dado efetivo do conteúdo)
+
+Modelo de requisição:
+```HTTP 
+POST /posts/ HTTP/1.1
+Authorization: Bearer <string>
+Content-Type: application/json
+
+{
+  "title": "<string>",
+  "description": "<string>",
+  "academic_level": "<string>",
+  "contents": [
+    {
+      "type": "title | subtitle | topic | paragraph",
+      "data": "<string>"
+    },
+    "..."
   ]
+}
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 201
+
+{
+  "id": "<number>",
+  "title": "<string>",
+  "description": "<string>",
+  "created_at": "<Date | string>",
+  "academic_level": "fundamental | médio | superior",
+  "topic": {
+    "id": "<number>",
+    "name": "<string>"
+  }
+}
+```
+
+
+### **Atualização de postagens**
+- **Autenticação**:  necessária
+- **Grupo de usuários**: professores (autor da postagem)
+- **Rota**: ```/posts/:id```
+
+A atualização de dados de uma postagem é feita apenas e exclusivamente pelo autor da postagem. Pode ser realizada por uma requisição **PUT** na rota ```/posts/:id``` (com id sendo o id da postagem).
+
+Os dados a serem atualizados devem seguir as mesmas regras da criação, mas não é necessário o envio de todos os dados novamente, apenas do que se quer atualizar.
+
+Modelo de requisição:
+```HTTP
+PUT /users/1 HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+COntent-Type: application/json
+
+{
+  "title": "Novo título"
+}
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+
+{
+  "id": "<number>",
+  "title": "Novo título",
+  "description": "<string>",
+  "created_at": "<Date | string>",
+  "academic_level": "fundamental | médio | superior",
+  "topic": {
+    "id": "<number>",
+    "name": "<string>"
+  },
+  "contents": [
+    {
+      "type": "title | subtitle | topic | paragraph",
+      "data": "<string>"
+    },
+    "..."
+  ]
+}
+```
+
+
+
+### **Apagar uma postagem**
+- **Autenticação**:  necessária
+- **Grupo de usuários**: professores (autor da postagem)
+- **Rota**: ```/posts/:id```
+
+Para apagar uma postagem, basta realizar uma requisição **DELETE** na rota ```/posts/:id```. Não é necessário o envio de nenhum dado. Como os conteúdos da postagem estão totalmente relacionados com ela, estes também são apagados do banco de dados.
+
+
+Modelo de requisição:
+```HTTP
+DELETE /posts/1 HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "message": "Postagem apagada com sucesso"
+}
+```
+
+
+### **Likes**
+- **Autenticação**:  necessária
+- **Grupo de usuários**: todos
+- **Rota**: ```/posts/:id/likes```
+
+Permite dar like ou remover o like de uma postagem (a que possui o id passado na URL). Caso o usuário já tenha dado like na postagem, o like é retirado, caso contrário, ele é adicionado.
+
+Os likes são importantes porque a ordenação padrão da API (pelo menos para as rotas que os possuem) são os likes.
+
+
+Modelo de requisição:
+```HTTP
+POST /posts/1/like HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "message": "Like adicionado | Like removido"
 }
 ```
 
@@ -95,197 +322,7 @@ Content-Type: application/json
 <br>
 
 
-
-## **PATH: /posts/ - GET, POST**
-
-#### GET (Autenticação não necessária):
-
-- **Funcionamento:**
-
-  Retorna a lista de postagens de um tópico. Essa URL está sujeita a filtro pelo título da postagem, o id do autor e id do tópico.
-
-  - base_url/posts/?title=:string
-  - base_url/posts/?author=:number
-  - base_url/posts/?topic=:number
-
-
-  ```json
-  {
-    "page": {
-      "current": "<number>",
-      "total": "<number>"
-    },
-    "count": "<number>",
-    "found": "<number>",
-    "data": [
-      {
-        "id": "<number>",
-        "title": "<string>",
-        "description": "<string>",
-        "created_at": "<Date | string>",
-        "academic_level": "fundamental | médio | superior",
-        "author": {
-          "id": "<number>",
-          "username": "<string>"
-        },
-        "likes": "<number>"
-      },
-      "..."
-    ]
-  ```
-
-#### POST (Autenticação necessária):
-
-- **Funcionamento:**
-
-  Permite criar uma postagem no tópico selecionado na URL.
-
-  **Detalhes:**
-  - O usuário precisa ser um professor.
-  - O título precisa ter mais que 5 caracteres.
-  - O título precisa ser único.
-
-  Os dados de envio devem ser no seguinte modelo:
-  ```json
-  {
-    "title": "<string>",
-    "description": "<string>",
-    "academic_level": "<string>",
-    "contents": [
-      {
-        "subtitle": "<string>",
-        "text": "<string>"
-      }
-    ]
-  }
-  ```
-
-- **Validação**:
-  - ```user```:
-    - Precisa ser um professor;
-  - ```title```:
-    - Precisa ser string;
-    - Precisa ter mais de 5 caracteres;
-    - Precisa ser um nome único;
-  - ```description```:
-    - Precisa ser uma string;
-  - ```contentes```:
-    - Precisa ser um array;
-    - Cada elemento precisa apresentar um ```subtitle: string``` e um ```text: string```.
-
 <hr>
-
-## **PATH: /posts/:id - GET, PUT, DELETE**
-
-#### GET (Autenticação não necessária):
-
-- **Funcionamento:**
-
-  Retorna as informações de uma postagem específica ou uma mensagem de erro (caso o tópico não exista). Os dados vem no seguinte formato:
-
-  ```json
-  {
-    "id": "<number>",
-    "title": "<string>",
-    "contents": [
-      {
-        "id":"<number>",
-        "subtitle": "<string>",
-        "text": "<string>"
-      },
-      "..."
-    ],
-    "description": "<string>",
-    "created_at": "<Date | string>",
-    "author": {
-      "id": "<number>",
-      "username": "<string>",
-      "email": "<string>",
-      "occupation": "teacher",
-      "created_at": "<Date | string>"
-    },
-    "topic": {
-      "id": "<number>",
-      "name": "<string>"
-    },
-    "likes": "<number>",
-    "comments": {
-      "list": [
-        {
-          "id": "<number>",
-          "text": "<string>",
-          "id": "<number>",
-        },
-        {
-          "id": "<number>",
-          "text": "<string>",
-          "reference": "<number>"
-        }
-        "..."
-      ]
-    }
-  }
-
-  ```
-
-#### PUT (Autenticação necessária):
-
-- **Funcionamento:**
-
-  Permite dar update na postagem. Os dados de envio devem ser no seguinte modelo:
-
-  ```json
-  {
-    "academic_level": "<string>",
-    "add": [
-      {
-        "subtitle": "<string>",
-        "text": "<string>"
-      }
-    ],
-    "remove": [
-      "<number>", "..."
-    ],
-    "description": "<string>"
-  }
-  ```
-
-**Validação:**
-  - ```user```:
-    - Precisa ser professor;
-    - Precisa ser o autor da postagem;
-  - ```title```:
-    - O título precisa ter mais que 5 caracteres;
-    - O título precisa ser único;
-  - ```remove```:
-    - Todos os itens devem ser inteiros;
-    - Todos os itens devem ser ids de conteúdos do post;
-  - ```add```:
-    - Todos os itens devem possuir um ```subtitle: string``` e um ```text```.
-
-
-#### DELETE (Autenticação necessária):
-
-- **Funcionamento:**
-
-  Permite deletar a postagem.
-
-**Validação:**
-  - ```user```:
-    - Precisa ser o autor da postagem;
-
-<hr>
-
-## **PATH: /topics/:topic_id/posts/:id/like - POST**
-
-#### POST (Autenticação necessária):
-
-- **Funcionamento:**
-
-  Altera o estado do like do usuário em questão para o post especificado na URL; caso ele já tenha dado like na postagem, retira o like e o oposto também é válido.
-
-<hr>
-
 
 ## **PATH: /topics/:topic_id/posts/:id/comment - POST**
 

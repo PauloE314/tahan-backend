@@ -35,7 +35,7 @@ export class Posts {
     created_at: Date;
 
     @Column()
-    academic_level: string;
+    academic_level: TAcademicLevel;
 
     @OneToMany(type => Likes, like => like.post)
     likes: Likes[];
@@ -47,4 +47,4 @@ export class Posts {
     containers: Containers[];
 }
 
-
+export type TAcademicLevel = 'fundamental' | 'médio' | 'superior';

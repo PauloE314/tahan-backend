@@ -43,7 +43,7 @@ export interface IUsersValidator extends BaseValidator {
         occupation: IOccupation
     }>,
     getUser: (id: any) => Promise<Users>,
-    isTeacher: (target: number | Users) => Promise<Users>
+    isTeacher: (target: Users) => Users
 }
 
 type IOccupation = 'teacher' | 'student';

@@ -2,7 +2,7 @@ import { IPostsController, IPostsRepository, IPostsValidator } from "./postsType
 import { getCustomRepository } from "typeorm";
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
-import { APIRoute } from "src/utils";
+import { APIRoute, ValidationError } from "src/utils";
 
 /**
  * Controlador de rotas relacionadas aos posts da aplicação.
@@ -39,7 +39,15 @@ export class PostsController implements IPostsController {
      */
     @APIRoute
     async create(request: APIRequest, response: Response, next: NextFunction) {
-        return response.send('ok');
+        const { title, contents, academic_level, description, topic } = request.body;
+        const user = request.user.info;
+
+        const validatedData = await this.validator.create({
+            title, contents, academic_level, description, topic
+        });
+        const post = await this.repo.createPosts({ ...validatedData, author: user });
+
+        return response.status(201).send(post);
     }
 
     /**
@@ -49,7 +57,13 @@ export class PostsController implements IPostsController {
      */
     @APIRoute
     async read(request: APIRequest, response: Response, next: NextFunction) {
-        return response.send('ok');
+        const user = request.user ? request.user.info: undefined;
+        const { post } = request;
+        const { query } = request;
+
+        const fullPost = await this.repo.getFullPost({ id: post.id, params: query, user });
+        
+        return response.send(fullPost);
     }
 
     /**
@@ -59,7 +73,15 @@ export class PostsController implements IPostsController {
      */
     @APIRoute
     async update(request: APIRequest, response: Response, next: NextFunction) {
-        return response.send('ok');
+        const { title, add, remove, academic_level, description } = request.body;
+        const author = request.user.info;
+        const post = request.post;
+
+        const validatedData = await this.validator.update({ title, add, remove, academic_level, description, author, post });
+
+        const updatedPost = await this.repo.updatePost({ ...validatedData, post });
+
+        return response.send(updatedPost);
     }
 
     /**
@@ -69,7 +91,14 @@ export class PostsController implements IPostsController {
      */
     @APIRoute
     async delete(request: APIRequest, response: Response, next: NextFunction) {
-        return response.send('ok');
+        const { post } = request;
+        const user = request.user.info;
+
+        this.validator.isPostAuthor(post, user);
+
+        this.repo.remove(post);
+
+        return response.send({ message: "Postagem deletada com sucesso" });
     }
 
     /**
@@ -79,7 +108,16 @@ export class PostsController implements IPostsController {
      */
     @APIRoute
     async like(request: APIRequest, response: Response, next: NextFunction) {
-        return response.send('ok');
+        const user = request.user.info;
+        const { post } = request;
+
+        const newLike = await this.repo.like(user, post);
+
+        if (newLike)
+            return response.send({ message: "Like adicionado" });
+
+        else
+            return response.send({ message: "Like removido" });
     }
 
     /**

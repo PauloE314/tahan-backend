@@ -124,7 +124,6 @@ export class ElementValidator {
         
         return this;
     }
-
     /**
      * Regra que certifica que o elemento existe.
      */
@@ -162,7 +161,7 @@ export class ElementValidator {
         this.rules.push(
             (data: any) => {
                 if (typeof data !== "string")
-                    throw new ValidationError(message || "Dado inválido");
+                    throw new ValidationError(message || "Tipo de dado inválido; esperado: string, recebido: " + typeof data);
                 return data;
             }
         )
@@ -176,7 +175,7 @@ export class ElementValidator {
         this.rules.push(
             (data: any) => {
                 if (typeof data !== "number")
-                    throw new ValidationError(message || "Dado inválido");
+                    throw new ValidationError(message || "Tipo de dado inválido; esperado: number, recebido: " + typeof data);
                 return data;
             }
         )
@@ -192,12 +191,12 @@ export class ElementValidator {
                 const overrideMessage = message ? message : { array: null, items: null };
                 // Certifica que é um array
                 if (!Array.isArray(data))
-                    throw new ValidationError(overrideMessage.array ||  "Dado inválido");
+                    throw new ValidationError(overrideMessage.array || "Tipo de dado inválido; esperado: array, recebido: " + typeof data);
                 // Certifica os tipos dos elementos
                 if (type && type !== 'any') 
                     for(const child of data)
                         if (typeof child !== type)
-                            throw new ValidationError(overrideMessage.items || "Elementos inválidos do array");
+                            throw new ValidationError(overrideMessage.items || "Elementos inválidos do array; esperado: " + type + ", recebido: " + typeof child);
                 
                 return data;
             }
@@ -229,7 +228,7 @@ export class ElementValidator {
                 const size = data.length ? data.length : -1;
                     
                 if (size < min) 
-                    throw new ValidationError(message || "Tamanho mínimo atingido");
+                    throw new ValidationError(message || "O tamanho mínimo é " + min);
             
                 
                 return data;
@@ -323,7 +322,7 @@ type IRule = (data: any, options?: any) => string | number | Array<any> | Object
 interface IValidatorInput {
     [name: string]: {
         data?: any,
-        rules: Array<IRule> | ((checker: ElementValidator) => ElementValidator),
+        rules:  ((checker: ElementValidator) => ElementValidator),
         optional?: boolean
     }
 }
@@ -342,22 +341,15 @@ export async function validateFields <T>(data: IValidatorInput & T): IValidatedO
     // Aplica função em todos os campos
     for (const field in data) {
         const info = data[field];
-        let rules = info.rules;
         let value = info.data !== undefined ? info.data : null;
-        let optional = info.optional !== undefined ? info.optional : false
+        let optional = info.optional !== undefined ? info.optional : false;
         
         // Checa se campo é opcional
         if (optional)
-            if (!value)
+            if (value === null)
                 continue;
 
-        const elementChecker = new ElementValidator();
-
-        // Lida com callbacks
-        if (typeof rules === 'function') 
-            rules = rules(elementChecker).rules;
-        
-
+        let rules = info.rules(new ElementValidator()).rules;
         // Array o array de regras
         for (const rule of rules) {
             try {
@@ -366,7 +358,8 @@ export async function validateFields <T>(data: IValidatorInput & T): IValidatedO
 
                 // Espera a resposta caso seja uma Promise e armazena resposta
                 if (value instanceof Promise) 
-                    await value;
+                    value = await value;
+                
                     
             } catch (err) {
                 // Armazena os erros
