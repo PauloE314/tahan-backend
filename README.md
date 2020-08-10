@@ -16,7 +16,6 @@ Tahan é um projeto que promete tornar o aprendizado divertido e produtivo ao me
 OBS: Todas as rotas de listagem seguem o mesmo padrão. Consiste em:
 
 ```json
-
 {
   "page": {
     "current": "<number>",
@@ -32,10 +31,10 @@ OBS: Todas as rotas de listagem seguem o mesmo padrão. Consiste em:
 
 Onde:
 - Page: dados referentes a paginação, sendo ```current``` o número da página atual e ```total``` a quantidade de páginas totais. A página requerida pode ser especificada na URL por um query_param chamado ```page```:
-    - base_url/list/? **```page=3```**
+    - /list/?**```page=3```**
 
 - Count: quantidade máxima de elementos retornados em ```data```. O padrão é 5. A quantidade de dados retornados pode ser especificado na URL por um query_param chamado ```count```:
-    - base_url/list/? **```count=10```**
+    - /list/?**```count=10```**
 
 - Found: quantidade de elementos encontrados na busca.
 
