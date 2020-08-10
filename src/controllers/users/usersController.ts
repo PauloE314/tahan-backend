@@ -6,9 +6,7 @@ import configs from '@config/server';
 import { APIRoute, paginate, filter } from 'src/utils';
 import { IUsersController, IUsersValidator, IUsersRepository } from './usersTypes';
 
-/**
- * Controlador de rotas do usuário. Essa classe concatena as funções necessárias para listagem, update, criação e delete de contas na aplicação
- */
+
 export default class UserController implements IUsersController {
 
   constructor(
@@ -27,13 +25,10 @@ export default class UserController implements IUsersController {
    */
   @APIRoute
   async list(request: APIRequest, response: Response, next: NextFunction) {
-    // Pega dados dos query params
     const params = request.query;
 
-    // Aplica filtro e paginação
     const users = await this.repo.findUsers(params);
 
-    // Resposta
     return response.send(users);
   }
 
@@ -47,14 +42,27 @@ export default class UserController implements IUsersController {
     const { secret_key, jwtTime } = configs;
     const { access_token, occupation } = request.body;
 
-    // Valida os dados
     const validatedData = await this.validator.signIn(access_token, occupation);
-    // Cria ou atualiza o usuário
-    const user = await this.repo.createOrUpdate(validatedData.google_data, occupation);
-    // Cria JWT
-    const login_token = this.repo.createLoginToken(user.id, secret_key, jwtTime);
 
-    return response.send({ user, login_token });
+    const user = await this.repo.createOrUpdate(validatedData.google_data, occupation);
+    const loginToken = this.repo.createLoginToken(user.id, secret_key, jwtTime);
+
+    return response.send({ user, login_token: loginToken });
+  }
+
+  /**
+   * **- web: /users/refresh/ - POST**
+   * 
+   * Atualiza o JWT do usuário
+   */
+  @APIRoute
+  async refresh(request: APIRequest, response: Response) {
+    const { secret_key, jwtTime } = configs;
+    const { id } = request.user.info;
+
+    const newToken = this.repo.createLoginToken(id, secret_key, jwtTime);
+
+    return response.send({ login_token: newToken });
   }
 
 
@@ -66,9 +74,8 @@ export default class UserController implements IUsersController {
   @APIRoute
   async read(request: APIRequest, response: Response, next: NextFunction) {
     const id = Number(request.params.id);
-    // Certifica que um certo usuário existe
     const user = await this.validator.getUser(id);
-    // Retorna os dados do usuário
+
     return response.send(user);
   }
 
@@ -85,14 +92,11 @@ export default class UserController implements IUsersController {
     const id = Number(request.params.id);
     const params = request.query;
 
-    // Certifica que o usuário existe
     const requestedUser = await this.validator.getUser(id);
 
-    // Aplica filtros e paginação
     const posts = await this.repo.findUserPosts(requestedUser.id, params);
 
-    // Retorna a lista
-    return response.send(posts)
+    return response.send(posts);
   }
 
   /**
@@ -107,10 +111,8 @@ export default class UserController implements IUsersController {
     const id = Number(request.params.id);
     const params = request.query;
 
-    // Certifica que o usuário existe
     const requestedUser = await this.validator.getUser(id);
 
-    // Aplica filtros e paginação
     const postContainers = await this.repo.findUserPostContainers(requestedUser.id, params);
 
     return response.send(postContainers);
@@ -123,7 +125,6 @@ export default class UserController implements IUsersController {
    */
   @APIRoute
   async readSelf(request: APIRequest, response: Response, next: NextFunction) {
-    // Retorna as informações do usuário
       const { user } = request;
 
       return response.send(user);
@@ -142,10 +143,8 @@ export default class UserController implements IUsersController {
       const { user } = request;
       const params = request.query;
 
-      // Lista de quizzes
       const serializedQuizList = await this.repo.findUserQuizzes(user.info.id, params)
 
-      // Retorna a lista
       return response.send(serializedQuizList)
   }
 
@@ -162,10 +161,8 @@ export default class UserController implements IUsersController {
     const { user } = request;
     const params = request.query;
 
-    // Lista de postagens
     const serializedPostList = await this.repo.findUserPosts(user.info.id, params);
 
-    // Retorna a lista
     return response.send(serializedPostList);
   }
 
@@ -182,7 +179,6 @@ export default class UserController implements IUsersController {
     const { user } = request;
     const params = request.query;
 
-    // Lista de containers
     const serializedPostContainerList = await this.repo.findUserPostContainers(user.info.id, params);
 
     return response.send(serializedPostContainerList);

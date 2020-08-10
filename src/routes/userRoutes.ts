@@ -9,14 +9,16 @@ const validator = new UserValidator();
 const controller = new UserController(validator, UsersRepository);
 
 
-// Entrar na aplicação
+// Autenticação
 routes.post('/sign-in', controller.signIn.bind(controller));
+routes.post('/self/refresh', auth_require, controller.refresh.bind(controller));
 
-// Leitura de usuários
+
+// Listagem de usuários
 routes.get('/', controller.list.bind(controller));
-routes.get('/:id([0-9]+)/', controller.read.bind(controller));
 
-// Dados de outros usuários
+// Outros usuários
+routes.get('/:id([0-9]+)/', controller.read.bind(controller));
 routes.get('/:id([0-9]+)/posts', controller.posts.bind(controller));
 routes.get('/:id([0-9]+)/post-containers', controller.postContainers.bind(controller));
 

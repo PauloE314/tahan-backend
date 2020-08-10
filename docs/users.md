@@ -47,6 +47,7 @@ Modelo de requisição com autenticação:
 ```HTTP
 GET /users/ HTTP/1.1
 Host: tahan_api.com
+Authorization: Bearer <string>
 ```
 
 Modelo de resposta: 
@@ -73,6 +74,20 @@ Content-Type: application/json
   ]
 }
 ```
+### **Refresh**
+Para atualizar o token JWT não é necessário fazer novamente o login com o google; basta enviar uma requisição **POST** para a rota ```/users/self/refresh``` (não é necessário ter nenhum body). É necessário estar autenticado para isso, isto é, estar com um header ```Authorization``` assim como consta no exemplo acima.
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+Authorization: Bearer <string>
+
+{
+  "login_token": <string>
+}
+```
+
 
 <br>
 
@@ -110,6 +125,7 @@ A visualização de dados gerais de um outro usuário pode ser feita por meio da
 Modelo de requisição:
 ```HTTP
 GET /users/1 HTTP/1.1
+Host: tahan_api.com
 ```
 
 
@@ -135,6 +151,7 @@ Para a visualização de dados do próprio usuário, basta fazer a mesma requisi
 Modelo de requisição:
 ```HTTP
 GET /users/self/ HTTP/1.1
+Host: tahan_api.com
 ```
 
 
@@ -176,6 +193,7 @@ Também é permitido o filtro (além de paginação e ordenação) pelos seguint
 Modelo de requisição:
 ```HTTP
 GET /users/self/quizzes/?name=foo HTTP/1.1
+Host: tahan_api.com
 Authorization: Bearer <string>
 ```
 
@@ -217,6 +235,7 @@ Assim como os quizzes, essa funcionalidade só está disponível quando o alvo (
 Modelo de requisição:
 ```HTTP
 GET /users/1/posts HTTP/1.1
+Host: tahan_api.com
 ```
 
 Modelo de resposta:
@@ -243,99 +262,66 @@ Content-Type: application/json
 }
 ```
 
-## **Path: /users/self/ - GET, DELETE**
 
-#### GET: (Autenticação necessária)
+### **4. Containers para posts de usuários**
+Assim como quizzes e posts, os containers só serão acessíveis caso o usuário alvo seja um professor.
 
-- **Funcionamento:**
+A API permite a visualização facilitada dos containers de um usuário (pensado justamente na criação de uma tela de perfil do usuário, por exemplo). Basta fazer uma requisição **GET** para a rota ```/users/:id/post-containers``` (para outros usuários) ou ```/users/self/post-containers```(para o usuário que faz a requisição). É permitido o filtro de dados por meio dos parâmetros (query params):
 
-  Retorna as informações do usuário logado. 
+- ```name```: O nome do container. Filtra de forma relativa.
 
-  ```json
-  {
-    "info": {
+Modelo de requisição:
+```HTTP
+GET /users/self/post-containers HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "..."
+  "data": [
+    {
       "id": "<number>",
-      "username": "<string>",
-      "email": "<string>",
-      "image_url": "<string>",
-      "occupation": "student | teacher"
-    },
-    "date": {
-      "expires": "<Date | string>",
-      "starts": "<Date | string>"
+      "name": "<string>",
+      "posts": [
+        "<number>",
+        "<number>",
+        "..."
+      ]
     }
-  }
-  ```
-  **OBS:** "date" se refere ao tempo de inicial e máximo do Token utilizado no momento.
+  ]
+}
+```
 
+No exemplo da resposta anterior, o atributo ```data[n].posts``` representa a lista dos ids dos posts daquele container.
 
+<br>
 
+## **Mudanças na conta do usuário**
 
-## **Path: /users/self/post-containers - GET**
+Como a forma de obtenção de dados do usuário é por meio do OAuth2 (google), o "update" de conta é feito de forma indireta, ou seja, por meio do sign-in - todas as vezes que essa rota é acessada com sucesso, os dados do usuário são atualizados no banco de dados. Assim, resta a operação de apagar a conta da aplicação:
 
-#### GET: (Autenticação necessária)
+### **Apagar a conta**
+O procedimento é simples, basta enviar uma requisição **DELETE** para a rota ```/users/self``` e a conta será apagada. Por motivos óbvios, é necessário estar autenticado para tal. Praticamente nenhuma das entidades da aplicação (quizzes, postagens, containers, etc) será deletada junto com o usuário.
 
-- **Funcionamento:**
+Modelo de requisição:
+```HTTP
+DELETE /users/self/ HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+```
 
-  Os containers do usuário logado. Permite filtro por ```title```:
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
 
-  - users/self/posts/?title=:string
-
-
-  ```json
-
-  {
-    "page": {
-      "current": "<number>",
-      "total": "<number>"
-    },
-    "count": "<number>",
-    "found": "<number>",
-    "data": [     
-      {
-        "id": "<number>",
-        "name": "<string>",
-        "posts": [
-          {
-            "id": "<number>",
-            "title": "<string>",
-            "description": "<string>",
-            "created_at": "<Date|string>",
-            "academic_level": "fundamental | médio | superior"
-          }
-        ]
-      }
-    ]
-  }
-  ```
-
-#### DELETE: (Autenticação necessária)
-- **Funcionamento:**
-  Apaga o usuário.
-
-
-<hr>
-
-## **Path: /users/:id/posts - GET**
-
-#### GET: (Autenticação necessária)
-
-- **Funcionamento:**
-
-  Retorna a lista de posts do usuário escolhido na URL. Permite filtro por ```title``` e ```topic```:
-
-  - users/:id/posts/?title=:string
-  - users/:id/posts/?topic=:number
-
-<hr>
-
-## **Path: /users/:id/post-containers - GET**
-
-#### GET: (Autenticação necessária)
-
-- **Funcionamento:**
-
-  Retorna a lista de containers para posts do usuário escolhido na URL. Permite filtro por ```title```:
-
-  - users/:id/post-containers/?title=:string
-
+{
+  "message": "Usuário removido com sucesso"
+}
+```

@@ -10,6 +10,7 @@ import { Quizzes } from "@models/quiz/Quizzes";
  */
 export interface IUsersController {
     signIn: IApiResponse,
+    refresh: IApiResponse,
     read: IApiResponse,
     posts: IApiResponse,
     postContainers: IApiResponse,
