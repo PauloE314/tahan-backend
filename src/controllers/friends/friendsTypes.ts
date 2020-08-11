@@ -1,23 +1,26 @@
-import { APIRequest } from "src/@types";
+import { APIRequest, IApiResponse } from "src/@types";
 import { Response, NextFunction } from "express";
 import { Users } from "@models/User";
 import { SelectQueryBuilder } from "typeorm";
-import { BaseRepository } from "src/utils/bases";
+import { BaseRepository, IPaginatedData } from "src/utils/bases";
 import { Friendships } from "@models/friends/Friendships";
 import { Solicitations } from "@models/friends/Solicitations";
+import { Messages } from "@models/friends/messages";
 
 
 /**
  * Interface do controlador de rotas dos amigos
  */
 export interface IFriendsController {
-    listFriends: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
-    listSolicitations: (request: APIRequest, response: Response, next?: NextFunction) => Promise<Response>,
-    sendSolicitation: (request: APIRequest, response: Response) => Promise<Response>,
-    // accept: (request: APIRequest, response: Response) => Promise<Response>,
-    // delete: (request: APIRequest, response: Response) => Promise<Response>,
+    listFriends: IApiResponse,
+    readFriendship: IApiResponse,
+    listSolicitations: IApiResponse,
+    sendSolicitation: IApiResponse,
+    answerSolicitation: IApiResponse,
+    deleteFriendship: IApiResponse,
+    deleteSolicitation: IApiResponse,
+    sendMessage: IApiResponse,
     
-    // message: (request: APIRequest, response: Response) => Promise<Response>,
 }
 
 
@@ -25,26 +28,43 @@ export interface IFriendsController {
  * Interface do repositório dos amigos
  */
 export interface IFriendsRepository extends BaseRepository<Friendships> {
-    findFriendships: (user: Users) => SelectQueryBuilder<Friendships>,
-    findSolicitations: (user: Users, type: string) => SelectQueryBuilder<Solicitations>,
-    sendSolicitation: (sender: Users, receiver: Users) => Promise<Solicitations>,
-    acceptSolicitation: (receiver: Users, solicitation: Solicitations) => Promise<Friendships>
+    findFriendships: (user: Users, params: any) => Promise<IPaginatedData<Friendships>>,
+    findFullFriendship: (friendshipId: number, params: any) => Promise<IFullFriendship>,
+    deleteFriendship: (friendship: Friendships) => Promise<void>
 
-    // sendMessage: (user: Users, friendship: any) => Promise<Messages>,
+    findSolicitations: (user: Users, type: string, params: any) => Promise<IPaginatedData<Solicitations>>,
+    sendSolicitation: (sender: Users, receiver: Users) => Promise<Solicitations>,
+    acceptSolicitation: (solicitation: Solicitations) => Promise<Friendships>,
+    denySolicitation: (solicitation: Solicitations) => Promise<void>,
+    deleteSolicitation: (solicitation: Solicitations) => Promise<void>
+
+    sendMessage: (user: Users, friendship: Friendships, message: string) => Promise<Messages>,
 }
 
 /**
  * Interface do validator das rotas dos amigos
  */
 export interface IFriendsValidator {
+    findFriendshipValidator: (user: Users, friendshipId: any) => Promise<any>,
+
     sendSolicitationValidator: (sender: Users, receiver_id: any) => Promise<ISendSolicitation>,
-    // acceptValidator: (receiver: Users, friendship: any) => Promise<Friendships>,
-    // deleteValidator: (user: Users, friendship: any) => Promise<void>,
-    // sendValidator: (user: Users, friendship: Friendships, text: string) => Promise<void>
+    answerSolicitationValidator: (receiver: Users, solicitationId: any, action: any ) => Promise<Solicitations>,
+    deleteSolicitationValidator: (user: Users, solicitationId: any) => Promise<Solicitations>,
+
+    deleteValidator: (user: Users, friendshipId: any) => Promise<Friendships>,
+
+    sendMessageValidator: (user: Users, friendshipId: any, message: any) => Promise<{
+        friendship: Friendships,
+        message: string
+    }>
 }
 
 
 interface ISendSolicitation {
     receiver: Users,
     sender: Users;
+}
+
+interface IFullFriendship extends Friendships {
+
 }

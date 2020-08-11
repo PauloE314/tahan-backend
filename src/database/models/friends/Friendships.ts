@@ -8,9 +8,12 @@ export class Friendships {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => Users)
-    @JoinTable()
-    users: Users[];
+    @ManyToOne(type => Users, user => user.id)
+    user_1: Users;
+    
+    @ManyToOne(type => Users, user => user.id)
+    user_2: Users;
+
     
     @OneToMany(type => Messages, message => message.friendship)
     messages: Messages[];

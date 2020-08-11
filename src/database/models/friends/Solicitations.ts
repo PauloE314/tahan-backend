@@ -16,4 +16,7 @@ export class Solicitations {
 
     @CreateDateColumn()
     sended_at: Date;
+
+    @Column({ nullable: true })
+    answer: 'accept' | 'deny'
 }

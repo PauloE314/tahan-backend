@@ -4,14 +4,15 @@ import { FriendsController } from '@controllers/friends/friendsController';
 import { FriendsValidator } from '@controllers/friends/friendsValidator';
 import { FriendsRepository } from '@controllers/friends/friendsRepository';
 
-// const router = new Routes({ mergeParams: true });
 const router = Router({ mergeParams: true });
 
-const validator = new FriendsValidator(FriendsRepository);
+const validator = new FriendsValidator();
 const controller = new FriendsController(FriendsRepository, validator);
 
 // Listagem de amigos
 router.get('/', auth_require, controller.listFriends.bind(controller));
+router.get('/:friendshipId([0-9]+)', auth_require, controller.readFriendship.bind(controller))
+
 
 // Listagem de solicitações
 router.get(
@@ -20,10 +21,16 @@ router.get(
     controller.listSolicitations.bind(controller)
 );
 
-// Envio de solicitações
-router.post('/send/:user_id([0-9]+)', auth_require, controller.sendSolicitation.bind(controller)
-);
+// Solicitações
+router.post('/solicitations/send/', auth_require, controller.sendSolicitation.bind(controller));
+router.post('/solicitations/:solicitationId([0-9]+)/answer/', auth_require, controller.answerSolicitation.bind(controller));
+router.delete('/solicitations/:solicitationId([0-9]+)', auth_require, controller.deleteSolicitation.bind(controller));
 
+// Acabar com amizade
+router.delete('/:friendshipId([0-9]+)', auth_require, controller.deleteFriendship.bind(controller))
+
+// Enviar mensagem
+router.post('/:friendshipId([0-9]+)/send-message', auth_require, controller.sendMessage.bind(controller))
 
 
 
