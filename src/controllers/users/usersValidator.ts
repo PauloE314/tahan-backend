@@ -68,7 +68,7 @@ export default class UserValidator extends BaseValidator implements IUsersValida
     /**
      * Certifica que o usuário é um professor
      */
-    public async isTeacher(target: Users) {        
+    public isTeacher(target: Users) {        
         if (target.occupation !== 'teacher')
             this.RaiseError("O usuário não é um professor", 400);
 
