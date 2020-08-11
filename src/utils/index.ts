@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { google_data } from "src/@types"
 
 import { APIRequest, user_interface } from "src/@types";
-import configs from '@config/server';
+import configs, { codes } from '@config/server';
 import { Users } from '@models/User';
 import { getRepository, QueryBuilder, SelectQueryBuilder } from "typeorm";
 import { Quizzes } from "@models/quiz/Quizzes";
@@ -250,7 +250,7 @@ export function filter<T>(query_builder: SelectQueryBuilder<T>, params: { [name:
 
 export class ValidationError extends Error {
     name = 'ValidationError';
-    code = 400;
+    code = codes.BAD_REQUEST;
     message: any;
 
     constructor(message: any, code?: number) {

@@ -158,8 +158,11 @@ export class ElementValidator {
      * Regra que certifica que o elemento é uma string
      */
     isString(message?: string) {
+        this.exists();
+
         this.rules.push(
             (data: any) => {
+
                 if (typeof data !== "string")
                     throw new ValidationError(message || "Tipo de dado inválido; esperado: string, recebido: " + typeof data);
                 return data;
@@ -172,6 +175,8 @@ export class ElementValidator {
      * Regra que certifica que o elemento é um número
      */
     isNumber(message?: string) {
+        this.exists();
+
         this.rules.push(
             (data: any) => {
                 if (typeof data !== "number")
@@ -186,8 +191,11 @@ export class ElementValidator {
      * Regra que certifica que o elemento é um array. Também permite certificar que todos os elementos são de um certo tipo de dado. 
      */
     isArray(type: 'string' | 'number' | 'object' | 'any', message?: { array: string, items: string } ) {
+        this.exists();
+
         this.rules.push(
             (data: any) => {
+
                 const overrideMessage = message ? message : { array: null, items: null };
                 // Certifica que é um array
                 if (!Array.isArray(data))
@@ -208,8 +216,11 @@ export class ElementValidator {
      * Regra que certifica que o elemento é um objeto.
      */
     isObject(message?: string) {
+        this.exists();
+
         this.rules.push(
             (data: any) => {
+
                 if (!(data instanceof Object) || Array.isArray(data) || data !== null) {
                     throw new ValidationError(message || `Dado inválido (esperado: objeto, recebido: ${typeof data}`);
                 }

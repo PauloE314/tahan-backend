@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { APIRequest } from 'src/@types';
 import { ValidationError } from 'src/utils';
+import { codes } from '@config/server';
 
 
 
@@ -14,7 +15,7 @@ export default function errorHandler(error: Error, request: Request, response: R
         })
     
 
-    return response.status(500).send({
+    return response.status(codes.SERVER_ERROR).send({
         errors: {
             name: error.name,
             message: error.message

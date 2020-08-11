@@ -2,7 +2,10 @@ import { IApiResponse } from "src/@types";
 import { IPaginatedData, BaseRepository } from "src/utils/bases";
 import { Posts } from "@models/Posts/Posts";
 import { Users } from "@models/User";
-import { TContentType } from "@models/Posts/Contents";
+import { TContentType, Contents } from "@models/Posts/Contents";
+import { Comments } from "@models/Posts/Comments";
+import { Likes } from "@models/Posts/Likes";
+import { Topics } from "@models/Topics";
 
 /**
  * Interface do controlador de rotas dos posts.
@@ -22,13 +25,11 @@ export interface IPostsController {
  */
 export interface IPostsRepository extends BaseRepository<Posts> {
     findPosts: (params: any) => Promise<IPaginatedData<Posts>>,
-    getFullPost: (data: { id: number, params: any, user: Users }) => Promise<Posts>
+    getFullPost: (data: { id: number, params: any, user: Users }) => Promise<IFullPostData>
     createPosts: (data: ICreateRepoData) => Promise<Posts>,
     updatePost: (data: IUpdateRepoData) => Promise<Posts>,
-    like: (user: Users, post: Posts) => Promise<any>
-    // deletePost: (post: Posts | number) => Promise<void>,
-    // like: (user: Users) => Promise<void>,
-    // comment: (user: Users, ...data: any) => Promise<Posts>
+    userLikedPost: (userId: number, postId: number) => Promise<Likes | false>,
+    writeComment: (data: ICommentRepoData) => Promise<Comments>
 }
 
 /**
@@ -37,10 +38,25 @@ export interface IPostsRepository extends BaseRepository<Posts> {
 export interface IPostsValidator {
     create: (data: ICreateData) => Promise<ICreateValidatedData>,
     update: (data: IUpdateData) => Promise<IUpdateValidatedData>,
+    comment: (data: ICommentData) => Promise<ICommentValidatedData>
     isPostAuthor: (post: Posts, user: Users) => any
-    // comment: (author: Users, text: any, post: any, reference: any) => Promise<ICommentValidatedData>
 }
 
+
+// Interfaces de leitura
+export interface IFullPostData{
+    id: number,
+    topic: Topics,
+    author: Users,
+    title: string,
+    description: string,
+    contents: Contents[],
+    comments: IPaginatedData<Comments>,
+    likes: {
+        count: number,
+        userLiked: boolean
+    }
+}
 
 
 // Interfaces de criação
@@ -88,9 +104,17 @@ export interface IUpdateRepoData extends IUpdateValidatedData {
 }
 
 // Interfaces de comentário
-interface ICommentValidatedData {
+export interface ICommentData {
+    text: any,
+    reference?: any
+}
+
+export interface ICommentValidatedData {
     text: string,
-    post: Posts,
+    reference?: Comments
+}
+
+export interface ICommentRepoData extends ICommentValidatedData {
     author: Users,
-    reference: Posts
+    post: Posts,
 }

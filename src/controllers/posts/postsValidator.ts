@@ -1,4 +1,4 @@
-import { IPostsValidator, ICreateData, IUpdateData } from "./postsTypes";
+import { IPostsValidator, ICreateData, IUpdateData, ICommentData, ICommentValidatedData } from "./postsTypes";
 import { getRepository, Check } from "typeorm";
 import { Posts } from "@models/Posts/Posts";
 import { BaseValidator, validateFields } from "src/utils/validators";
@@ -7,6 +7,8 @@ import { type } from "os";
 import { ValidationError } from "src/utils";
 import { Topics } from "@models/Topics";
 import { Users } from "@models/User";
+import { response } from "express";
+import { Comments } from "@models/Posts/Comments";
 
 /**
  * Validador dos posts.
@@ -58,7 +60,6 @@ export class PostsValidator extends BaseValidator implements IPostsValidator {
      */
     async update({ post, title, academic_level, add, remove, description, author }: IUpdateData) {
         const { min_title_size } = configs.posts;
-        const contentList = post.contents.map(content => content.id);
 
         this.isPostAuthor(post, author);
         
@@ -79,7 +80,7 @@ export class PostsValidator extends BaseValidator implements IPostsValidator {
             },
             add: {
                 data: add,
-                rules: check => check.isArray("object").custom(validateContents),
+                rules: check => check.isArray("any").custom(validateContents),
                 optional: true
             },
             remove: {
@@ -104,6 +105,29 @@ export class PostsValidator extends BaseValidator implements IPostsValidator {
     }
 
     /**
+     * Valida os dados de criação de um comentário de posts
+     */
+    async comment({ text, reference }: ICommentData) {
+        
+        const response = await validateFields({
+            text: {
+                data: text,
+                rules: check => check.isString()
+            },
+            reference: {
+                data: reference,
+                rules: check => check.isNumber().custom(validateCommentReference),
+                optional: true
+            }
+        })
+        
+        return <ICommentValidatedData>{
+            text: response.text,
+            reference: response.reference ? response.reference : undefined
+        };
+    }
+
+    /**
      * Certifica que o usuário é o autor da postagem
      */
     isPostAuthor(post: Posts, user: Users) {
@@ -120,10 +144,12 @@ function validateContents(data: Array<any>) {
     const validTypes = ['title', 'subtitle', 'topic', 'paragraph'];
 
     for (const item of data) {
-        if (!validTypes.includes(item.type))
+        const { type, data } = item;
+
+        if (!validTypes.includes(type))
             throw new ValidationError("Tipo de conteúdo inválido (os tipos aceitos são: title, subtitle, topic, paragraph)");
 
-        if (typeof item.data !== 'string')
+        if (typeof data !== 'string')
             throw new ValidationError("Dado do conteúdo deve ser uma string");
     }
     
@@ -156,4 +182,16 @@ function validateRemoveContents(remove: Array<number>, post: Posts) {
     }
     
     return remove;
+}
+
+/**
+ * Checa se um comentário existe
+ */
+async function validateCommentReference(id: number) {
+    const comment = await getRepository(Comments).findOne(id);
+
+    if (!comment)
+        throw new ValidationError("Referência inválida");
+
+    return comment;
 }

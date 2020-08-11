@@ -14,6 +14,9 @@ export class Comments {
     @Column()
     text: string;
 
+    @CreateDateColumn()
+    created_at: Date;
+
     @ManyToOne(type => Posts, post => post.id, { onDelete: 'CASCADE' })
     post: Posts;
 

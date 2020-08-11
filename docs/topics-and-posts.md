@@ -2,6 +2,8 @@
 
 Esse arquivo é destinado a explicar e exemplificar o funcionamento da API em relação aos postagens e tópicos.
 
+<br>
+
 ## **Tópicos**
 
 Os tópicos são divisões didáticas que serão úteis para a criação de postagens e quizzes. Como possuem um funcionamento muito simples, não havia a necessidade de criar uma documentação exclusiva para eles (afinal, essa entidade só possui uma rota).
@@ -33,11 +35,15 @@ Content-Type: application/json
   "..."
 ]
 ```
+<br>
 
+<hr>
 
 ## **Postagens**
 
 As postagens são formas do professor gerar arquivos que auxiliem em aulas ou no estudo individual do aluno. Por motivos óbvios, apenas os professores podem criar postagens e é necessário autenticação para tal.
+
+<br>
 
 ## **Visualização de postagens**
 
@@ -87,6 +93,8 @@ Content-Type: application/json
   ]
 }
 ```
+
+<br>
 
 ### **Postagem individual**
 - **Autenticação**:  necessária
@@ -159,8 +167,9 @@ Content-Type: application/json
 
 Os campos ```like.count``` e ```like.user_liked``` são, respectivamente, a quantidade de likes da postagem e um booleano que diz se o usuário (no caso de estar logado) curtiu a postagem.
 
-Como os comentários podem tender ao infinito, elas possuem paginação semelhante à padrão para listagens. A diferença é o prefixo ```comment_``` antes das propriedades de configuração de paginação (```comment_count``` e ```comment_page```). Não é permitido a aplicação de filtro.
+Como os comentários podem tender ao infinito, elas possuem paginação semelhante à padrão para listagens. A diferença é o prefixo ```comment_``` antes das propriedades de configuração de paginação (```comment_count``` e ```comment_page```). Não é permitido a aplicação de filtros.
 
+<br>
 
 ### **Criação de postagens**
 - **Autenticação**:  necessária
@@ -210,6 +219,7 @@ HTTP/1.1 201
 }
 ```
 
+<br>
 
 ### **Atualização de postagens**
 - **Autenticação**:  necessária
@@ -258,7 +268,7 @@ Content-Type: application/json
 }
 ```
 
-
+<br>
 
 ### **Apagar uma postagem**
 - **Autenticação**:  necessária
@@ -286,6 +296,7 @@ Content-Type: application/json
 }
 ```
 
+<br>
 
 ### **Likes**
 - **Autenticação**:  necessária
@@ -316,31 +327,44 @@ Content-Type: application/json
 ```
 
 <br>
-<br>
-<br>
-<br>
-<br>
 
 
-<hr>
+### **Escrevendo comentários**
+- **Autenticação**: necessária
+- **Grupo de usuários**: todos
+- **Rota**: ```/posts/:id/comment```
 
-## **PATH: /topics/:topic_id/posts/:id/comment - POST**
+Ao ver uma postagem, é possível escrever comentários sobre ela (e também sobre quizzes, a documentação dessa funcionalidade pode ser encontrada [aqui](./quizzes.md)). Essa funcionalidade foi pensada como forma de poder receber um feedback dos alunos e até outros professores sobre o assunto.
 
-#### POST (Autenticação necessária):
-- **Funcionamento:**
-  Permite o usuário comentar em post. Os comentário podem referenciar outros comentário, para isso, deve ser enviado o "reference" como mostra no exemplo abaixo:
+Para escrever um comentário em um quiz, basta enviar uma requisição **POST** para a rota ```/posts/:id/comment``` (com ```:id``` sendo o id numérico do comentário). É necessário que alguns dados sejam enviados no processo:
+- ```text```: o comentário em si. Deve ser uma string sem tamanho mínimo.
+- ```reference?```: uma referência a outro comentário (algo como o que temos no whatsapp). Deve ser o id do outro comentário.
 
-  ```json
-  {
+Modelo de requisição:
+```HTTP
+POST /posts/1/comment HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+Content-Type: application/json
+
+{
+  "text": "<string>",
+  "reference": 1
+}
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "id": "<number>"
+  "text": "<string>",
+  "reference": {
+    "id": "<number>",
     "text": "<string>",
-    "reference": "<number>"
-  }
-  ```
-
-**Validação:**
-  - ```text```:
-    - Deve ser uma string;
-  - ```reference```:
-    - Deve ser um inteiro;
-    - Deve ser o id de um comentário existente.
-
+  },
+  "created_at": "<Date | string>",
+}
+```

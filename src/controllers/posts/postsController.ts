@@ -1,8 +1,10 @@
 import { IPostsController, IPostsRepository, IPostsValidator } from "./postsTypes";
-import { getCustomRepository } from "typeorm";
+import { getCustomRepository, getRepository } from "typeorm";
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 import { APIRoute, ValidationError } from "src/utils";
+import { Likes } from "@models/Posts/Likes";
+import { codes } from "@config/server";
 
 /**
  * Controlador de rotas relacionadas aos posts da aplicação.
@@ -45,9 +47,12 @@ export class PostsController implements IPostsController {
         const validatedData = await this.validator.create({
             title, contents, academic_level, description, topic
         });
-        const post = await this.repo.createPosts({ ...validatedData, author: user });
+        const createdPost = await this.repo.createPosts({ ...validatedData, author: user });
 
-        return response.status(201).send(post);
+        delete createdPost.author;
+
+
+        return response.status(codes.CREATED).send(createdPost);
     }
 
     /**
@@ -61,6 +66,7 @@ export class PostsController implements IPostsController {
         const { post } = request;
         const { query } = request;
 
+        // Carrega todos os dados de uma postagem
         const fullPost = await this.repo.getFullPost({ id: post.id, params: query, user });
         
         return response.send(fullPost);
@@ -80,6 +86,8 @@ export class PostsController implements IPostsController {
         const validatedData = await this.validator.update({ title, add, remove, academic_level, description, author, post });
 
         const updatedPost = await this.repo.updatePost({ ...validatedData, post });
+
+        delete updatedPost.author;
 
         return response.send(updatedPost);
     }
@@ -110,14 +118,26 @@ export class PostsController implements IPostsController {
     async like(request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const { post } = request;
+        const likesRepo = getRepository(Likes);
 
-        const newLike = await this.repo.like(user, post);
+        const userLiked = await this.repo.userLikedPost(user.id, post.id);
 
-        if (newLike)
-            return response.send({ message: "Like adicionado" });
+        // Remove o like caso ele exista
+        if (userLiked) {
+            await likesRepo.remove(userLiked);
 
-        else
             return response.send({ message: "Like removido" });
+        }
+
+        // Cria um novo like
+        else {
+            const newLike = new Likes();
+            newLike.user = user;
+            newLike.post = post;
+            await likesRepo.save(newLike);
+
+            return response.send({ message: "Like adicionado" });
+        }
     }
 
     /**
@@ -127,7 +147,19 @@ export class PostsController implements IPostsController {
      */
     @APIRoute
     async comment(request: APIRequest, response: Response, next: NextFunction) {
-        return response.send('ok');
+        const { post } = request;
+        const user = request.user.info;
+        const { text, reference } = request.body;
+
+        const validatedData = await this.validator.comment({ text, reference });
+
+        const comment = await this.repo.writeComment({ author: user, post: post, ...validatedData});
+
+        // Normaliza os dados de resposta 
+        delete comment.post;
+        delete comment.author;
+
+        return response.status(codes.CREATED).send(comment);
     }
     
 

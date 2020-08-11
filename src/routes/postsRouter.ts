@@ -27,7 +27,7 @@ routes.delete('/:id([0-9]+)/', auth_require, is_teacher, getPost, controller.del
 // // Outros
 routes.post('/:id([0-9]+)/like', auth_require, getPost, controller.like.bind(controller))
 
-// routes.post('/:id([0-9]+)/comment', auth_require, getPost, validator.comment_validation, controller.comment)
+routes.post('/:id([0-9]+)/comment', auth_require, getPost, controller.comment.bind(controller))
 
 
 // Criar

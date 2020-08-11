@@ -1,4 +1,4 @@
-import { IPostsRepository, IUpdateValidatedData, IUpdateRepoData, ICreateRepoData } from "./postsTypes";
+import { IPostsRepository, IUpdateValidatedData, IUpdateRepoData, ICreateRepoData, ICommentRepoData } from "./postsTypes";
 import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
 import { Posts } from "@models/Posts/Posts";
 import { EntityRepository, getRepository } from "typeorm";
@@ -6,6 +6,7 @@ import { Users } from "@models/User";
 import { ICreateValidatedData } from './postsTypes'
 import { Contents } from "@models/Posts/Contents";
 import { Likes } from "@models/Posts/Likes";
+import { Comments } from "@models/Posts/Comments";
 
 /**
  * Repositório dos posts da aplicação.
@@ -61,26 +62,42 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
             .leftJoinAndSelect('post.topic', 'topic')
             .leftJoinAndSelect('post.contents', 'content')
             .loadRelationCountAndMap('post.likes', 'post.likes')
-            .leftJoin('post.comments', 'comment')
             .select([
                 'post',
                 'topic',
-                'comment',
                 'content',
                 'author.id', 'author.username', 'author.image_url'
             ])
             .getOne();
 
+        const { likes, comments, ...postData } = post;
+        
+        // Carrega comentários
+        const commentQueryBuilder = getRepository(Comments)
+            .createQueryBuilder('comment')
+            .leftJoin('comment.post', 'post')
+            .where('post.id = :id', { id: post.id })
+
+        // Aplica paginação em comentários
+        const paginatedComments = await this.paginate(commentQueryBuilder, {
+            count: params.count,
+            page: params.page
+        });
+
         // Checa se o usuário deu like
         const userLiked = user ? (await getRepository(Likes).findOne({
             where: { user: user.id}
         })) : false;
-
         
-        //@ts-ignore
-        post.likes = { count: <number>post.likes, user_liked: userLiked ? true : false };
 
-        return post;
+        return {
+            ...postData,
+            likes: {
+                count: <any>post.likes,
+                userLiked: userLiked ? true : false
+            },
+            comments: paginatedComments,
+        };
     }
 
     /**
@@ -100,7 +117,6 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
         post.description = description;
 
         const saved = await this.save(post);
-        delete saved.author;
         return saved;
     }
 
@@ -141,37 +157,44 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
 
         // Salva a postagem
         const saved = await this.save(post);
-        delete saved.author;
         return saved;
     }
 
     /**
-     * Permite dar like em uma postagem
+     * Checa se um like existe
      */
-    async like(user: Users, post: Posts) {
-        // Tenta pegar o like anterior
-        const original_like = await getRepository(Likes).createQueryBuilder('like')
+    async userLikedPost(userId: number, postId: number) {
+        
+        const like = await getRepository(Likes).createQueryBuilder('like')
             .leftJoin('like.user', 'user')
             .leftJoin('like.post', 'post')
-            .where('user.id = :userId', { userId: user.id })
-            .where('post.id = :postId', { postId: post.id })
+            .where('user.id = :userId', { userId })
+            .where('post.id = :postId', { postId })
             .getOne();
 
-        // Caso ele não existe, cria um novo
-        if (!original_like) {
-            const like = new Likes();
-            like.post = post;
-            like.user = user;
-            // Salva o like
-            const saved = await getRepository(Likes).save(like);
-            return saved
-        }
-        // Caso exista, apaga o like
-        else {
-            await getRepository(Likes).remove(original_like);
-            return false;
-        }
-    
+        if (like)
+            return like;
+
+        return false;
+    }
+
+
+    /**
+     * Escreve o comentário de um usuário
+     */
+    async writeComment({ author, post, text, reference }: ICommentRepoData) {
+        const commentary = new Comments();
+
+        commentary.author = author;
+        commentary.post = post;
+        commentary.text = text;
+
+        if (reference)
+            commentary.reference = reference;
+
+        const saved = await getRepository(Comments).save(commentary);
+
+        return saved;
     }
 
 }
