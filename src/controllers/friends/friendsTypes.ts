@@ -1,10 +1,9 @@
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 import { Users } from "@models/User";
-import { Repository, QueryBuilder, SelectQueryBuilder } from "typeorm";
+import { SelectQueryBuilder } from "typeorm";
 import { BaseRepository } from "src/utils/bases";
 import { Friendships } from "@models/friends/Friendships";
-import { Messages } from "@models/friends/messages";
 import { Solicitations } from "@models/friends/Solicitations";
 
 

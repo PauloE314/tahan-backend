@@ -1,13 +1,8 @@
 import { IFriendsController, IFriendsValidator, IFriendsRepository } from './friendsTypes';
 import { APIRequest } from 'src/@types';
 import { Response, NextFunction } from 'express';
-// import { APIRoute } from 'src/utils';
 import { getCustomRepository } from 'typeorm';
-import { Friendships } from '@models/friends/Friendships';
-import { nextTick } from 'process';
 import { APIRoute } from 'src/utils';
-import { FriendsRepository } from '@controllers/friends/friendsRepository';
-
 
 
 /**

@@ -1,4 +1,4 @@
-import { Repository, QueryBuilder, EntityRepository, SelectQueryBuilder, getRepository } from "typeorm";
+import { EntityRepository, getRepository } from "typeorm";
 import { Users } from "@models/User";
 import { BaseRepository, IPaginatedData } from "src/utils/bases";
 import { IUsersRepository } from "@controllers/users/usersTypes";

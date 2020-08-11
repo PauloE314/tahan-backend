@@ -1,6 +1,4 @@
 import { Router } from 'express';
-import sectionController from '@controllers/topicsController';
-import SectionValidator from '@middlewares/validators/topicsValidators';
 import room_manager from 'src/socket/helpers/rooms';
 import Client from 'src/socket/helpers/client';
 

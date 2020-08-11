@@ -1,10 +1,11 @@
 import { Response, NextFunction } from 'express';
-import { getRepository, Like, getCustomRepository } from 'typeorm';
+import {  getCustomRepository } from 'typeorm';
 
 import { APIRequest } from 'src/@types';
-import configs from '@config/server';
-import { APIRoute, paginate, filter } from 'src/utils';
+import { APIRoute } from 'src/utils';
 import { IUsersController, IUsersValidator, IUsersRepository } from './usersTypes';
+
+import configs from '@config/server';
 
 
 export default class UserController implements IUsersController {

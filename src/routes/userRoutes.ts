@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import UserController from '@controllers/users/usersController';
 import UserValidator from '@controllers/users/usersValidator';
-import { auth_require, is_teacher, is_student } from '@middlewares/auth';
+import { auth_require } from '@middlewares/auth';
 import { UsersRepository } from '@controllers/users/UsersRepository';
 
 const routes = Router({ mergeParams: true });

@@ -1,4 +1,4 @@
-import { Router, NextFunction, Response } from 'express';
+import { Router } from 'express';
 import { getPost } from '@middlewares/index';
 import { auth_require, is_teacher } from "@middlewares/auth"
 import { PostsController } from '@controllers/posts/postsController';

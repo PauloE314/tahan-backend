@@ -1,9 +1,7 @@
 import { Users } from '@models/User';
-import { APIRequest } from 'src/@types';
-import { Validator, is_string, validateFields } from 'src/utils/validators';
-import { Response, NextFunction } from 'express';
+import { validateFields } from 'src/utils/validators';
 import { getRepository } from 'typeorm';
-import { get_google_user_data, APIRoute, ValidationError } from 'src/utils';
+import { get_google_user_data } from 'src/utils';
 import { BaseValidator } from 'src/utils/validators';
 import { IUsersValidator } from './usersTypes';
 

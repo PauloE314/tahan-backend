@@ -1,10 +1,8 @@
-import { Router, NextFunction, Response, response } from 'express';
-import { auth_require, is_student, is_teacher } from "@middlewares/auth"
+import { Router } from 'express';
+import { auth_require } from "@middlewares/auth"
 import { FriendsController } from '@controllers/friends/friendsController';
 import { FriendsValidator } from '@controllers/friends/friendsValidator';
 import { FriendsRepository } from '@controllers/friends/friendsRepository';
-import { getFriendship } from '@middlewares/index';
-import { APIRequest } from 'src/@types';
 
 // const router = new Routes({ mergeParams: true });
 const router = Router({ mergeParams: true });

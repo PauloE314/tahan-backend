@@ -1,9 +1,8 @@
-import { Router, NextFunction, Response } from 'express';
-import { getTopic, getQuiz } from '@middlewares/index';
+import { Router } from 'express';
+import { getQuiz } from '@middlewares/index';
 import { auth_require, is_teacher, is_student } from "@middlewares/auth"
 import QuizzesController from '@controllers/quizzesController';
 import QuizzesValidator from '@middlewares/validators/quizzesValidator';
-import router from 'src/app/router';
 
 const routes = Router({ mergeParams: true });
 const controller = new QuizzesController();

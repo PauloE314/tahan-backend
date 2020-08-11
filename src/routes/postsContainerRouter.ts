@@ -1,8 +1,7 @@
-import { Router, NextFunction, Response } from 'express';
-import { auth_require, is_student, is_teacher } from "@middlewares/auth"
+import { Router} from 'express';
+import { auth_require, is_teacher } from "@middlewares/auth"
 import ContainersController from '@controllers/postContainersController';
 import ContainersValidator from '@middlewares/validators/postContainersValidators';
-import router from 'src/app/router';
 import { getContainer } from '@middlewares/index';
 
 const routes = Router({ mergeParams: true });

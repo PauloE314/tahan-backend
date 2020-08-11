@@ -1,8 +1,7 @@
-import { Repository, QueryBuilder, EntityRepository, SelectQueryBuilder, getRepository } from "typeorm";
+import { EntityRepository, SelectQueryBuilder, getRepository } from "typeorm";
 import { Users } from "@models/User";
 import { BaseRepository } from "src/utils/bases";
 import { Friendships } from "@models/friends/Friendships";
-import { Messages } from "@models/friends/messages";
 import { IFriendsRepository } from "@controllers/friends/friendsTypes";
 import { Solicitations } from "@models/friends/Solicitations";
 
