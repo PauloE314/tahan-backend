@@ -2,8 +2,6 @@ import { IPostsRepository, IUpdateValidatedData, IUpdateRepoData, ICreateRepoDat
 import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
 import { Posts } from "@models/Posts/Posts";
 import { EntityRepository, getRepository } from "typeorm";
-import { Users } from "@models/User";
-import { ICreateValidatedData } from './postsTypes'
 import { Contents } from "@models/Posts/Contents";
 import { Likes } from "@models/Posts/Likes";
 import { Comments } from "@models/Posts/Comments";
@@ -96,8 +94,9 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
 
         // Checa se o usuário deu like
         const userLiked = user ? (await getRepository(Likes).findOne({
-            where: { user: user.id}
+            where: { user: user.id, post: post.id }
         })) : false;
+
         
 
         return {
