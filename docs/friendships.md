@@ -1,5 +1,6 @@
 # **Friendships**
 
+Esse arquivo é destinado a explicar e exemplificar o funcionamento da API em relação ao seu sistema interno de amizade.
 
 As amizades são formas de compartilhar dados (no caso, envio de tokens para jogos) entre usuários da aplicação. As funcionalidades das amizades incluem solicitação de amizade, e a amizade em si.
 
