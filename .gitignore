@@ -7,3 +7,4 @@ temp/
 uploads/*
 test.*
 test
+database.sqlite

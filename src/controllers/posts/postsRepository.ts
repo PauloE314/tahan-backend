@@ -96,7 +96,7 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
             ...postData,
             likes: {
                 count: <any>post.likes,
-                userLiked: userLiked ? true : false
+                user_liked: userLiked ? true : false
             },
             comments: paginatedComments,
         };
@@ -168,11 +168,12 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
     async userLikedPost(userId: number, postId: number) {
         
         const like = await getRepository(Likes).createQueryBuilder('like')
-            .leftJoin('like.user', 'user')
-            .leftJoin('like.post', 'post')
+            .leftJoinAndSelect('like.user', 'user')
+            .leftJoinAndSelect('like.post', 'post')
             .where('user.id = :userId', { userId })
-            .where('post.id = :postId', { postId })
+            .andWhere('post.id = :postId', { postId })
             .getOne();
+
 
         if (like)
             return like;

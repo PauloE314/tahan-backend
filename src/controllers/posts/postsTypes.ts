@@ -54,7 +54,7 @@ export interface IFullPostData{
     comments: IPaginatedData<Comments>,
     likes: {
         count: number,
-        userLiked: boolean
+        user_liked: boolean
     }
 }
 
