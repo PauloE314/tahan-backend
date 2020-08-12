@@ -1,14 +1,15 @@
-import { IQuizzesController, IQuizzesRepository, IQuizzesValidator } from "./quizzesTypes";
 import { getCustomRepository } from "typeorm";
+import { QuizzesRepository } from "./quizzesRepository";
+import QuizValidator from "@middlewares/validators/quizzesValidator";
 
 /**
  * Controlador de rotas relacionadas aos quizzes da aplicação.
  */
-export class QuizzesController implements IQuizzesController {
+export class QuizzesController {
 
     constructor(
-        private repository: new () => IQuizzesRepository,
-        private validator: IQuizzesValidator
+        private repository: new () => QuizzesRepository,
+        private validator: QuizValidator
     ) {  }
     
 
