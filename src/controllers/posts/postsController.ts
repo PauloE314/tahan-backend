@@ -64,10 +64,15 @@ export class PostsController implements IPostsController {
     async read(request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user ? request.user.info: undefined;
         const { post } = request;
-        const { query } = request;
+        const { comment_count, comment_page } = request.query;
+
+        const params = {
+            count: comment_count,
+            page: comment_page,
+        }
 
         // Carrega todos os dados de uma postagem
-        const fullPost = await this.repo.getFullPost({ id: post.id, params: query, user });
+        const fullPost = await this.repo.getFullPost({ id: post.id, params, user });
         
         return response.send(fullPost);
     }

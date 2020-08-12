@@ -76,7 +76,9 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
         const commentQueryBuilder = getRepository(Comments)
             .createQueryBuilder('comment')
             .leftJoin('comment.post', 'post')
+            .leftJoin('comment.author', 'author')
             .where('post.id = :id', { id: post.id })
+            .select(['comment', 'author.id', 'author.username', 'author.image_url'])
 
         // Aplica paginação em comentários
         const paginatedComments = await this.paginate(commentQueryBuilder, {

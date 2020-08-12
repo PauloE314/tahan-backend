@@ -153,11 +153,21 @@ Content-Type: application/json
       {
         "id": "<number>",
         "text": "<string>",
+        "author": {
+          "id": "<number>",
+          "username": "<string>",
+          "image_url": "<string>"
+        }
       },
       {
         "id": "<number>",
         "text": "<string>",
-        "reference": "<number>"
+        "reference": "<number>",
+        "author": {
+          "id": "<number>",
+          "username": "<string>",
+          "image_url": "<string>"
+        }
       }
       "..."
     ]
