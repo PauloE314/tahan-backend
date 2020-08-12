@@ -1,6 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateColumn, ManyToMany, JoinTable, ManyToOne } from "typeorm";
 import { Users } from "@models/User";
-import { Messages } from "./messages";
 
 @Entity()
 export class Solicitations {

@@ -1,30 +1,123 @@
-import { EntityRepository, SelectQueryBuilder, getRepository } from "typeorm";
+import { EntityRepository, getRepository } from "typeorm";
 import { Users } from "@models/User";
 import { BaseRepository } from "src/utils/bases";
 import { Friendships } from "@models/friends/Friendships";
 import { IFriendsRepository } from "@controllers/friends/friendsTypes";
 import { Solicitations } from "@models/friends/Solicitations";
-import { Messages } from "@models/friends/messages";
 
 @EntityRepository(Friendships)
 export class FriendsRepository extends BaseRepository<Friendships> implements IFriendsRepository {
+
+    /**
+     * Retorna as solicitações de amizade que envolvam o usuário passado como parâmetro.
+     */
+    async findSolicitations (user: Users, params: any) {
+        const { id } = user;
+
+        // Query base
+        const base_query = getRepository(Solicitations)
+            .createQueryBuilder('solicitation')
+            .leftJoin('solicitation.sender', 'sender')
+            .leftJoin('solicitation.receiver', 'receiver')
+            .select([
+                'solicitation',
+                'sender.id', 'sender.username', 'sender.image_url',
+                'receiver.id', 'receiver.username', 'receiver.image_url'
+            ]);
+
+        // Somente as enviadas
+        if (params.type === 'sended') 
+            base_query.where('sender.id = :id', { id });
+        
+        // Somente as recebidas
+        else if (params.type === 'received')
+            base_query.where('receiver.id = :id', { id })
+
+        // Todas
+        else
+            base_query.where('sender.id = :id', { id }).orWhere('sender.id = :id', { id })
+
+        
+        // Serialização de filtro de resposta
+        const answerFilter: any = params.answer == null ? 
+            { operator: 'is', data: params.answer }:
+            { operator: 'equal', data: params.answer }
+
+
+        // Aplica paginação
+        const paginated = await this.filterAndPaginate(base_query, {
+            count: params.count,
+            page: params.page,
+            filter: {
+                answer: answerFilter
+            }
+        })
+
+        return paginated;
+    }
+
+
+    /**
+     * Envia uma solicitação de amizade 
+     */
+    async createSolicitation (sender: Users, receiver: Users): Promise<Solicitations> {
+        // Cria a solicitação
+        const solicitation = new Solicitations();
+        solicitation.sender = sender;
+        solicitation.receiver = receiver;
+        const saved = await getRepository(Solicitations).save(solicitation);
+
+        return saved;
+    }
+        
+    /**
+     * Response uma solicitação de amizade
+     */
+    async answerSolicitation (data: { solicitation: Solicitations, answer: 'deny' | 'accept' }) {
+        data.solicitation.answer = data.answer
+        return await getRepository(Solicitations).save(data.solicitation);
+    }
+    
+    /**
+     * Permite apagar uma solicitação de amizade
+     */
+    async deleteSolicitation(solicitation: Solicitations) {
+        await getRepository(Solicitations).remove(solicitation);
+    }
+
 
     /**
      * Retorna todas as amizades do usuário passado como parâmetro
      */
     async findFriendships (user: Users, params: any) {
         const { id } = user;
+        const { username } = params;
 
         const queryBuilder = this.createQueryBuilder('friendship')
             .leftJoin('friendship.user_1', 'user1')
             .leftJoin('friendship.user_2', 'user2')
-            .where('user1.id = :id', { id })
-            .orWhere('user2.id = :id', { id })
             .select([
                 'friendship',
                 'user1.id', 'user1.username', 'user1.image_url',
                 'user2.id', 'user2.username', 'user2.image_url',
-            ])
+            ]);
+
+        if (username) {
+            queryBuilder
+                .where(
+                    'user1.id = :id AND user2.username LIKE :username',
+                    { id, username: `%${username}%` }
+                )
+                .orWhere(
+                    'user2.id = :id AND user1.username LIKE :username',
+                    { id, username: `%${username}%` }
+                )
+        }  
+        else {
+            queryBuilder
+                .where('user1.id = :id', { id, username: `%${username}%` })
+                .orWhere('user2.id = :id', { id, username: `%${username}%` })
+        }
 
         const friendPaginated = await this.paginate(queryBuilder, {
             count: params.count,
@@ -35,109 +128,16 @@ export class FriendsRepository extends BaseRepository<Friendships> implements IF
     }
 
     /**
-     * Retorna as solicitações de amizade que envolvam o usuário passado como parâmetro. Permite o filtro por meio de type: 'all' | 'sended' | 'received'
+     * Cria uma nova amizade
      */
-    async findSolicitations (user: Users, type: string, params: any) {
-        const { id } = user;
-
-        // Query base
-        const base_query = getRepository(Solicitations)
-            .createQueryBuilder('solicitation')
-            .select(['solicitation'])
-
-        // Apenas as solicitações enviadas
-        if (type === 'sended') 
-            base_query
-                .loadRelationIdAndMap('solicitation.sender', 'solicitation.sender')
-                .leftJoinAndSelect('solicitation.receiver', 'receiver')
-                .where('solicitation.sender.id = :id', { id })
-                .addSelect(['receiver.id', 'receiver.username'])
-
-
-        // Apenas as solicitações recebidas
-        else if (type === 'received')
-            base_query
-                .loadRelationIdAndMap('solicitation.receiver', 'solicitation.receiver')
-                .leftJoin('solicitation.sender', 'sender')
-                .where('solicitation.receiver.id = :id', { id })
-                .addSelect(['sender.id', 'sender.username'])
-
-        // Todas as solicitações que envolvem o usuário
-        else
-            base_query
-                .leftJoin('solicitation.receiver', 'receiver')
-                .leftJoin('solicitation.sender', 'sender')
-                .where('sender.id = :id', { id })
-                .orWhere('receiver.id = :id', { id })
-                .addSelect(['receiver.id', 'receiver.username'])
-                .addSelect(['sender.id', 'sender.username'])
-
-
-        const paginated = await this.paginate(base_query, {
-            count: params.count,
-            page: params.page
-        })
-
-        return paginated;
-    }
-
-    /**
-     * Retorna todos os dados de uma amizade 
-     */
-    async findFullFriendship (friendshipId: number, params: any) {
-        const friendship = await this.createQueryBuilder('friends')
-            .leftJoinAndSelect('friends.user_1', 'user1')
-            .leftJoinAndSelect('friends.user_2', 'user2')
-            .leftJoinAndSelect('friends.messages', 'messages')
-            .where('friends.id = :id', { id: friendshipId })
-            .getOne();
-
-        return friendship;
-    }
-
-
-    /**
-     * Envia uma solicitação de amizade 
-     */
-    async sendSolicitation (sender: Users, receiver: Users): Promise<Solicitations> {
-        // Cria a solicitação
-        const solicitation = new Solicitations();
-        solicitation.sender = sender;
-        solicitation.receiver = receiver;
-        const saved = await getRepository(Solicitations).save(solicitation);
-
-        return saved;
-    }
-
-    /**
-     * Aceita uma solicitação de amizade e retorna uma amizade fixa
-     */
-    async acceptSolicitation (solicitation: Solicitations): Promise<Friendships> {
-        // Pega o usuário
-        const { sender, receiver } = solicitation;
-        // Aceitação
-        solicitation.answer = 'accept';
-        await getRepository(Solicitations).save(solicitation);
-        // Cria a amizade
+    async createFriendship(data: [Users, Users]) {
         const friendship = new Friendships();
-        friendship.user_1 = sender;
-        friendship.user_2 = receiver;
+        friendship.user_1 = data[0];
+        friendship.user_2 = data[1];
 
         const saved = await this.save(friendship);
-
         return saved;
     }
-
-    
-    /**
-     * Nega uma solicitação de amizade
-     */
-    async denySolicitation (solicitation: Solicitations) {
-        // Negação
-        solicitation.answer = "deny";
-        await getRepository(Solicitations).save(solicitation);
-    }
-
 
     /**
      * Permite acabar com uma amizade
@@ -145,28 +145,4 @@ export class FriendsRepository extends BaseRepository<Friendships> implements IF
     async deleteFriendship(friendship: Friendships) {
         await this.remove(friendship);
     }
-
-    /**
-     * Permite apagar uma solicitação de amizade
-     */
-    async deleteSolicitation(solicitation: Solicitations) {
-        await getRepository(Solicitations).remove(solicitation);
-    }
-
-
-    /**
-     * Permite enviar uma mensagem simples para seu amigo 
-     */
-    async sendMessage (user: Users, friendship: Friendships, message: string): Promise<Messages> {
-        console.log(user);
-        const newMessage = new Messages();
-        newMessage.sender = user;
-        newMessage.friendship = friendship;
-        newMessage.message = message;
-
-        const saved = await getRepository(Messages).save(newMessage);
-
-        return saved;
-    }
-
 }

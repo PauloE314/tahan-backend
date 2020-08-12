@@ -72,7 +72,7 @@ export interface ICreateValidatedData {
     title: string,
     contents: Array<{ type: TContentType, data: string }>,
     academic_level: 'médio' | 'fundamental' | 'superior',
-    topic: number,
+    topic: Topics,
     description: string,
 }
 

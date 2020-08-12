@@ -33,17 +33,25 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
             count: params.count,
             page: params.page,
             filter: {
-                title: { like: params.title },
-                topic: { equal: params.topic },
+                title: { operator: 'like', data: params.title },
+                topic: { operator: 'equal', data: params.topic },
             }
         };
 
         // Procura pelo id de um autor ou por seu username
         if (params.author_id)
-            filterPaginateInput.filter['author.id'] = { equal: params.author_id, getFromEntity: false };
+            filterPaginateInput.filter['author.id'] = {
+                operator: 'equal',
+                data: params.author_id,
+                getFromEntity: false
+            };
 
         else if (params.author)
-            filterPaginateInput.filter['author.username'] = { like: params.author, getFromEntity: false };
+            filterPaginateInput.filter['author.username'] = {
+                operator: 'like',
+                data: params.author,
+                getFromEntity: false
+            };
             
         // Aplica filtro e paginação
         const serializedPostList = await this.filterAndPaginate(postsQueryBuilder, filterPaginateInput);
@@ -105,7 +113,7 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
     /**
      * Criação de postagens.
      */
-    async createPosts({ author, title, contents, academic_level, description }: ICreateRepoData) {
+    async createPosts({ author, title, contents, academic_level, description, topic }: ICreateRepoData) {
         const post = new Posts();
         post.author = author;
         post.title = title;
@@ -117,6 +125,8 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
         });
         post.academic_level = academic_level;
         post.description = description;
+        post.topic = topic;
+
 
         const saved = await this.save(post);
         return saved;

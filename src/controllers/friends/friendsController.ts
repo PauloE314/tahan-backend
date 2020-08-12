@@ -1,19 +1,126 @@
-import { IFriendsController, IFriendsValidator, IFriendsRepository } from './friendsTypes';
+import { IFriendsValidator, IFriendsRepository } from './friendsTypes';
 import { APIRequest } from 'src/@types';
 import { Response, NextFunction } from 'express';
-import { getCustomRepository } from 'typeorm';
+import { getCustomRepository, getRepository } from 'typeorm';
 import { APIRoute } from 'src/utils';
+import UserValidator from '@controllers/users/usersValidator';
+import { FriendsRepository } from './friendsRepository';
+import { FriendsValidator } from './friendsValidator';
+import { Solicitations } from '@models/friends/Solicitations';
 
 
 /**
  * Controlador de ações para amigos
  */
-export class FriendsController implements IFriendsController {
-    
+export class FriendsController {
+    userValidator = new UserValidator();
+
     constructor(
         private repository: new() => IFriendsRepository,
         private validator: IFriendsValidator
     ) { }
+
+    /**
+     * **web: /friends/<sended | received | all> - GET**
+     * 
+     * Lista as solicitações do usuário logado. Permite o filtro de pesquisa por paginação e answer.
+     * 
+     * - answer: 'accept' | 'deny' | 'null'
+     */
+    // @APIRoute
+    @APIRoute
+    async listSolicitations(request: APIRequest, response: Response, next: NextFunction) {
+        const user = request.user.info;
+        const params = request.query;
+
+        params.answer = params.answer === 'null' ? null: params.answer;
+        // Pega lista de solicitações
+        const solicitations = await this.repo.findSolicitations(user, params);
+        
+        return response.send(solicitations);
+    }
+
+    /**
+     * **web: /friends/send/ - POST**
+     * 
+     * Permite enviar uma solicitação amizade. Retorna erro caso a a amizade já exista.
+     */
+    @APIRoute
+    async sendSolicitation(request: APIRequest, response: Response) {
+        const sender = request.user.info;
+        const { user } = request.body;
+        
+        // Certifica que o alvo existe
+        const receiver = await this.userValidator.getUser(user);
+
+        // Certifica que os usuários já não são amigos ou se existe outra solicitação
+        await this.validator.sendSolicitationValidator(sender, receiver);
+
+        // Envia a solicitação
+        const newSolicitation = await this.repo.createSolicitation(sender, receiver);
+
+        // Retorna os dados da amizade
+        return response.send(newSolicitation);
+    }
+
+    /**
+     * **web: /friends/:solicitationId/ - POST**
+     * 
+     * Permite aceitar a solicitação de amizade de alguém.
+     */
+    @APIRoute
+    async answerSolicitation(request: APIRequest, response: Response) {
+        const user = request.user.info;
+        const { solicitation } = request;
+        const { action } = request.body;
+
+        // Valida a operação
+        this.validator.answerSolicitationValidator({ user, solicitation, action });
+
+        // Aceita a amizade
+        if (action === 'accept') {
+            // Aceita a solicitação
+            await this.repo.answerSolicitation({ solicitation, answer: 'accept'});
+
+            // Cria nova amizade
+            const friendship = await this.repo.createFriendship(
+                [solicitation.sender, solicitation.receiver]
+            );
+
+            const serializedFriendship = {
+                id: friendship.id,
+                users: [friendship.user_1, friendship.user_2],
+                accepted_at: friendship.accepted_at
+            }
+            return response.send(serializedFriendship);
+
+        }
+        // Nega solicitação
+        else {
+            await this.repo.answerSolicitation({ solicitation, answer: 'deny'});
+
+            return response.send({ message: "Solicitação negada com sucesso" });
+        }
+    }
+    
+    /**
+     * **web: /solicitation/:solicitationId - DELETE**
+     * 
+     * Remove uma solicitação de amizade.
+     */
+    @APIRoute
+    async deleteSolicitation(request: APIRequest, response: Response) {
+        const user = request.user.info;
+        const { solicitation } = request;
+
+        // Valida a operação
+        await this.validator.deleteSolicitationValidator({ user, solicitation });
+
+        // Deleta a solicitação
+        await this.repo.deleteSolicitation(solicitation);
+
+        return response.send({ message: 'Solicitação deletada com sucesso' });
+    }
 
     /**
      * **web: /friends/ - GET**
@@ -30,7 +137,7 @@ export class FriendsController implements IFriendsController {
         const friends = await this.repo.findFriendships(user, params);
 
         const { data, ...paginatedData } = friends;
-        // Serialização dos dados do
+        // Serialização dos dados
         const friendsData = data.map(friend => ({
             id: friend.id,
             users: [friend.user_1, friend.user_2],
@@ -43,89 +150,6 @@ export class FriendsController implements IFriendsController {
     }
 
     /**
-     * **web: /friends/:friendshipId - GET**
-     * 
-     * Retorna os dados de uma amizade.
-     */
-    // @APIRoute
-    @APIRoute
-    async readFriendship(request: APIRequest, response: Response, next: NextFunction) {
-        const user = request.user.info;
-        const { friendshipId } = request.params;
-        const params = request.query;
-        
-        await this.validator.findFriendshipValidator(user, friendshipId);
-        const friendship = await this.repo.findFullFriendship(Number(friendshipId), params);
-
-        return response.send(friendship);
-    }
-
-    /**
-     * **web: /friends/<sended | received | all> - GET**
-     * 
-     * Lista as solicitações do usuário logado. Permite o filtro de pesquisa por paginação.
-     */
-    // @APIRoute
-    @APIRoute
-    async listSolicitations(request: APIRequest, response: Response, next: NextFunction) {
-        const user = request.user.info;
-        const type = request.params.type;
-        const params = request.query;
-
-        // Pega lista de solicitações
-        const solicitations = await this.repo.findSolicitations(user, type, params);
-        
-        return response.send(solicitations);
-        
-    }
-
-    /**
-     * **web: /friends/send/ - POST**
-     * 
-     * Permite enviar uma solicitação amizade. Retorna erro caso a a amizade já exista.
-     */
-    @APIRoute
-    async sendSolicitation(request: APIRequest, response: Response) {
-        const requestSender = request.user.info;
-        const { user } = request.body;
-        
-        // Valida dados
-        const { sender, receiver } = await this.validator.sendSolicitationValidator(requestSender, user);
-
-        // Cria a amizade
-        const new_friendship = await this.repo.sendSolicitation(sender, receiver);
-
-        // Retorna os dados da amizade
-        return response.send(new_friendship);
-    }
-
-    /**
-     * **web: /friends/:solicitationId/ - POST**
-     * 
-     * Permite aceitar a solicitação de amizade de alguém.
-     */
-    @APIRoute
-    async answerSolicitation(request: APIRequest, response: Response) {
-        const user = request.user.info;
-        const { solicitationId } = request.params;
-        const { action } = request.body;
-
-        // Valida a operação
-        const solicitation = await this.validator.answerSolicitationValidator(user, solicitationId, action);
-
-        // Aceita a amizade
-        if (action === 'accept') {
-            const resp = await this.repo.acceptSolicitation(solicitation);
-            return response.send(resp);
-
-        }
-        else {
-            await this.repo.denySolicitation(solicitation);
-            return response.send({ message: "Solicitação negada com sucesso" });
-        }
-    }
-    
-    /**
      * **web: /friends/:friendshipId - DELETE**
      * 
      * Acaba com uma amizade consolidada.
@@ -133,54 +157,14 @@ export class FriendsController implements IFriendsController {
     @APIRoute
     async deleteFriendship(request: APIRequest, response: Response) {
         const user = request.user.info;
-        const { friendshipId } = request.params;
+        const { friendship } = request;
 
-        // Valida a operação
-        const friendship = await this.validator.deleteValidator(user, friendshipId);
-
+        // Certifica que usuário está na amizade
+        this.validator.isInFriendship({ user, friendship });
         // Desfaz a amizade
         await this.repo.deleteFriendship(friendship);
 
         return response.send({ message: 'Amizade desfeita com sucesso' });
-    }
-
-    /**
-     * **web: /solicitation/:solicitationId - DELETE**
-     * 
-     * Remove uma solicitação de amizade.
-     */
-    @APIRoute
-    async deleteSolicitation(request: APIRequest, response: Response) {
-        const user = request.user.info;
-        const { solicitationId } = request.params;
-
-        // Valida a operação
-        const solicitation = await this.validator.deleteSolicitationValidator(user, solicitationId);
-
-        await this.repo.deleteSolicitation(solicitation);
-
-        return response.send({ message: 'Solicitação deletada com sucesso' });
-    }
-
-    
-    
-    /**
-     * **web: /friends/:friendshipId/send-message - POST**
-     * 
-     * Permite o envio de mensagem para amigo. Os dados de envio devem ser:
-     * 
-     * - message: string
-     */
-    @APIRoute
-    async sendMessage(request: APIRequest, response: Response) {
-        const user = request.user.info;
-        const { friendshipId } = request.params;
-        const { message } = request.body;
-
-        const validatedData = await this.validator.sendMessageValidator(user, friendshipId, message);
-        
-        const newMessage = await this.repo.sendMessage(user, validatedData.friendship, validatedData.message);
-        return response.send(newMessage);
     }
 
 

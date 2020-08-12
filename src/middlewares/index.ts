@@ -7,6 +7,8 @@ import { Posts } from "@models/Posts/Posts";
 import { auth_user } from 'src/utils';
 import { Quizzes } from "@models/quiz/Quizzes";
 import { Containers } from "@models/Posts/Containers";
+import { Solicitations } from "@models/friends/Solicitations";
+import { Friendships } from "@models/friends/Friendships";
 
 // Tenta encontrar um tópico pelo id
 export async function getTopic(request: APIRequest, response: Response, next: NextFunction) {
@@ -38,6 +40,45 @@ export async function getPost(request: APIRequest, response: Response, next: Nex
     return next();
 }
 
+/**
+ * Pega os dados de uma solicitação de amizade pela URL
+ */
+export async function getSolicitation(request: APIRequest, response: Response, next: NextFunction) {
+    const id = Number(request.params.solicitationId)
+
+    const solicitation = await getRepository(Solicitations).findOne({
+        relations: ['sender', 'receiver'],
+        where: { id }
+    });
+
+    if (!solicitation)
+        return response.status(404).send({ message: "Solicitação não encontrada" });
+    
+    request.solicitation = solicitation;
+
+    return next();
+}
+
+
+
+/**
+ * Pega uma amizade passada na URL e a salva na request
+ */
+export async function getFriendship(request: APIRequest, response: Response, next: NextFunction) {
+    const id = Number(request.params.friendshipId);
+
+    const friendship = await getRepository(Friendships).findOne({
+        relations: ['user_1', 'user_2'],
+        where: { id }
+    });
+
+    if (!friendship) 
+        return response.status(404).send({ message: "Amizade não encontrada" });
+
+    request.friendship = friendship;
+
+    return next();
+}
 
 /**
  * Pega o quiz usando a URL.
@@ -101,25 +142,3 @@ export async function getContainer(request: APIRequest, response: Response, next
     return next();
 }
 
-
-/**
- * Pega uma amizade passada na URL e a salva na request
- */
-export function getFriendship(id_name: string) {
-    return async function (request: APIRequest, response: Response, next: NextFunction) {
-        const id = Number(request.params[id_name]);
-
-        if (id) {
-            const container = await getRepository(Containers).findOne({
-                relations: ['author', 'posts'],
-                where: { id }
-            });
-            if (container) {
-                request.container = container;
-                return next();
-            }
-            return response.status(400).send({ message: "Container de posts não encontrado" })
-        }
-        return next();
-    }
-}

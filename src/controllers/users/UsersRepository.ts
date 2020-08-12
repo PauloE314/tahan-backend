@@ -24,9 +24,9 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
             count: params.count,
             page: params.page,
             filter: {
-                username: { like: params.username },
-                email: { like: params.email },
-                occupation: { like: params.occupation },
+                username: { operator: 'like', data: params.username },
+                email: { operator: 'like', data: params.email },
+                occupation: { operator: 'like', data: params.occupation },
             }
         });
 
@@ -82,8 +82,8 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
             count: params.count,
             page: params.page,
             filter: {
-                title: { like: params.title },
-                topic: { equal: params.topic }
+                title: { operator: 'like', data: params.title },
+                topic: { operator: 'equal', data: params.topic }
             }
         })
 
@@ -107,8 +107,8 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
             count: params.count,
             page: params.page,
             filter: {
-                name: { like: params.name },
-                author: { equal: authorId },
+                name: { operator: 'like', data: params.name },
+                author: { operator: 'equal', data: authorId },
             }
         });
 
@@ -128,9 +128,9 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
             count: params.count,
             page: params.page,
             filter: {
-                author: { equal: authorId },
-                topic: { equal: params.topic },
-                name: { like: params.name }
+                author: { operator: 'equal', data: authorId },
+                topic: { operator: 'equal', data: params.topic },
+                name: { operator: 'like', data: params.name }
             }
         });
 

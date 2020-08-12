@@ -88,6 +88,9 @@ export class PostsController implements IPostsController {
         const author = request.user.info;
         const post = request.post;
 
+        // Certifica que é o autor
+        this.validator.isPostAuthor(post, author);
+
         const validatedData = await this.validator.update({ title, add, remove, academic_level, description, author, post });
 
         const updatedPost = await this.repo.updatePost({ ...validatedData, post });

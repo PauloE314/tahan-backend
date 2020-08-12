@@ -118,7 +118,7 @@ Vale a pena lembrar que é possível, através das rotas dos usuários, ver quiz
 Por motivos performáticos e de segurança, para acessar essas rotas é necessário estar autenticado.
 
 
-### **1. Dados gerais de um usuário**
+### **Dados gerais de um usuário**
 
 #### **Outros usuários:**
 
@@ -183,7 +183,7 @@ Content-Type: application/json
 A propriedade ```date``` se refere aos dados relacionados à expiração do token JWT (```expires``` sendo o tempo máximo de utilização e ```starts``` sendo quando o token foi atualizado pela ultima vez).
 
 
-### **2. Quizzes dos usuários**
+### **Quizzes dos usuários**
 
 Essa funcionalidade só está disponível para alvos que são professores (por exemplo, ```/users/1/quizzes``` retornará um ```400_BAD_REQUEST``` caso o usuário 1 são seja um professor).
 
@@ -232,7 +232,7 @@ Content-Type: application/json
 O array de números na resposta (data.questions) é referente à lista dos ids das questões do quiz. Essa rota não é destinada a ver todos os dados do quiz; para tal, utilize a rota ```/quizzes/:id/``` (a documentação está disponível [aqui](./quizzes.md))
 
 
-### **3. Postagens dos usuários**
+### **Postagens dos usuários**
 
 Assim como os quizzes, essa funcionalidade só está disponível quando o alvo (```self``` caso seja o usuário que faz a requisição ou um id - ```number``` - caso seja outro usuário) é um professor.
 
@@ -272,7 +272,7 @@ Content-Type: application/json
 ```
 
 
-### **4. Containers para posts de usuários**
+### **Containers para posts de usuários**
 Assim como quizzes e posts, os containers só serão acessíveis caso o usuário alvo seja um professor.
 
 A API permite a visualização facilitada dos containers de um usuário (pensado justamente na criação de uma tela de perfil do usuário, por exemplo). Basta fazer uma requisição **GET** para a rota ```/users/:id/post-containers``` (para outros usuários) ou ```/users/self/post-containers```(para o usuário que faz a requisição). É permitido o filtro de dados por meio dos parâmetros (query params):

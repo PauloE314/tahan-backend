@@ -17,8 +17,8 @@ export interface IPaginatedData<T> {
 
 interface IFilterInput {
     [name: string]: {
-        like?: any,
-        equal?: any,
+        operator?: 'equal' | 'like' | 'is'
+        data: any,
         name?: string,
         getFromEntity?: boolean,
     }
@@ -41,6 +41,12 @@ export class BaseRepository<T> extends Repository<T> {
      * Filtra os dados de um selectQueryBuilder
      */
     filter <new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: IFilterInput): SelectQueryBuilder<new_T> {
+
+        const connectors = {
+            equal: '=',
+            like: 'like',
+            is: 'is'
+        }
         // Seta a entidade
         const entity = queryBuilder.alias;
     
@@ -48,18 +54,16 @@ export class BaseRepository<T> extends Repository<T> {
             const data = params[fieldName];
             const getFromEntity = data.getFromEntity !== undefined? data.getFromEntity: true;
             const name = data.name || fieldName;
+            const connector = connectors[data.operator]
 
-            // Primeiro lado da equação
-            const firstEqualSide = getFromEntity ? `${entity}.${fieldName}`: `${fieldName}`;
+            if (data.data !== undefined) {
+                // Primeiro lado da equação
+                const firstEqualSide = getFromEntity ? `${entity}.${fieldName}`: `${fieldName}`;
 
-            // Aplica like
-            if (data.like) 
-                queryBuilder.andWhere(`${firstEqualSide} LIKE :${name}`, { [name]: `%${data.like}%`});
-            
-            // Aplica igual
-            else if (data.equal !== undefined)
-                queryBuilder.andWhere(`${firstEqualSide} = :${name}`, { [name]: data.equal });
-    
+                const validData = connector === 'like' ? `%${data.data}%`: data.data;
+
+                queryBuilder.andWhere(`${firstEqualSide} ${connector} :${name}`, { [name]: validData });
+            }
         }
         return queryBuilder;
     }
