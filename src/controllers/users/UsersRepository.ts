@@ -43,7 +43,7 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
             .where('googleID = :id', { id: data.id })
             .getOne();
 
-        const user = oldUser || new Users;
+        const user = oldUser || new Users();
         // Atualiza dados do usuário
         user.email = data.email;
         user.image_url = data.image_url;
@@ -52,11 +52,13 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
         // Seta a ocupação apenas uma vez
         if (!oldUser)
             user.occupation = occupation;
+            
+        const saved = await this.save(user);
 
         // Normatiza dados
-        delete user.googleID;
+        delete saved.googleID;
         // Retorna user
-        return user;
+        return saved;
     }
 
     /**
