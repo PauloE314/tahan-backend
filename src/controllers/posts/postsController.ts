@@ -1,20 +1,19 @@
-import { IPostsController, IPostsRepository, IPostsValidator } from "./postsTypes";
 import { getCustomRepository, getRepository } from "typeorm";
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
-import { APIRoute, ValidationError } from "src/utils";
-import { Likes } from "@models/Posts/Likes";
+import { APIRoute } from "src/utils";
 import { codes } from "@config/server";
+import { PostsRepository, PostCommentRepository } from "./postsRepository";
+import { PostsValidator } from "./postsValidator";
 
 /**
  * Controlador de rotas relacionadas aos posts da aplicação.
  */
-export class PostsController implements IPostsController {
+export class PostsController {
+    validator = new PostsValidator();
+    repository = PostsRepository;
+    commentsRepository = PostCommentRepository;
 
-    constructor(
-        private repository: new () => IPostsRepository,
-        private validator: IPostsValidator
-    ) {  }
 
     /**
      * **web: /posts/ - GET**
@@ -126,42 +125,63 @@ export class PostsController implements IPostsController {
     async like(request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const { post } = request;
-        const likesRepo = getRepository(Likes);
+        // const likesRepo = getRepository(Likes);
 
-        const userLiked = await this.repo.userLikedPost(user.id, post.id);
+        const postLiked = await this.repo.userLikedPost(user.id, post.id);
 
         // Remove o like caso ele exista
-        if (userLiked) {
-            await likesRepo.remove(userLiked);
-
+        if (postLiked) {
+            post.likes = post.likes.filter(likeUser => likeUser.id !== user.id);
+            post.like_amount -= 1;
+            await this.repo.save(post);
             return response.send({ message: "Like removido" });
         }
 
         // Cria um novo like
         else {
-            const newLike = new Likes();
-            newLike.user = user;
-            newLike.post = post;
-            await likesRepo.save(newLike);
+            post.likes.push(user);
+            post.like_amount += 1;
 
+            await this.repo.save(post);
+            
             return response.send({ message: "Like adicionado" });
         }
     }
 
     /**
-     * **web: /posts/:id/comment - POST**
+     * **web: /posts/:id/comments - GET**
+     * 
+     * Permite ver a lista de comentários de uma postagem
+     */
+    @APIRoute
+    async listComments(request: APIRequest, response: Response, next: NextFunction) {
+        const { post } = request;
+        
+        const comments = await this.commentsRepo.listPostComments({
+            postId: post.id
+        });
+
+        return response.send(comments);
+    }
+
+    /**
+     * **web: /posts/:id/comments - POST**
      * 
      * Permite comentar em um post
      */
     @APIRoute
-    async comment(request: APIRequest, response: Response, next: NextFunction) {
+    async createComments(request: APIRequest, response: Response, next: NextFunction) {
         const { post } = request;
         const user = request.user.info;
         const { text, reference } = request.body;
 
         const validatedData = await this.validator.comment({ text, reference });
 
-        const comment = await this.repo.writeComment({ author: user, post: post, ...validatedData});
+        const comment = await this.commentsRepo.writeComment({
+            author: user,
+            post: post,
+            ...validatedData
+        });
 
         // Normaliza os dados de resposta 
         delete comment.post;
@@ -169,9 +189,32 @@ export class PostsController implements IPostsController {
 
         return response.status(codes.CREATED).send(comment);
     }
+
+    /**
+     * **web: /posts/comments:id - POST**
+     * 
+     * Permite apagar um comentário
+     */
+    @APIRoute
+    async deleteComment(request: APIRequest, response: Response, next: NextFunction) {
+        const { postComment } = request;
+        const user = request.user.info;
+
+        this.validator.isPostCommentAuthor({ user, postComment });
+
+        await this.commentsRepo.deleteComment(postComment);
+
+        return response.send({ message: "Comentário apagado com sucesso" });
+
+    }
+
     
 
     get repo() {
         return getCustomRepository(this.repository);
+    }
+
+    get commentsRepo() {
+        return getCustomRepository(this.commentsRepository)
     }
 }

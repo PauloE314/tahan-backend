@@ -1,21 +1,23 @@
-import { IPostsRepository, IUpdateValidatedData, IUpdateRepoData, ICreateRepoData, ICommentRepoData } from "./postsTypes";
+import { IUpdateValidatedData, IUpdateRepoData, ICreateRepoData, ICommentRepoData } from "./postsTypes";
 import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
 import { Posts } from "@models/Posts/Posts";
 import { EntityRepository, getRepository } from "typeorm";
 import { Contents } from "@models/Posts/Contents";
-import { Likes } from "@models/Posts/Likes";
 import { Comments } from "@models/Posts/Comments";
+import { Users } from "@models/User";
 
 /**
  * Repositório dos posts da aplicação.
  */
 @EntityRepository(Posts)
-export class PostsRepository extends BaseRepository<Posts> implements IPostsRepository {
+export class PostsRepository extends BaseRepository<Posts> {
 
     /**
      * Listagem de postagens
      */
     async findPosts(params: any) {
+        const order = params.order || null;
+
         const postsQueryBuilder = this.createQueryBuilder('post')
             .leftJoin('post.author', 'author')
             .leftJoin('post.topic', 'topic')
@@ -26,37 +28,43 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
                 'author.id', 'author.username',
             ])
 
-        // Input da função de paginação e filtro
-        const filterPaginateInput: IFilterAndPaginateInput = {
-            count: params.count,
-            page: params.page,
+            
+            // Input da função de paginação e filtro
+            const filterPaginateInput: IFilterAndPaginateInput = {
+                count: params.count,
+                page: params.page,
             filter: {
                 title: { operator: 'like', data: params.title },
                 topic: { operator: 'equal', data: params.topic },
             }
         };
-
+        
         // Procura pelo id de um autor ou por seu username
         if (params.author_id)
-            filterPaginateInput.filter['author.id'] = {
-                operator: 'equal',
-                data: params.author_id,
-                getFromEntity: false
-            };
-
+        filterPaginateInput.filter['author.id'] = {
+            operator: 'equal',
+            data: params.author_id,
+            getFromEntity: false
+        };
+        
         else if (params.author)
-            filterPaginateInput.filter['author.username'] = {
-                operator: 'like',
-                data: params.author,
-                getFromEntity: false
-            };
-            
+        filterPaginateInput.filter['author.username'] = {
+            operator: 'like',
+            data: params.author,
+            getFromEntity: false
+        };
+        
+        
+        // Aplica ordenação por likes
+        if (order === 'likes')
+            postsQueryBuilder.orderBy('post.like_amount', 'DESC');
+        
         // Aplica filtro e paginação
         const serializedPostList = await this.filterAndPaginate(postsQueryBuilder, filterPaginateInput);
-
+        
         return serializedPostList;
     }
-
+    
     /**
      * Tenta pegar um quiz individualmente e lidar com comentários, likes, etc.
      */
@@ -65,9 +73,9 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
         const post = await getRepository(Posts).createQueryBuilder("post")
             .where("post.id = :id", { id })
             .leftJoin('post.author', 'author')
+            .loadRelationCountAndMap('post.likes', 'post.likes')
             .leftJoinAndSelect('post.topic', 'topic')
             .leftJoinAndSelect('post.contents', 'content')
-            .loadRelationCountAndMap('post.likes', 'post.likes')
             .select([
                 'post',
                 'topic',
@@ -75,37 +83,19 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
                 'author.id', 'author.username', 'author.image_url'
             ])
             .getOne();
+            
+        const { likes, like_amount, ...postData } = post;
 
-        const { likes, comments, ...postData } = post;
-        
-        // Carrega comentários
-        const commentQueryBuilder = getRepository(Comments)
-            .createQueryBuilder('comment')
-            .leftJoin('comment.post', 'post')
-            .leftJoin('comment.author', 'author')
-            .where('post.id = :id', { id: post.id })
-            .select(['comment', 'author.id', 'author.username', 'author.image_url'])
-
-        // Aplica paginação em comentários
-        const paginatedComments = await this.paginate(commentQueryBuilder, {
-            count: params.count,
-            page: params.page
-        });
-
+ 
         // Checa se o usuário deu like
-        const userLiked = user ? (await getRepository(Likes).findOne({
-            where: { user: user.id, post: post.id }
-        })) : false;
-
-        
+        const userLiked = await this.userLikedPost(user.id, post.id);
 
         return {
             ...postData,
             likes: {
-                count: <any>post.likes,
+                count: <any>likes,
                 user_liked: userLiked ? true : false
             },
-            comments: paginatedComments,
         };
     }
 
@@ -176,18 +166,43 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
      */
     async userLikedPost(userId: number, postId: number) {
         
-        const like = await getRepository(Likes).createQueryBuilder('like')
-            .leftJoinAndSelect('like.user', 'user')
-            .leftJoinAndSelect('like.post', 'post')
-            .where('user.id = :userId', { userId })
-            .andWhere('post.id = :postId', { postId })
+        const post = await this.createQueryBuilder('post')
+            .leftJoinAndSelect('post.likes', 'userLike')
+            .where('post.id = :postId', { postId })
+            .andWhere('userLike.id = :userId', { userId })
             .getOne();
 
-
-        if (like)
-            return like;
+        if (post)
+            return post;
 
         return false;
+    }
+}
+
+
+
+
+@EntityRepository(Comments)
+export class PostCommentRepository extends BaseRepository<Comments> {
+    /**
+     * Retorna a lista de comentários de uma postagem
+     */
+    async listPostComments(data: { postId: number }) {
+        const { postId } = data;
+
+        const commentQueryBuilder = getRepository(Comments).createQueryBuilder('comment')
+            .leftJoin('comment.post', 'post')
+            .leftJoin('comment.author', 'author')
+            .where('post.id = :postId', { postId })
+            .loadRelationIdAndMap('comment.reference', 'comment.reference')
+            .select([
+                'comment',
+                'author.id', 'author.username', 'author.image_url',
+            ])
+
+        const comments = await commentQueryBuilder.getMany();
+
+        return comments;
     }
 
 
@@ -209,4 +224,10 @@ export class PostsRepository extends BaseRepository<Posts> implements IPostsRepo
         return saved;
     }
 
+    /**
+     * Apaga comentário
+     */
+    async deleteComment(postComment: Comments) {
+        await this.remove(postComment);
+    }
 }

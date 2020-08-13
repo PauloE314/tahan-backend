@@ -2,6 +2,7 @@ import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, CreateDateCol
 import { Posts } from './Posts/Posts';
 import { Quizzes } from "./quiz/Quizzes";
 import { Containers } from './Posts/Containers'
+import { Comments } from "./Posts/Comments";
 
 @Entity()
 @Unique(['email', 'googleID'])
@@ -27,6 +28,10 @@ export class Users {
 
     @CreateDateColumn()
     created_at: Date;
+
+    // Likes
+    @ManyToMany(type => Posts, post => post.likes)
+    postLikes: Posts[];
 
     // Quizzes
     @OneToMany(type => Posts, post => post.author)

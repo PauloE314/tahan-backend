@@ -1,11 +1,7 @@
-import { Response, NextFunction, Request } from 'express';
-import { Posts } from '@models/Posts/Posts';
+import { Response } from 'express';
 
 import { APIRequest } from 'src/@types';
 import { getRepository, Like } from 'typeorm';
-import { Likes } from '@models/Posts/Likes';
-import { Comments } from '@models/Posts/Comments';
-import { Contents } from '@models/Posts/Contents';
 import { Containers } from '@models/Posts/Containers';
 import { APIRoute, paginate, filter } from 'src/utils';
 

@@ -4,43 +4,8 @@ import { Posts } from "@models/Posts/Posts";
 import { Users } from "@models/User";
 import { TContentType, Contents } from "@models/Posts/Contents";
 import { Comments } from "@models/Posts/Comments";
-import { Likes } from "@models/Posts/Likes";
 import { Topics } from "@models/Topics";
 
-/**
- * Interface do controlador de rotas dos posts.
- */
-export interface IPostsController {
-    list: IApiResponse,
-    create: IApiResponse,
-    read: IApiResponse,
-    delete: IApiResponse,
-    update: IApiResponse,
-    like: IApiResponse,
-    comment: IApiResponse,
-}
-
-/**
- * Interface do repositório de posts.
- */
-export interface IPostsRepository extends BaseRepository<Posts> {
-    findPosts: (params: any) => Promise<IPaginatedData<Posts>>,
-    getFullPost: (data: { id: number, params: any, user: Users }) => Promise<IFullPostData>
-    createPosts: (data: ICreateRepoData) => Promise<Posts>,
-    updatePost: (data: IUpdateRepoData) => Promise<Posts>,
-    userLikedPost: (userId: number, postId: number) => Promise<Likes | false>,
-    writeComment: (data: ICommentRepoData) => Promise<Comments>
-}
-
-/**
- * Interface do validador de ações em posts.
- */
-export interface IPostsValidator {
-    create: (data: ICreateData) => Promise<ICreateValidatedData>,
-    update: (data: IUpdateData) => Promise<IUpdateValidatedData>,
-    comment: (data: ICommentData) => Promise<ICommentValidatedData>
-    isPostAuthor: (post: Posts, user: Users) => any
-}
 
 
 // Interfaces de leitura
@@ -51,7 +16,6 @@ export interface IFullPostData{
     title: string,
     description: string,
     contents: Contents[],
-    comments: IPaginatedData<Comments>,
     likes: {
         count: number,
         user_liked: boolean

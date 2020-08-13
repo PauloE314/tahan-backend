@@ -1,7 +1,6 @@
 import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn, OneToOne, JoinTable, JoinColumn, ManyToMany} from "typeorm";
 import { Topics } from '../Topics';
 import { Users } from '../User';
-import { Likes } from "./Likes";
 import { Comments } from "./Comments";
 import { Contents } from './Contents';
 import { Containers } from './Containers';
@@ -37,14 +36,18 @@ export class Posts {
     @Column()
     academic_level: TAcademicLevel;
 
-    @OneToMany(type => Likes, like => like.post)
-    likes: Likes[];
-
     @OneToMany(type => Comments, comment => comment.post)
     comments: Comments[];
 
     @ManyToMany(type => Containers, container => container.posts)
     containers: Containers[];
+
+    @ManyToMany(type => Users, user => user.postLikes)
+    @JoinTable()
+    likes: Users[];
+
+    @Column({ default: 0 })
+    like_amount: number
 }
 
 export type TAcademicLevel = 'fundamental' | 'médio' | 'superior';

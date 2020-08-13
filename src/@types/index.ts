@@ -6,6 +6,7 @@ import { Quizzes } from '@models/quiz/Quizzes';
 import { Containers } from '@models/Posts/Containers';
 import { Friendships } from '@models/friends/Friendships';
 import { Solicitations } from '@models/friends/Solicitations';
+import { Comments } from '@models/Posts/Comments';
 
 // modelo de usuário
 export interface user_interface {
@@ -34,7 +35,8 @@ export interface APIRequest extends Request{
     container?: Containers,
     quiz?: Quizzes,
     friendship?: Friendships,
-    solicitation?: Solicitations
+    solicitation?: Solicitations,
+    postComment?: Comments
 }
 
 export type IApiResponse = (request: APIRequest, response: Response, next?: NextFunction) => Response | Promise<Response>

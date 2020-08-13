@@ -1,7 +1,7 @@
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 
-import { getRepository } from "typeorm";
+import { getRepository, getCustomRepository } from "typeorm";
 import { Topics } from "@models/Topics";
 import { Posts } from "@models/Posts/Posts";
 import { auth_user } from 'src/utils';
@@ -9,6 +9,8 @@ import { Quizzes } from "@models/quiz/Quizzes";
 import { Containers } from "@models/Posts/Containers";
 import { Solicitations } from "@models/friends/Solicitations";
 import { Friendships } from "@models/friends/Friendships";
+import { PostCommentRepository } from "@controllers/posts/postsRepository";
+
 
 // Tenta encontrar um tópico pelo id
 export async function getTopic(request: APIRequest, response: Response, next: NextFunction) {
@@ -25,19 +27,58 @@ export async function getTopic(request: APIRequest, response: Response, next: Ne
 }
 
 // Tenta encontrar uma postagem pelo id
-export async function getPost(request: APIRequest, response: Response, next: NextFunction) {
-    const post_id = Number(request.params.id);
+export function getPost(limit: 'short' | 'medium' | 'long' = 'short') {
+    return async function (request: APIRequest, response: Response, next: NextFunction) {
+        const post_id = Number(request.params.id);
 
-    const post = await getRepository(Posts).findOne({ 
-        relations: ["author", "contents", "topic"],
-        where: { id: post_id }
-    });
+        const postQueryBuilder = getRepository(Posts)
+            .createQueryBuilder('post')
+            .leftJoinAndSelect('post.author', 'author')
+            .leftJoinAndSelect('post.topic', 'topic')
+            .where('post.id = :post_id', { post_id })
+            .select(['post', 'author', 'topic'])
 
-    if (!post)
-        return response.send({ message: "Postagem não encontrada" });
+        if (limit === 'medium' || limit === 'long') 
+            postQueryBuilder
+                .leftJoinAndSelect('post.contents', 'content')
 
-    request.post = post;
-    return next();
+        if (limit === 'long') 
+            postQueryBuilder
+                .leftJoin('post.likes', 'userLike')
+                .addSelect(['userLike.id'])
+        
+        const post = await postQueryBuilder.getOne();
+
+        if (!post)
+            return response.send({ message: "Postagem não encontrada" });
+
+        request.post = post;
+        return next();
+    }
+}
+
+/**
+ * Tenta pegar o comentário de uma postagem
+ */
+export function getPostComment() {
+    return async function(request: APIRequest, response: Response, next: NextFunction) {
+        const id = Number(request.params.postCommentId);
+
+        const postCommentQueryBuilder = getCustomRepository(PostCommentRepository)
+            .createQueryBuilder('comment')
+            .leftJoinAndSelect('comment.author', 'user')
+            .where('comment.id = :id', { id })
+            
+        const comment = await postCommentQueryBuilder.getOne();
+
+        if (!comment)
+            return response.status(404).send({ message: "Comentário não encontrado" });
+
+        request.postComment = comment;
+        console.log(request.postComment);
+
+        return next();
+    }
 }
 
 /**

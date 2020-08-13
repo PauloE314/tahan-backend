@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn, ManyToMany, JoinTable} from "typeorm";
 
 import { Posts } from "@models/Posts/Posts";
 import { Users } from "@models/User";

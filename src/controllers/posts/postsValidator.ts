@@ -1,19 +1,17 @@
-import { IPostsValidator, ICreateData, IUpdateData, ICommentData, ICommentValidatedData } from "./postsTypes";
-import { getRepository, Check } from "typeorm";
+import { ICreateData, IUpdateData, ICommentData, ICommentValidatedData } from "./postsTypes";
+import { getRepository } from "typeorm";
 import { Posts } from "@models/Posts/Posts";
 import { BaseValidator, validateFields } from "src/utils/validators";
-import configs from 'src/config/server';
-import { type } from "os";
+import configs, { codes } from 'src/config/server';
 import { ValidationError } from "src/utils";
 import { Topics } from "@models/Topics";
 import { Users } from "@models/User";
-import { response } from "express";
 import { Comments } from "@models/Posts/Comments";
 
 /**
  * Validador dos posts.
  */
-export class PostsValidator extends BaseValidator implements IPostsValidator {
+export class PostsValidator extends BaseValidator {
 
     /**
      * Valida os campos de criação de uma postagem
@@ -132,7 +130,17 @@ export class PostsValidator extends BaseValidator implements IPostsValidator {
      */
     isPostAuthor(post: Posts, user: Users) {
         if (post.author.id !== user.id) 
-            throw new ValidationError("Essa rota só é válida para o autor da postagem");
+            throw new ValidationError("Essa rota só é válida para o autor da postagem", codes.PERMISSION_DENIED);
+    }
+
+    /**
+     * Certifica que o usuário é o autor de um comentário
+     */
+    isPostCommentAuthor(data: { user: Users, postComment: Comments }) {
+        const { user, postComment } = data;
+
+        if (postComment.author.id !== user.id)
+            throw new ValidationError("Essa rota só é válida para o autor do comentário", codes.PERMISSION_DENIED)
     }
 }
 

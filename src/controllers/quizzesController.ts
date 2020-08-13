@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { Topics } from '@models/Topics';
 
 import { APIRequest } from 'src/@types';
-import { getRepository, getConnection, Like } from 'typeorm';
+import { getRepository, getConnection, } from 'typeorm';
 import { Quizzes } from '@models/quiz/Quizzes';
 import { Alternatives } from '@models/quiz/Alternatives';
 import { Questions } from '@models/quiz/Questions';
