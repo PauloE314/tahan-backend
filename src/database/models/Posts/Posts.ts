@@ -46,7 +46,7 @@ export class Posts {
     @JoinTable()
     likes: Users[];
 
-    @Column({ default: 0 })
+    @Column({ default: 0, select: false })
     like_amount: number
 }
 

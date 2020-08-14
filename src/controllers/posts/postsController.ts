@@ -30,6 +30,10 @@ export class PostsController {
 
         const posts = await this.repo.findPosts(query);
 
+        posts.data.forEach(post => {
+            delete post.like_amount;
+        });
+
         return response.send(posts);
     }
 

@@ -21,18 +21,22 @@ export class PostsRepository extends BaseRepository<Posts> {
         const postsQueryBuilder = this.createQueryBuilder('post')
             .leftJoin('post.author', 'author')
             .leftJoin('post.topic', 'topic')
-            .loadRelationCountAndMap('post.likes', 'post.likes')
             .select([
                 'post',
+                'post.like_amount',
                 'topic',
                 'author.id', 'author.username',
             ])
 
+        // Aplica ordenação por likes
+        if (order === 'likes')
+            postsQueryBuilder.orderBy('post.like_amount', 'DESC');
+
             
-            // Input da função de paginação e filtro
-            const filterPaginateInput: IFilterAndPaginateInput = {
-                count: params.count,
-                page: params.page,
+        // Input da função de paginação e filtro
+        const filterPaginateInput: IFilterAndPaginateInput = {
+            count: params.count,
+            page: params.page,
             filter: {
                 title: { operator: 'like', data: params.title },
                 topic: { operator: 'equal', data: params.topic },
@@ -41,23 +45,19 @@ export class PostsRepository extends BaseRepository<Posts> {
         
         // Procura pelo id de um autor ou por seu username
         if (params.author_id)
-        filterPaginateInput.filter['author.id'] = {
-            operator: 'equal',
-            data: params.author_id,
-            getFromEntity: false
-        };
+            filterPaginateInput.filter['author.id'] = {
+                operator: 'equal',
+                data: params.author_id,
+                getFromEntity: false
+            };
         
         else if (params.author)
-        filterPaginateInput.filter['author.username'] = {
-            operator: 'like',
-            data: params.author,
-            getFromEntity: false
-        };
+            filterPaginateInput.filter['author.username'] = {
+                operator: 'like',
+                data: params.author,
+                getFromEntity: false
+            };
         
-        
-        // Aplica ordenação por likes
-        if (order === 'likes')
-            postsQueryBuilder.orderBy('post.like_amount', 'DESC');
         
         // Aplica filtro e paginação
         const serializedPostList = await this.filterAndPaginate(postsQueryBuilder, filterPaginateInput);
