@@ -15,7 +15,4 @@ export class Alternatives {
 
     @ManyToOne(type => Questions, question => question.id, { onDelete: 'CASCADE' })
     question?: Questions;
-
-    @OneToOne(type => Questions, question => question.rightAnswer, { onDelete: 'CASCADE' })
-    rightAnswerQuestion?: Questions;
 }

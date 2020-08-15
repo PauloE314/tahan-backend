@@ -1,23 +1,36 @@
 import { IPaginatedData } from "src/utils/bases"
 import { Quizzes } from "@models/quiz/Quizzes"
+import { Topics } from "@models/Topics";
 
 /**
  * Tipagem das validações
  */
-export type IRepoListQuizzes = Promise<IPaginatedData<Quizzes>>
-
-export type IRepoValidQuiz = Promise<{
-
+export type IValidCreateQuiz = Promise<{
+    name: string,
+    mode: string,
+    password?: string,
+    questions: IValidCreateQuestion,
+    topic: Topics
 }>
-
-export type IRepoValidAlternative = Promise<{
-
-}>
-
-export type IRepoQuizAnswers = {}
-
-
- /**
-  * Tipagem dos repositórios
-  */
  
+export type IValidCreateQuestion = Array<{
+    question: string,
+    alternatives: Array<{
+        text: string,
+        right: boolean
+    }>
+}>
+ 
+
+/**
+ * Tipagem dos repositórios
+ */
+
+// Listagem
+export type IRepoListQuizzes = Promise<IPaginatedData<Quizzes>>
+// Criação
+export type IRepoCreateQuiz = Promise<Quizzes>
+
+
+
+

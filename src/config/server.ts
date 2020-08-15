@@ -11,6 +11,9 @@ export default {
         min_title_size: 5
     },
     quizzes: {
+        min_name_size: 5,
+        min_password_size: 5,
+
         min_questions: 4,
         max_questions: Infinity,
         min_alternatives: 2,

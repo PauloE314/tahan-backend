@@ -10,7 +10,7 @@ const controller = new QuizzesController();
 // Listagem
 routes.get('/', controller.list);
 // // Criação
-// routes.post('/', auth_require, is_teacher, validator.create_validation, controller.create);
+routes.post('/', auth_require, is_teacher, controller.create);
 
 // // Leitura
 // routes.get('/', controller.list);

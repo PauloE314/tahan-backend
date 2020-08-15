@@ -56,61 +56,92 @@ Content-Type: application/json
 }
 ```
 
-
-
 ## **Quizzes individuais**
+...
+
+## **Criação de quizzes**
+- **Autenticação**:  necessária
+- **Grupo de usuários**:  professores
+- **Rota**: ```/quizzes/```
+
+Para criar um quiz basta enviar uma requisição **POST** para a rota ```/quizzes/```. Os campos de envio tem certas regras a serem seguidas:
+
+- ```name```: o nome do quiz. Ele deve ser uma string de no mínimo 5 letras e único.
+- ```mode```: o modo do quiz. Deve ser uma string com o valor ```public``` para quizzes públicos e ```private``` para quizzes privados.
+- ```password```: a senha do quiz. Só é necessária quando o quiz for privado. Deve ser uma string de no mínimo 5 letras.
+- ```topic```: o id do tópico a qual o quiz deve pertencer. Deve ser um número referente a uma tópico válido.
+- ```questions```: a lista de questões do quiz. Deve ser um array e ter no mínimo itens e cada item deve ser um objeto que contenha os seguintes valores:
+  - ```question```: a pergunta da questão. Deve ser uma string.
+  - ```alternatives```: as alternativas da questão. Deve ser um array e ter no mínimo 2 itens e no máximo 6. Cada um de seus itens deve conter as seguintes propriedades:
+    - ```text```: o texto da alternative. Deve ser uma string;
+    - ```right```:  um booleano que diz se a questão é verdadeira ou falsa. Cada questão deve ter uma e apenas uma questão com essa propriedade setada para ```true```.
 
 
-## **PATH: /quizzes - GET, POST**
+Modelo de requisição:
+```HTTP
+POST /quizzes/ HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+Content-Type: application/json
 
+{
+	"name": "<string>",
+	"mode": "public",
+	"topic": 1,
+	"questions": [
+    {
+      "question": "<string>",
+      "alternatives": [
+          {
+            "text": "<string>"
+          },
+          {
+            "text": "<string>",
+            "right": true
+          }
+      ]
+    },
+    "..."
+	]
+}
+```
 
+Modelo de resposta
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
 
-#### POST: (Autenticação necessária)
-
-- **Funcionamento:**
-
-  Permite os professores criarem quizzes.
-  ```json
-  {
-    "name": "<string>",
-    "mode": "public | private",
-    "password": "<string>",
-    "topic": "<number>",
-    "questions": [
-      {
-        "question": "<string>",
-        "alternatives": [
-          { "text": "<string>"},
-          { "text": "<string>" },
-          { "text": "<string>", "right": true }
-        ]
+{
+  "id": "<string>",
+  "name": "<string>",
+  "created_at": "<Date | string>",
+  "questions": [
+    {
+      "id": "<number>",
+      "question": "<string>",
+      "alternatives": [
+        {
+          "id": "<number>",
+          "text": "<string>"
+        },
+        {
+          "id": "<number>",
+          "text": "<string>"
+        },
+        {
+          "id": "<number>",
+          "text": "<string>"
+        }
+      ],
+      "rightAnswer": {
+        "id": "<number>",
+        "text": "<string>"
       }
-    ]
-  }
-  ```
+    }
+  ]
+}
+```
 
-- **Validação:**
-  - ```name```:
-    - Deve ser uma string;
-    - Deve ter mais de 5 caracteres;
-    - Deve ser único;
-  - ```mode```:
-    - Deve ser uma string;
-    - Deve ser ```public``` ou ```private```;
-  - ```password```:
-    - Só é necessário caso o ```mode``` seja ```private```.
-    - Deve ser uma string;
-    - Deve ter mais de 4 caracteres.
-  - ```topic```:
-    - Deve ser um inteiro;
-    - Deve ser o ```id``` de um tópico.
-  - ```questions```:
-    - Deve ser um array;
-    - Deve ter pelo menos 4 itens;
-    - Cada item deve possuir um campo ```question: string```;
-    - Cada item deve possuir um campo ```alternatives: array``` em que cada elemento desse novo array deve ser um objeto que possui uma propriedade ```text: string```. Um e apenas um dos elementos de ```alternatives``` deve possuir uma propriedade ```right: true```.
-
-  
 
 
 ## **PATH: /quizzes/:id - GET, PUT, DELETE**

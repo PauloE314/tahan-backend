@@ -1,17 +1,18 @@
-import { getCustomRepository } from "typeorm";
+import { getCustomRepository, getRepository } from "typeorm";
 import { QuizzesRepository } from "./quizzesRepository";
-import QuizValidator from "@middlewares/validators/quizzesValidator";
+import { QuizzesValidator } from "./quizzesValidator";
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 import { APIRoute } from "src/utils";
 import { IFilterAndPaginateInput } from "src/utils/bases";
+import { Quizzes } from "@models/quiz/Quizzes";
 
 /**
  * Controlador de rotas relacionadas aos quizzes da aplicação.
  */
 export class QuizzesController {
     repository = QuizzesRepository
-    validator = new QuizValidator()
+    validator = new QuizzesValidator()
 
     /**
      * **web: /quizzes/ - GET**
@@ -27,8 +28,14 @@ export class QuizzesController {
         const params = request.query;
         const  { count, page, author, author_id, name, topic } = params;
 
+
+        const gambiarra = await getRepository(Quizzes).find({
+            relations: ['questions', 'questions.alternatives']
+        })
+        return response.send(gambiarra);
+
         // Configurações de filtro e paginação
-        const filterPaginateInput: IFilterAndPaginateInput = {
+        const listParams: IFilterAndPaginateInput = {
             count,
             page,
             filter: {
@@ -36,33 +43,38 @@ export class QuizzesController {
                 topic: { operator: 'equal', data: topic },
             }
         };
-
         // Lida com o id e username do autor
         if (author_id)
-            filterPaginateInput.filter['author.id'] = {
-                operator: 'equal', data: author_id, getFromEntity: false
-            };
+            listParams.filter['author.id'] = { operator: 'equal', data: author_id, getFromEntity: false };
         
         else if (author)
-            filterPaginateInput.filter['author.username'] = {
-                operator: 'like', data: author, getFromEntity: false
-            };
+            listParams.filter['author.username'] = {operator: 'like', data: author, getFromEntity: false};
 
         // Pega a lista e paginação
-        const quizList = await this.repo.listQuizzes({ params: filterPaginateInput, queries: params });
+        const quizList = await this.repo.listQuizzes({ params: listParams, queries: params });
 
         return response.send(quizList);
     }
 
     /**
-     * **web: /quizzes/ - GET**
+     * **web: /quizzes/ - POST**
      * 
-     * Lista os quizzes públicos existentes. Permite o filtro por:
-     * 
-     * - author_id: id do autor
-     * - author: username do autor
-     * - name: nome do quiz
+     * Cria um novo quiz.
      */
+    @APIRoute
+    async create(request: APIRequest, response: Response, next: NextFunction) {
+        const author = request.user.info;
+        const { body } = request;
+
+        // Valida os campos
+        const { mode, name, questions, topic, password } = await this.validator.createValidation(body);
+
+        // Cria o quiz
+        const quiz = await this.repo.createQuiz({ mode, name, questions, topic, password, author });
+
+        // Retorna dados
+        return response.send(quiz);
+    }
     
 
     get repo() {
