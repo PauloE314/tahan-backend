@@ -25,6 +25,11 @@ type ICreateQuestionsInput = Array<{
     }>
 }>
 
+interface ICheckMode {
+    quiz: Quizzes,
+    mode: 'public' | 'private'
+}
+
 /**
  * Validador dos quizzes.
  */
@@ -76,6 +81,9 @@ export class QuizzesValidator extends BaseValidator {
             questions: response.questions
         };
     }
+
+
+    
 }
 
 /**

@@ -20,6 +20,8 @@ export type IValidCreateQuestion = Array<{
         right: boolean
     }>
 }>
+
+export type IGetQuiz = Promise<Quizzes>
  
 
 /**

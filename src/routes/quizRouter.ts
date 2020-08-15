@@ -9,8 +9,13 @@ const controller = new QuizzesController();
 
 // Listagem
 routes.get('/', controller.list);
-// // Criação
+
+// Criação
 routes.post('/', auth_require, is_teacher, controller.create);
+
+// Leitura
+routes.get('/public/:id([0-9]+)', auth_require, getQuiz, controller.readPublic);
+routes.post('/private/:id([0-9]+)', auth_require, getQuiz, controller.readPrivate);
 
 // // Leitura
 // routes.get('/', controller.list);

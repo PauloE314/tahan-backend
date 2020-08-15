@@ -57,7 +57,83 @@ Content-Type: application/json
 ```
 
 ## **Quizzes individuais**
-...
+- **Grupo de usuários**:  todos
+
+Os quizzes, como visto na seção anterior, podem ser públicos ou privados e isso influencia na forma de visualização de quizzes, por isso, há duas rotas com essa função, uma para os quizzes públicos e outra para quizzes privados.
+
+### **Quizzes públicos**
+
+Para acessar os quizzes públics, basta realizar uma requisição **GET** na rota ```/quizzes/public/:id``` (com ```id``` sendo o id do quiz requerido). Não é necessário autenticação.
+
+Modelo de requisição:
+```HTTP
+GET /quizzes/public/1 HTTP/1.1
+Host: tahan_api.com
+```
+
+Modelo de resposta: 
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+    "id": "<number>",
+    "name": "<string",
+    "mode": "public",
+    "created_at": "<Date | string>",
+    "author": {
+      "id": "<number>",
+      "username": "<string>",
+      "email": "<string>",
+      "occupation": "teacher",
+      "image_url": "<string>",
+      "created_at": "<Date | string>"
+    },
+    "questions": [
+      {
+        "id": "<number>",
+        "question": "<string>",
+        "alternatives": [
+          {
+            "id": "<number>",
+            "text": "<string>"
+          },
+          "..."
+        ],
+        "rightAnswer": {
+          "id": "<number>",
+          "text": "<string>"
+        }
+      },
+      "..."
+    ],
+    "topic": {
+      "id": "<number>",
+      "name": "<string>"
+    }
+  }
+```
+
+### **Quizzes privados**
+
+Para acessar quizzes privados é necessário enviar a senha do quiz na requisição, assim, fica inseguro realizar uma requisição do tipo **GET**; ao invés disso, é necessário realizar uma requisição do tipo **POST** para a rota ```quizzes/private/:id``` (com ```id``` sendo o id numérico do quiz). A senha enviada deve ser uma string. A autenticação é necessária.
+
+Caso o usuário que acessa essa rota for o criador do quiz, não é necessário o envio da senha.
+
+Modelo de requisição:
+```HTTP
+POST /quizzes/private/2 HTTP/1.1
+Host: tahan_api.com
+Content-Type: application/json
+Authorization: Bearer <string>
+
+{
+  "password": "<string>"
+}
+```
+
+A resposta é igual à dos quizzes públicos (exceto pelo campo "mode" que nesse caso é "private").
+
 
 ## **Criação de quizzes**
 - **Autenticação**:  necessária
@@ -145,51 +221,6 @@ Content-Type: application/json
 
 
 ## **PATH: /quizzes/:id - GET, PUT, DELETE**
-
-#### GET: (Autenticação não necessária)
-
-- **Funcionamento:**
-
-  Retorna as informações de um quiz. 
-  ```json
-  {
-    "id": "<number>",
-    "name": "<string",
-    "mode": "public | private",
-    "password": "<string>",
-    "created_at": "<Date | string>",
-    "author": {
-      "..."
-    },
-    "questions": [
-      {
-        "id": "<number>",
-        "question": "<string>",
-        "alternatives": [
-          {
-            "id": "<number>",
-            "text": "<string>"
-          },
-          "..."
-        ],
-        "rightAnswer": {
-          "id": "<number>",
-          "text": "<string>"
-        }
-      },
-      "..."
-    ],
-    "topic": {
-      "..."
-    }
-  }
-  ```
-
-  **OBS:** Os campos ```mode``` e ```password``` só estarão presentes para o autor do quiz.
-
-- **Validação**:
-  - ```permission```:
-    - Caso o quiz seja privado e o usuário não seja o criador do quiz, a senha deve ser passada como um query_param: ```quizzes/:id?password=:string```.
 
 #### PUT: (Autenticação necessária)
 

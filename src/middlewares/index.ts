@@ -128,16 +128,17 @@ export async function getQuiz(request: APIRequest, response: Response, next: Nex
 
     if (!isNaN(id)) {
         const quiz = await getRepository(Quizzes)
-        .createQueryBuilder('quiz')
-        .leftJoinAndSelect('quiz.questions', 'question')
-        .leftJoinAndSelect('question.alternatives', 'alternative')
-        .leftJoinAndSelect('question.rightAnswer', 'right_answer')
-        .leftJoinAndSelect('quiz.author', 'author')
-        .leftJoinAndSelect('quiz.topic', 'topic')
-        .where('quiz.id = :id', { id })
-        .addSelect('quiz.mode')
-        .addSelect('quiz.password')
-        .getOne();
+            .createQueryBuilder('quiz')
+            .leftJoinAndSelect('quiz.questions', 'question')
+            .leftJoinAndSelect('question.alternatives', 'alternative')
+            .leftJoinAndSelect('question.rightAnswer', 'right_answer')
+            .leftJoinAndSelect('quiz.author', 'author')
+            .leftJoinAndSelect('quiz.topic', 'topic')
+            .where('quiz.id = :id', { id })
+            .addSelect('quiz.mode')
+            .addSelect('quiz.password')
+            .getOne();
+
 
         if (!quiz)
             return response.send({ message: "Quiz não encontrado" });

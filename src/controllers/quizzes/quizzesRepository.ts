@@ -1,15 +1,15 @@
 import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
 import { Quizzes } from "@models/quiz/Quizzes";
-import { EntityRepository, getCustomRepository, getConnection, getRepository } from "typeorm";
+import { EntityRepository, getCustomRepository, getConnection } from "typeorm";
 import { Alternatives } from "@models/quiz/Alternatives";
-import {
-    IRepoListQuizzes,
-    IRepoCreateQuiz
-} from "./quizzesTypes";
+import { IRepoListQuizzes, IRepoCreateQuiz, IGetQuiz } from "./quizzesTypes";
 import { Topics } from "@models/Topics";
 import { Questions } from "@models/quiz/Questions";
 import { Users } from "@models/User";
 import { ValidationError } from "src/utils";
+import bcrypt from 'bcrypt';
+import config from 'src/config/server';
+
 
 
 /**
@@ -34,6 +34,9 @@ type ICreateQuestionInput = Array<{
         right: boolean
     }>
 }>
+interface IGetQuizInput {
+    id: number
+}
 /**
  * Repositório dos quizzes da aplicação.
  */
@@ -91,8 +94,8 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
             quiz.name = name;
             quiz.mode = mode;
             quiz.topic = topic;
-            quiz.password = password;
             quiz.author = author;
+            quiz.password = password ? await bcrypt.hash(password, config.cryptTimes): undefined;
 
             // Salva o quiz
             const saved = await this.save(quiz);
@@ -115,10 +118,23 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
         catch(err) {
             await queryRunner.rollbackTransaction();
 
-            throw new ValidationError({ name: err.name, message: err.message })
+            throw new ValidationError({ name: err.name, message: err.message }, 500)
+
         } finally {
             await queryRunner.release();
         }
+    }
+
+    /**
+     * Leitura de um quiz específico
+     */
+    async getQuiz({ id }: IGetQuizInput): IGetQuiz {
+        const quiz = await this.findOne({
+            relations: ['questions', 'questions.alternatives', 'questions.rightAnswer'],
+            where: { id }
+        });
+
+        return quiz;
     }
 
     /**
@@ -127,6 +143,7 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     async updateQuiz(): Promise<any> {
         return {};
     }
+    
 
     /**
      * Retorna as respostas dos quizzes

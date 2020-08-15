@@ -6,6 +6,7 @@ import { Response, NextFunction } from "express";
 import { APIRoute } from "src/utils";
 import { IFilterAndPaginateInput } from "src/utils/bases";
 import { Quizzes } from "@models/quiz/Quizzes";
+import bcrypt from 'bcrypt';
 
 /**
  * Controlador de rotas relacionadas aos quizzes da aplicação.
@@ -28,12 +29,6 @@ export class QuizzesController {
         const params = request.query;
         const  { count, page, author, author_id, name, topic } = params;
 
-
-        const gambiarra = await getRepository(Quizzes).find({
-            relations: ['questions', 'questions.alternatives']
-        })
-        return response.send(gambiarra);
-
         // Configurações de filtro e paginação
         const listParams: IFilterAndPaginateInput = {
             count,
@@ -41,6 +36,7 @@ export class QuizzesController {
             filter: {
                 name: { operator: 'like', data: name },
                 topic: { operator: 'equal', data: topic },
+                mode: { operator: 'equal', data: 'public' }
             }
         };
         // Lida com o id e username do autor
@@ -75,6 +71,54 @@ export class QuizzesController {
         // Retorna dados
         return response.send(quiz);
     }
+
+    /**
+     * **web: /quizzes/public/:id - GET**
+     * 
+     * Retorna os dados completos de um quiz público.
+     */
+    @APIRoute
+    async readPublic(request: APIRequest, response: Response, next: NextFunction) {
+        const { quiz } = request;
+
+        if (quiz.mode !== 'public')
+            return response.status(401).send({
+                message: 'Permissão negada: ação inválida para quiz privado'
+            });
+
+        delete quiz.password;
+
+        return response.send(quiz);
+    }
+
+    /**
+     * **web: /quizzes/private/:id - POST**
+     * 
+     * Retorna os dados completos de um quiz público.
+     */
+    @APIRoute
+    async readPrivate(request: APIRequest, response: Response, next: NextFunction) {
+        const { quiz } = request;
+        const user = request.user.info;
+        const { password } = request.body;
+
+        // Certifica que o quiz é privado
+        if (quiz.mode !== 'private')
+            return response.status(401).send({
+                message: 'Permissão negada: ação inválida para quiz público'
+            });
+
+        // Checa se é o autor do quiz
+        if (quiz.author.id !== user.id)
+            // Compara senha
+            if(!(await bcrypt.compare(password || '-1', quiz.password))) 
+                return response.status(401).send({ message: 'Senha inválida' });
+
+        delete quiz.password;
+
+        return response.send(quiz);
+    }
+
     
 
     get repo() {
