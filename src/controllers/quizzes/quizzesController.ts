@@ -80,15 +80,20 @@ export class QuizzesController {
     @APIRoute
     async readPublic(request: APIRequest, response: Response, next: NextFunction) {
         const { quiz } = request;
+        const user = request.user.info;
 
+        // Certifica que o quiz é público
         if (quiz.mode !== 'public')
             return response.status(401).send({
                 message: 'Permissão negada: ação inválida para quiz privado'
             });
 
+        // Dados de like
+        const likeData = await this.repo.getQuizLikesData({ id: quiz.id, user });
+
         delete quiz.password;
 
-        return response.send(quiz);
+        return response.send({ ...quiz, likes: likeData });
     }
 
     /**
@@ -114,9 +119,12 @@ export class QuizzesController {
             if(!(await bcrypt.compare(password || '-1', quiz.password))) 
                 return response.status(401).send({ message: 'Senha inválida' });
 
+        // Pega os dados de um quiz
+        const likeData = await this.repo.getQuizLikesData({ id: quiz.id, user });
+
         delete quiz.password;
 
-        return response.send(quiz);
+        return response.send({ ...quiz, likes: likeData });
     }
 
     

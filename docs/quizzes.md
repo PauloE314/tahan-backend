@@ -110,9 +110,15 @@ Content-Type: application/json
     "topic": {
       "id": "<number>",
       "name": "<string>"
+    },
+    "likes": {
+      "count": "<number>",
+      "user_liked": "<boolean>"
     }
   }
 ```
+
+O campo ```likes``` é referente ao sistema de likes dos quizzes. Na prática ele funciona exatamente igual ao sistema das postagens (```count``` sendo a quantidade de likes e ```user_liked``` sendo se o usuário deu like do quiz ou não; caso o usuário não esteja loado, ```user_liked```será automaticamente falso).
 
 ### **Quizzes privados**
 

@@ -37,6 +37,10 @@ type ICreateQuestionInput = Array<{
 interface IGetQuizInput {
     id: number
 }
+interface IGetQuizLikesInput {
+    id: number,
+    user: Users
+}
 /**
  * Repositório dos quizzes da aplicação.
  */
@@ -135,6 +139,37 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
         });
 
         return quiz;
+    }
+
+    /**
+     * Retorna dados sobre os likes de um quiz
+     */
+    async getQuizLikesData({ id, user }: IGetQuizLikesInput ) {
+        const userId = user ? user.id : null;
+        
+        const quiz = await this.createQueryBuilder('quiz')
+            .where('quiz.id = :id', { id })
+            .loadRelationCountAndMap('quiz.likes', 'quiz.likes')
+            .getOne();
+    
+        // Checa se o usuário deu Like
+        if (userId) {
+            const userLiked = await this.createQueryBuilder('quiz')
+                .leftJoin('quiz.likes', 'userLike')
+                .where('quiz.id = :id', { id })
+                .andWhere('userLike.id = :userId', { userId })
+                .getOne();
+            
+            return {
+                count: quiz.likes,
+                user_liked: userLiked ? true : false
+            }
+        }
+
+        return {
+            count: quiz.likes,
+            user_liked: false
+        };
     }
 
     /**
