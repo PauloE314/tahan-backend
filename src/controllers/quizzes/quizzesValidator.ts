@@ -5,6 +5,7 @@ import { getRepository } from "typeorm";
 import { ValidationError } from "src/utils";
 import config from "src/config/server";
 import { Topics } from "@models/Topics";
+import { Users } from "@models/User";
 
 /**
  * Interfaces de validação
@@ -80,6 +81,16 @@ export class QuizzesValidator extends BaseValidator {
             topic: response.topic,
             questions: response.questions
         };
+    }
+
+    /**
+     * Checa se um usuário é o autor de um quiz
+     */
+    isQuizAuthor({ quiz, user }: { quiz: Quizzes, user: Users }) {
+        if (quiz.author.id !== user.id )
+            this.RaiseError("Permissão negada, essa ação só é permitida ao autor do quiz", 401);
+
+        return quiz;
     }
 
 

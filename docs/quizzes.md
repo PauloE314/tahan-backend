@@ -223,6 +223,36 @@ Content-Type: application/json
   ]
 }
 ```
+## **Apagando quizzes**
+- **Autenticação**:  necessária
+- **Grupo de usuários**:  professores
+- **Rota**: ```/quizzes/:id```
+
+Para apagar um quiz, é necessário, acima de tudo, ser o autor do mesmo. A requisição para realizar essa ação é um **DELETE** para a rota ```/quizzes/:id``` (com ```id``` sendo o id do quiz selecionado).
+
+Modelo de requisição:
+```HTTP
+DELETE /quizzes/1 HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "message": "Quiz apagado com sucesso"
+}
+```
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
 
 
 

@@ -17,6 +17,9 @@ routes.post('/', auth_require, is_teacher, controller.create);
 routes.get('/public/:id([0-9]+)', auth_require, getQuiz, controller.readPublic);
 routes.post('/private/:id([0-9]+)', auth_require, getQuiz, controller.readPrivate);
 
+// Apagar o quiz
+routes.delete('/:id([0-9]+)', auth_require, is_teacher, getQuiz, controller.delete);
+
 // // Leitura
 // routes.get('/', controller.list);
 // routes.get('/:id', getQuiz, validator.read_quiz_validation, controller.read);

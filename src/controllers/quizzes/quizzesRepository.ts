@@ -34,13 +34,8 @@ type ICreateQuestionInput = Array<{
         right: boolean
     }>
 }>
-interface IGetQuizInput {
-    id: number
-}
-interface IGetQuizLikesInput {
-    id: number,
-    user: Users
-}
+
+
 /**
  * Repositório dos quizzes da aplicação.
  */
@@ -132,7 +127,7 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     /**
      * Leitura de um quiz específico
      */
-    async getQuiz({ id }: IGetQuizInput): IGetQuiz {
+    async getQuiz({ id }: { id: number }): IGetQuiz {
         const quiz = await this.findOne({
             relations: ['questions', 'questions.alternatives', 'questions.rightAnswer'],
             where: { id }
@@ -144,7 +139,7 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     /**
      * Retorna dados sobre os likes de um quiz
      */
-    async getQuizLikesData({ id, user }: IGetQuizLikesInput ) {
+    async getQuizLikesData({ id, user }: { id: Number, user: Users } ) {
         const userId = user ? user.id : null;
         
         const quiz = await this.createQueryBuilder('quiz')

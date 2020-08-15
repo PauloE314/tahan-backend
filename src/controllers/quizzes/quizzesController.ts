@@ -127,6 +127,24 @@ export class QuizzesController {
         return response.send({ ...quiz, likes: likeData });
     }
 
+    /**
+     * **web: /quizzes/:id - DELETE**
+     * 
+     * Permite o autor apagar seu quiz
+     */
+    @APIRoute
+    async delete(request: APIRequest, response: Response, next: NextFunction) {
+        const user = request.user.info;
+        const { quiz } = request;
+
+        // Certifica que o usuário é o autor do quiz
+        this.validator.isQuizAuthor({ quiz, user });
+
+        // Apaga o quiz
+        this.repo.remove(quiz);
+
+        return response.send({ message: 'Quiz apagado com sucesso' });
+    }
     
 
     get repo() {
