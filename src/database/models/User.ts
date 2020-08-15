@@ -33,6 +33,9 @@ export class Users {
     @ManyToMany(type => Posts, post => post.likes)
     postLikes: Posts[];
 
+    @ManyToMany(type => Quizzes, quiz => quiz.likes)
+    quizLikes: Quizzes[];
+
     // Quizzes
     @OneToMany(type => Posts, post => post.author)
     writenPosts: Posts[];

@@ -21,16 +21,28 @@ export class PostsRepository extends BaseRepository<Posts> {
         const postsQueryBuilder = this.createQueryBuilder('post')
             .leftJoin('post.author', 'author')
             .leftJoin('post.topic', 'topic')
+            .leftJoin('post.likes', 'likes')
+            .loadRelationCountAndMap('post.likes', 'post.likes')
             .select([
                 'post',
-                'post.like_amount',
                 'topic',
                 'author.id', 'author.username',
             ])
+            
+
 
         // Aplica ordenação por likes
-        if (order === 'likes')
-            postsQueryBuilder.orderBy('post.like_amount', 'DESC');
+        if (order === 'relevance')
+            postsQueryBuilder
+                .addSelect(`
+                    CASE
+                        WHEN post_likes.postsId IS NOT NULL THEN COUNT(post.id)
+                        ELSE 0
+                    END`,
+                    'likes_count'
+                )
+                .groupBy('post.id')
+                .orderBy('likes_count', 'DESC');
 
             
         // Input da função de paginação e filtro
@@ -84,7 +96,7 @@ export class PostsRepository extends BaseRepository<Posts> {
             ])
             .getOne();
             
-        const { likes, like_amount, ...postData } = post;
+        const { likes, ...postData } = post;
 
  
         // Checa se o usuário deu like

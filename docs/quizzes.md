@@ -1,19 +1,41 @@
 # **Quizzes**
 
-## **PATH: /quizzes - GET, POST**
+Esse arquivo é destinado à documentação de funcionalidades dos quizzes do projeto. Não será abordado o tópico de jogos multiplayer nessa etapa.
 
-#### GET: (Autenticação não necessária)
-
-- **Funcionamento:**
-
-  Lista os quizzes públicos desse tópico. Permite a pesquisa pelo ```name``` do quiz, por ```topic``` e pelo ```id```  de seu criador nos query_params:
-  - quizzes/?name=:string
-  - quizzes/?author=:number
-  - quizzes/?topic=:number
+Os quizzes são questionários temporizados ou não e singleplayer ou multiplayer didáticos com o fim de divertir e avaliar os alunos. Nesse tópico, mais que em qualquer outro, haverá uma grande diferença entre as rotas dos alunos e professores; os professores possuem caráter administrativo e contribuidor para os quizzes da plataforma, enquanto que os alunos serão os que consumirão esse conteúdo.
 
 
-  ```json
-  [
+## **Visualização de quizzes**
+
+### **Listagem**
+- **Autenticação**:  não necessária
+- **Grupo de usuários**:  todos
+- **Rota**: ```/quizzes/```
+
+Os quizzes possuem grande quantidade de informação, assim, a listagem apresentará pequenas porções desses dados para aumentar a performance e impedir a obtenção de dados "delicados". Na listagem apenas aparecerão os quizzes públicos, os privados precisam ser acessados diretamente na URL (vide esta [seção](##quizzes-individuais)).
+
+Para obter a listagem de quizzes basta realizar uma requisição **GET** para a rota ```/quizzes/```. Os dados retornados estão paginados e é permitido o filtro pelos parâmetros (query params):
+- ```author```: o username do autor do quiz. Causa um filtro relativo.
+- ```author_id```: o id do autor do quiz. Causa um filtro absoluto.
+- ```name```: nome do quiz. Causa um filtro relativo.
+- ```topic```: id do tópico a qual o quiz pertence. Causa um filtro absoluto.
+
+Também é permitido o filtro pela quantidade de likes, para isso, basta adicionar o parâmetro (query params) ```order=relevance``` na URL.
+
+Modelo de requisição:
+```HTTP
+GET /quizzes/?order=relevance HTTP/1.1
+Host: tahan_api.com
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "..."
+  "data": [
     {
       "id": "<number>",
       "name": "<string>",
@@ -21,14 +43,26 @@
       "author": {
         "id": "<number>",
         "username": "<string>",
+        "image_url": "<string>"
       },
       "topic": {
         "id": "<number>",
         "name": "<string>"
-      }
-    }
+      },
+      "likes": "<number>"
+    },
+    "..."
   ]
-  ```
+}
+```
+
+
+
+## **Quizzes individuais**
+
+
+## **PATH: /quizzes - GET, POST**
+
 
 
 #### POST: (Autenticação necessária)

@@ -42,11 +42,11 @@ export function getPost(limit: 'short' | 'medium' | 'long' = 'short') {
             postQueryBuilder
                 .leftJoinAndSelect('post.contents', 'content')
 
-        if (limit === 'long') 
+        if (limit === 'long')
             postQueryBuilder
-                .leftJoin('post.likes', 'userLike')
-                .addSelect(['userLike.id'])
-        
+                .leftJoin('post.likes', 'like')
+                .select(['post', 'author', 'topic', 'like.id'])
+
         const post = await postQueryBuilder.getOne();
 
         if (!post)
@@ -75,7 +75,6 @@ export function getPostComment() {
             return response.status(404).send({ message: "Comentário não encontrado" });
 
         request.postComment = comment;
-        console.log(request.postComment);
 
         return next();
     }

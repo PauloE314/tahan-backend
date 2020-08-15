@@ -389,7 +389,7 @@ O campo ```reference``` é opcional, ele é uma forma de responder ou referencia
 
 
 
-### **Vendo comentários**
+### **Apagando comentários**
 - **Autenticação**: necessária
 - **Grupo de usuários**: todos
 - **Rota**: ```/posts/comments:id```

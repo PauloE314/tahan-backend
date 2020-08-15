@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, Unique, OneToMany, ManyToOne, CreateDateColumn, ManyToMany, JoinTable } from "typeorm";
 import { Questions } from './Questions';
 import { Users } from "@models/User";
 import { Topics } from "@models/Topics";
@@ -35,4 +35,8 @@ export class Quizzes {
 
     @ManyToOne(type => Users, user => user.id)
     author: Users;
+
+    @ManyToMany(type => Users, user => user.postLikes)
+    @JoinTable()
+    likes: Users[];
 }

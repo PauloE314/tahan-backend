@@ -6,4 +6,5 @@ import { BaseValidator } from "src/utils/validators";
 export class QuizzesValidator extends BaseValidator {
 
     
+    
 }

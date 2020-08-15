@@ -30,10 +30,6 @@ export class PostsController {
 
         const posts = await this.repo.findPosts(query);
 
-        posts.data.forEach(post => {
-            delete post.like_amount;
-        });
-
         return response.send(posts);
     }
 
@@ -136,7 +132,7 @@ export class PostsController {
         // Remove o like caso ele exista
         if (postLiked) {
             post.likes = post.likes.filter(likeUser => likeUser.id !== user.id);
-            post.like_amount -= 1;
+
             await this.repo.save(post);
             return response.send({ message: "Like removido" });
         }
@@ -144,10 +140,8 @@ export class PostsController {
         // Cria um novo like
         else {
             post.likes.push(user);
-            post.like_amount += 1;
 
             await this.repo.save(post);
-            
             return response.send({ message: "Like adicionado" });
         }
     }

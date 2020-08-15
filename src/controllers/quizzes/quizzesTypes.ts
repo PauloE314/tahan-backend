@@ -1,10 +1,10 @@
+import { IPaginatedData } from "src/utils/bases"
+import { Quizzes } from "@models/quiz/Quizzes"
 
 /**
  * Tipagem das validações
  */
-export type IRepoListQuizzes = Promise<{
-
-}>
+export type IRepoListQuizzes = Promise<IPaginatedData<Quizzes>>
 
 export type IRepoValidQuiz = Promise<{
 

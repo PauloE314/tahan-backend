@@ -1,4 +1,4 @@
-import { BaseRepository } from "src/utils/bases";
+import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
 import { Quizzes } from "@models/quiz/Quizzes";
 import { EntityRepository, getCustomRepository } from "typeorm";
 import { Alternatives } from "@models/quiz/Alternatives";
@@ -9,6 +9,10 @@ import {
     IRepoValidQuiz
 } from "./quizzesTypes";
 
+interface IListQuizzesInput {
+    params: IFilterAndPaginateInput,
+    queries: any
+}
 /**
  * Repositório dos quizzes da aplicação.
  */
@@ -18,8 +22,39 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     /**
      * Listagem de quizzes da aplicação
      */
-    async listQuizzes(): IRepoListQuizzes {
-        return {};
+    async listQuizzes({ params, queries }: IListQuizzesInput): IRepoListQuizzes {
+        const order = queries.order || null;
+        // Cria o query builder
+        const quizListQueryBuilder = this.createQueryBuilder('quiz')
+            .leftJoin('quiz.topic', 'topic')
+            .leftJoin('quiz.author', 'author')
+            .leftJoin('quiz.likes', 'likes')
+            .loadRelationCountAndMap('quiz.likes', 'quiz.likes')
+            .select([
+                'quiz',
+                'topic',
+                'author.id', 'author.username', 'author.image_url'
+            ]);
+
+        // Ordena a query pela quantidade de likes (many to many)
+        if (order === 'relevance')
+            quizListQueryBuilder
+                .addSelect(`
+                    CASE
+                        WHEN quiz_likes.quizzesId IS NOT NULL THEN COUNT(quiz.id)
+                        ELSE 0
+                    END`,
+                    'likes_count'
+                )
+                .groupBy('quiz.id')
+                .orderBy('likes_count', 'DESC');
+
+
+
+        // Pega a paginação e filtro
+        const listQuizzes = await this.filterAndPaginate(quizListQueryBuilder, params);
+
+        return listQuizzes;
     }
 
     /**
@@ -64,3 +99,8 @@ export class AlternativeRepository extends BaseRepository<Alternatives> {
         return getCustomRepository(Quizzes);
     }
 }
+
+
+/**
+ * Interfaces de entrada de dados
+ */

@@ -45,9 +45,6 @@ export class Posts {
     @ManyToMany(type => Users, user => user.postLikes)
     @JoinTable()
     likes: Users[];
-
-    @Column({ default: 0, select: false })
-    like_amount: number
 }
 
 export type TAcademicLevel = 'fundamental' | 'médio' | 'superior';
