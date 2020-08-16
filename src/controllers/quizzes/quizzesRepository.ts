@@ -35,6 +35,14 @@ interface IUpdateQuizInput {
     add?: ICreateQuestionInput,
     remove: Array<number>
 }
+interface IQuizAnswerInput {
+    quiz: Quizzes,
+    user: Users,
+    answer: Array<{
+        question: number,
+        answer: number
+    }>
+}
 
 
 
@@ -213,6 +221,13 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    /**
+     * Cria uma resposta para o usuários
+     */
+    async createQuizAnswer({ answer, user, quiz }: IQuizAnswerInput) {
+
     }
     
 

@@ -28,6 +28,11 @@ interface IUpdateQuizzesInput {
     remove?: any
 }
 
+interface IQuizAnswerInput {
+    quiz: Quizzes,
+    answer: any
+}
+
 
 /**
  * Validador dos quizzes.
@@ -160,6 +165,13 @@ export class QuizzesValidator extends BaseValidator {
             add: response.add,
             remove: response.remove
         };
+    }
+
+    /**
+     * Validação de resposta de quiz
+     */
+    validateQuizAnswer({ answer, quiz }: IQuizAnswerInput) {
+
     }
 
     /**

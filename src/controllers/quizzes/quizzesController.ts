@@ -168,6 +168,26 @@ export class QuizzesController {
 
         return response.send({ message: 'Quiz apagado com sucesso' });
     }
+
+    /**
+     * **web: /quizzes/:id/answer - POST**
+     * 
+     * Permite um aluno responder um quiz
+     */
+    @APIRoute
+    async answer(request: APIRequest, response: Response, next: NextFunction) {
+        const user = request.user.info;
+        const { quiz } = request;
+        const { answer } = request.body;
+
+        // Valida respostas do quiz
+        this.validator.validateQuizAnswer({ answer, quiz });
+
+        // Cria resposta
+        const report = await this.repo.createQuizAnswer({ answer, user, quiz });
+
+        return response.send(report);
+    }
     
 
     get repo() {
