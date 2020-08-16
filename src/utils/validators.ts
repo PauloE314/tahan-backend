@@ -1,5 +1,5 @@
 import { APIRequest } from "../@types";
-import { Response, NextFunction } from "express";
+import { Response, NextFunction, response } from "express";
 import { ValidationError, auth_user } from ".";
 
 
@@ -325,6 +325,10 @@ export class ElementValidator {
         );
         return this;
     }
+    /*
+    c => c.areItemsValid(c => c.is)
+    
+    */
 }
 
 

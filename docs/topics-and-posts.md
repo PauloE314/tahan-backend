@@ -208,7 +208,20 @@ HTTP/1.1 201
 
 A atualização de dados de uma postagem é feita apenas e exclusivamente pelo autor da postagem. Pode ser realizada por uma requisição **PUT** na rota ```/posts/:id``` (com id sendo o id da postagem).
 
-Os dados a serem atualizados devem seguir as mesmas regras da criação, mas não é necessário o envio de todos os dados novamente, apenas do que se quer atualizar.
+Os dados a serem atualizados devem seguir as mesmas regras da criação, mas não é necessário o envio de todos os dados novamente, apenas do que se quer atualizar. Entretanto, a lógica de atualização dos conteúdos é diferente, é possível remover os conteúdos ou adicionar novos conteúdos:
+
+```json
+{
+  "remove": ["<number>", "<number>"],
+  "add": [
+    {
+      "type": "title | subtitle | topic | paragraph",
+      "data": "<string>"
+    },
+  ]
+}
+```
+O campo ```remove``` deve ser um array contendo a lista dos ids dos conteúdos que deve-se apagar, enquanto que ```add``` é, assim como na criação, um array com as propriedades dos novos conteúdos.
 
 Modelo de requisição:
 ```HTTP

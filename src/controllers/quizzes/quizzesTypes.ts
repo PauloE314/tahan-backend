@@ -9,11 +9,11 @@ export type IValidCreateQuiz = Promise<{
     name: string,
     mode: string,
     password?: string,
-    questions: IValidCreateQuestion,
+    questions: IValidQuestions,
     topic: Topics
 }>
  
-export type IValidCreateQuestion = Array<{
+export type IValidQuestions = Array<{
     question: string,
     alternatives: Array<{
         text: string,
@@ -28,10 +28,6 @@ export type IGetQuiz = Promise<Quizzes>
  * Tipagem dos repositórios
  */
 
-// Listagem
-export type IRepoListQuizzes = Promise<IPaginatedData<Quizzes>>
-// Criação
-export type IRepoCreateQuiz = Promise<Quizzes>
 
 
 

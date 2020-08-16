@@ -1,5 +1,5 @@
 import { BaseValidator, validateFields } from "src/utils/validators";
-import { IValidCreateQuiz, IValidCreateQuestion } from "./quizzesTypes";
+import { IValidCreateQuiz, IValidQuestions } from "./quizzesTypes";
 import { Quizzes } from "@models/quiz/Quizzes";
 import { getRepository } from "typeorm";
 import { ValidationError } from "src/utils";
@@ -18,27 +18,31 @@ interface ICreateQuizzesInput {
     questions: any
 }
 
-type ICreateQuestionsInput = Array<{
-    question: any,
-    alternatives: Array<{
-        text: string,
-        right?: boolean
-    }>
-}>
-
-interface ICheckMode {
+interface IUpdateQuizzesInput {
     quiz: Quizzes,
-    mode: 'public' | 'private'
+    name?: any,
+    mode?: any,
+    password?: any,
+    topic?: any,
+    add?: any,
+    remove?: any
 }
+
 
 /**
  * Validador dos quizzes.
  */
 export class QuizzesValidator extends BaseValidator {
+    // Regras estáticas do validator
+    rules = {
+        minNameSize: config.quizzes.min_name_size,
+        minPassSize: config.quizzes.min_name_size,
+        minQuestSize: config.quizzes.min_questions
+    };
 
     async createValidation({ name, mode, password, topic, questions }: ICreateQuizzesInput): IValidCreateQuiz {
+        const { minNameSize, minPassSize } = this.rules;
         const questionValidator = new QuestionValidator();
-        const { min_name_size: minNameSize, min_password_size: minPassSize} = config.quizzes;
         const modes = ['public', 'private'];
         const isPasswordOptional = mode !== 'private';
 
@@ -47,7 +51,7 @@ export class QuizzesValidator extends BaseValidator {
             // Validação de nome de quiz
             name: {
                 data: name,
-                rules: q => q.isString().min(minNameSize).custom(isNameUnique)
+                rules: q => q.isString().min(minNameSize).custom(isNameUnique())
             },
             // Validação de modo de jogo
             mode: {
@@ -70,7 +74,7 @@ export class QuizzesValidator extends BaseValidator {
                 data: questions,
                 rules: q => q.isArray('object', {
                     array: 'Dado inválido', items: 'alternativa inválida'
-                }).custom(questionValidator.createValidation.bind(questionValidator))
+                }).custom(questionValidator.createValidation().bind(questionValidator))
             }
         });
 
@@ -84,6 +88,81 @@ export class QuizzesValidator extends BaseValidator {
     }
 
     /**
+     * Valida a atualização de um quiz
+     */
+    async updateValidation({ mode, name, password, add, remove, topic, quiz }: IUpdateQuizzesInput) {
+        const { minNameSize, minPassSize, minQuestSize } = this.rules;
+        const modes = ['public', 'private'];
+        const questionIdList = quiz.questions.map(quest => quest.id);
+        const isPasswordOptional = mode !== 'private';
+        
+        const questionValidator = new QuestionValidator();
+
+        const removeSize = remove ? remove.length || 0 : 0;
+        const addSize = add ? add.length || 0 : 0;
+        const actualSize = quiz.questions.length;
+
+        // Certifica que a quantidade de questões ainda será válida
+        if ((actualSize + addSize - removeSize < minQuestSize) && (actualSize >= minQuestSize))
+            this.RaiseError({ questions: "Quantidade resultante de questões inválida" });
+
+        if ((addSize - removeSize < 0) && (actualSize < minQuestSize))
+            this.RaiseError({ questions: "Quantidade resultante de questões inválida" });
+
+        
+        const response = await validateFields({
+            // Validação de nome de quiz
+            name: {
+                data: name,
+                rules: q => q.isString().min(minNameSize).custom(isNameUnique(quiz.name)),
+                optional: true
+            },
+            // Validação de modo de jogo
+            mode: {
+                data: mode,
+                rules: q => q.isString().isEqualTo(modes, 'Modo de quiz inválido'),
+                optional: true
+            },
+            // validação de senha
+            password: {
+                data: password,
+                rules: q => q.isString().min(minPassSize),
+                optional: isPasswordOptional
+            },
+            // Validação de tópico
+            topic: {
+                data: topic,
+                rules: q => q.isNumber().custom(topicExists),
+                optional: true
+            },
+            // Validação criação de questões
+            add: {
+                data: add,
+                rules: q => q.isArray('object', {
+                    array: 'Dado inválido', items: 'Questão inválida'
+                }).custom(questionValidator.createValidation(false).bind(questionValidator)),
+                optional: true
+            },
+            remove: {
+                data: remove,
+                rules: q => q.isArray("number", {
+                    array: "Dado inválido", items: "Questão inválida"
+                }).custom(isRemoveQuestionValid(questionIdList)),
+                optional: true
+            }
+        });
+
+        return {
+            name: response.name,
+            mode: response.mode,
+            password: response.password,
+            topic: response.topic,
+            add: response.add,
+            remove: response.remove
+        };
+    }
+
+    /**
      * Checa se um usuário é o autor de um quiz
      */
     isQuizAuthor({ quiz, user }: { quiz: Quizzes, user: Users }) {
@@ -92,10 +171,18 @@ export class QuizzesValidator extends BaseValidator {
 
         return quiz;
     }
-
-
-    
 }
+
+
+
+
+type ICreateQuestionsInput = Array<{
+    question: any,
+    alternatives: Array<{
+        text: string,
+        right?: boolean
+    }>
+}>
 
 /**
  * Validator de questões dos quizzes
@@ -105,55 +192,61 @@ class QuestionValidator extends BaseValidator {
     /**
      * Valida a criação de questões
      */
-    createValidation(input: ICreateQuestionsInput): IValidCreateQuestion {
-        const response = [];
-        const {
-            min_alternatives: minAlt,
-            max_alternatives: maxAlt,
-            min_questions: minQuest,
-            max_questions: maxQuest
-        } = config.quizzes;
-        // Valida quantidade de questões
-        if (input.length < minQuest || input.length > maxQuest)
-            this.RaiseError(`Quantidade inválida de questões`);
+    createValidation(validateSize?: boolean) {
+        return function (input: ICreateQuestionsInput): IValidQuestions {
+            const response = [];
+            const {
+                min_alternatives: minAlt,
+                max_alternatives: maxAlt,
+                min_questions: minQuest,
+                max_questions: maxQuest
+            } = config.quizzes;
 
-        // Valida cada questão
-        for(const data of input) {
-            let rightAlternative = false;
-            // Certifica que a questão possui texto
-            if (typeof data.question !== 'string')
-                this.RaiseError('Questões inválida');
+            const validateQuestSize = validateSize !== undefined ? validateSize : true; 
 
-            // Certifica que a questão possui alternativas
-            if (!Array.isArray(data.alternatives))
-                this.RaiseError("Alternativas inválidas");
+            // Valida quantidade de questões
+            if (validateQuestSize)
+                if (input.length < minQuest || input.length > maxQuest)
+                    this.RaiseError(`Quantidade inválida de questões`);
 
-            // Certifica que a quantidade de alternativas é válida
-            if (data.alternatives.length < minAlt || data.alternatives.length > maxAlt)
-                this.RaiseError('Alternativas inválidas: quantidade incompatível');
+            // Valida cada questão
+            for(const data of input) {
+                let rightAlternative = false;
+                // Certifica que a questão possui texto
+                if (typeof data.question !== 'string')
+                    this.RaiseError('Questões inválida');
 
-            for(const alternative of data.alternatives) {
-                // Certifica que cada alternativa possui um texto
-                if (typeof alternative.text !== 'string')
+                // Certifica que a questão possui alternativas
+                if (!Array.isArray(data.alternatives))
                     this.RaiseError("Alternativas inválidas");
 
-                // Certifica que só exista uma alternativa correta
-                if (alternative.right !== undefined) {
-                    if (rightAlternative)
-                        this.RaiseError("Alternativas inválidas: mais de uma alternativa correta");
+                // Certifica que a quantidade de alternativas é válida
+                if (data.alternatives.length < minAlt || data.alternatives.length > maxAlt)
+                    this.RaiseError('Alternativas inválidas: quantidade incompatível');
 
-                    rightAlternative = alternative.right;
+                for(const alternative of data.alternatives) {
+                    // Certifica que cada alternativa possui um texto
+                    if (typeof alternative.text !== 'string')
+                        this.RaiseError("Alternativas inválidas");
+
+                    // Certifica que só exista uma alternativa correta
+                    if (alternative.right !== undefined) {
+                        if (rightAlternative)
+                            this.RaiseError("Alternativas inválidas: mais de uma alternativa correta");
+
+                        rightAlternative = alternative.right;
+                    }
                 }
+
+                // Certifica que existe uma alternativa correta
+                if (!rightAlternative)
+                    this.RaiseError("Questões inválidas: questão sem resposta correta");
+
+                response.push(data);
             }
 
-            // Certifica que existe uma alternativa correta
-            if (!rightAlternative)
-                this.RaiseError("Questões inválidas: questão sem resposta correta");
-
-            response.push(data);
+            return response;
         }
-
-        return response;
     }
 }
 
@@ -161,16 +254,18 @@ class QuestionValidator extends BaseValidator {
 /**
  * Valida o nome do quiz
  */
-async function isNameUnique (name: string, currentName?: string) {
-    // Validação de unicidade
-    const same_name_quiz = await getRepository(Quizzes).findOne({ 
-        where: { name }
-    });
-    if (same_name_quiz) {
-        if (same_name_quiz.name !== currentName)
-            throw new ValidationError("Nome já escolhido anteriormente");
+function isNameUnique (currentName?: string) {
+        return async function (name: string) {
+        // Validação de unicidade
+        const same_name_quiz = await getRepository(Quizzes).findOne({ 
+            where: { name }
+        });
+        if (same_name_quiz) {
+            if (same_name_quiz.name !== currentName)
+                throw new ValidationError("Nome já escolhido anteriormente");
+        }
+        return name;
     }
-    return name;
 }
 
 /**
@@ -182,4 +277,18 @@ async function topicExists (id: number) {
     if (!topic) 
         throw new ValidationError("Tópico inválido");
     return topic;
+}
+
+/**
+ * Certifica que a remoção de questões é válida
+ */
+function isRemoveQuestionValid(idList: Array<number>) {
+    return function (data: Array<any>) {
+        for(const element of data) {
+            if (!idList.includes(element))
+                throw new ValidationError("Questão inexistente");
+                
+        }
+        return data;
+    }
 }

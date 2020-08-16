@@ -2,7 +2,6 @@ import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
 import { Quizzes } from "@models/quiz/Quizzes";
 import { EntityRepository, getCustomRepository, getConnection } from "typeorm";
 import { Alternatives } from "@models/quiz/Alternatives";
-import { IRepoListQuizzes, IRepoCreateQuiz, IGetQuiz } from "./quizzesTypes";
 import { Topics } from "@models/Topics";
 import { Questions } from "@models/quiz/Questions";
 import { Users } from "@models/User";
@@ -27,13 +26,16 @@ interface ICreateQuizInput {
     questions: ICreateQuestionInput,
     author: Users
 }
-type ICreateQuestionInput = Array<{
-    question: string,
-    alternatives: Array<{
-        text: string,
-        right: boolean
-    }>
-}>
+interface IUpdateQuizInput {
+    quiz: Quizzes
+    name?: string,
+    mode?: any,
+    password?: string,
+    topic?: Topics,
+    add?: ICreateQuestionInput,
+    remove: Array<number>
+}
+
 
 
 /**
@@ -45,7 +47,7 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     /**
      * Listagem de quizzes da aplicação
      */
-    async listQuizzes({ params, queries }: IListQuizzesInput): IRepoListQuizzes {
+    async listQuizzes({ params, queries }: IListQuizzesInput) {
         const order = queries.order || null;
         // Cria o query builder
         const quizListQueryBuilder = this.createQueryBuilder('quiz')
@@ -83,11 +85,12 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     /**
      * Criação de quizzes
      */
-    async createQuiz({ mode, name, questions, topic, password, author }: ICreateQuizInput): IRepoCreateQuiz {
+    async createQuiz({ mode, name, questions, topic, password, author }: ICreateQuizInput) {
+        // Inicia transaction
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.connect();
-
         await queryRunner.startTransaction();
+
         try {
             const quiz = new Quizzes();
             quiz.name = name;
@@ -102,17 +105,10 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
             // Cria questões
             await this.questionsRepo.createQuestions(questions, saved);
 
-            const fullQuiz = await this.findOne({
-                relations: ['questions', 'questions.alternatives', 'questions.rightAnswer'],
-                where: {
-                    id: saved.id
-                }
-            });
-
             // Roda as transactions;
             await queryRunner.commitTransaction();
             
-            return fullQuiz;
+            return await this.getQuiz({ id: saved.id });
         }
         catch(err) {
             await queryRunner.rollbackTransaction();
@@ -127,7 +123,7 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     /**
      * Leitura de um quiz específico
      */
-    async getQuiz({ id }: { id: number }): IGetQuiz {
+    async getQuiz({ id }: { id: number }) {
         const quiz = await this.findOne({
             relations: ['questions', 'questions.alternatives', 'questions.rightAnswer'],
             where: { id }
@@ -139,7 +135,7 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     /**
      * Retorna dados sobre os likes de um quiz
      */
-    async getQuizLikesData({ id, user }: { id: Number, user: Users } ) {
+    async getQuizLikesData({ id, user }: { id: Number, user: Users }) {
         const userId = user ? user.id : null;
         
         const quiz = await this.createQueryBuilder('quiz')
@@ -170,8 +166,53 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     /**
      * Atualização de quizzes
      */
-    async updateQuiz(): Promise<any> {
-        return {};
+    async updateQuiz({ quiz, mode, name, password, add, remove, topic }: IUpdateQuizInput) {
+        // Inicia transaction
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        
+        try {
+            // Atualiza informações brutas do quiz
+            quiz.name = name || quiz.name;
+            quiz.password = password || quiz.password;
+            quiz.topic = topic || quiz.topic;
+    
+            // Mudar modo do quiz
+            if (mode) {
+                quiz.mode = mode;
+                quiz.password = null;
+            }
+
+            // Remove questões
+            if (remove) 
+                for (const removeQuestId of remove) {
+                    quiz.questions = quiz.questions.filter(quest => quest.id !== removeQuestId);
+                    await this.questionsRepo.delete({ id: removeQuestId });
+                }
+
+            // Salva quiz
+            const saved = await this.save(quiz);
+
+            // Adiciona questões
+            if (add) 
+                await this.questionsRepo.createQuestions(add, saved);
+            
+            // Roda transactions
+            await queryRunner.commitTransaction();
+
+            // Pega os dados completos do quiz
+            return await this.getQuiz({ id: saved.id });
+        }
+        catch(err) {
+            // Desfaz alterações caso ocorra algum erro
+            await queryRunner.rollbackTransaction();
+
+            throw new ValidationError({ name: err.name, message: err.message }, 500);
+
+        } finally {
+            await queryRunner.release();
+        }
     }
     
 
@@ -186,6 +227,15 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
         return getCustomRepository(QuestionsRepository);
     }
 }
+
+
+type ICreateQuestionInput = Array<{
+    question: string,
+    alternatives: Array<{
+        text: string,
+        right: boolean
+    }>
+}>
 
 /**
  * Repositório das alternativas da aplicação
@@ -207,6 +257,7 @@ export class QuestionsRepository extends BaseRepository<Questions> {
             newQuestion.alternatives = [];
             const savedQuestion = await this.save(newQuestion);
 
+
             // Cria alternativas
             for (const altData of data.alternatives) {
                 const newAlt = new Alternatives();
@@ -220,9 +271,9 @@ export class QuestionsRepository extends BaseRepository<Questions> {
                     savedQuestion.rightAnswer = newAlt;
                 
             }
-            await this.save(savedQuestion);
+            const addedAltQuestion = await this.save(savedQuestion);
 
-            response.push(savedQuestion);
+            response.push(addedAltQuestion);
         }
         return response;
     }

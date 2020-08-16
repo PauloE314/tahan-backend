@@ -223,9 +223,69 @@ Content-Type: application/json
   ]
 }
 ```
+## **Atualizando quizzes**
+- **Autenticação**:  necessária
+- **Grupo de usuários**:  autor do quiz (professor)
+- **Rota**: ```/quizzes/:id```
+
+Para atualizar as informações do quiz, basta realizar uma requisição **PUT** para a rota ```/quizzes/:id``` (com ```id``` sendo o id numérico do quiz requisitado). Essa rota só está disponível para o criador do quiz.
+
+As regras dos dados de envio são praticamente as mesmas da criação (só que os campos não são obrigatórios, exceto no caso de mudar o tópico para privado, nesse caso a senha se torna obrigatória), entretanto, para adicionar novas questões, é necessário enviar um campo ```add``` ao invés do ```questions``` da criação; além disso, é possível remover questões enviando o campo ```remove``` que deve ser um array numérico que contém os ids das questões a serem removidas (lembrando que a quantidade de questões nunca pode ser menor que 4).
+
+Modelo de requisição:
+```HTTP
+PUT /quizzes/1 HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+Content-Type: application/json
+
+{
+  "name": "New name",
+  "remove": ["<number>"]
+}
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+
+{
+  "id": "<string>",
+  "name": "<string>",
+  "created_at": "<Date | string>",
+  "questions": [
+    {
+      "id": "<number>",
+      "question": "<string>",
+      "alternatives": [
+        {
+          "id": "<number>",
+          "text": "<string>"
+        },
+        {
+          "id": "<number>",
+          "text": "<string>"
+        },
+        {
+          "id": "<number>",
+          "text": "<string>"
+        }
+      ],
+      "rightAnswer": {
+        "id": "<number>",
+        "text": "<string>"
+      }
+    }
+  ]
+}
+```
+
+
 ## **Apagando quizzes**
 - **Autenticação**:  necessária
-- **Grupo de usuários**:  professores
+- **Grupo de usuários**:  autor do quiz (professor)
 - **Rota**: ```/quizzes/:id```
 
 Para apagar um quiz, é necessário, acima de tudo, ser o autor do mesmo. A requisição para realizar essa ação é um **DELETE** para a rota ```/quizzes/:id``` (com ```id``` sendo o id do quiz selecionado).
@@ -255,56 +315,6 @@ Content-Type: application/json
 <br>
 
 
-
-## **PATH: /quizzes/:id - GET, PUT, DELETE**
-
-#### PUT: (Autenticação necessária)
-
-- **Funcionamento:**
-
-  Permite ao criador do quiz alterar os dados do quiz.
-
-  ```json
-  {
-    "name": "<string>",
-    "mode": "public | private",
-    "password": "<string>",
-    "remove": [
-      "<number>",
-      "..."
-    ],
-    "add": [
-      {
-        "question": "<string>",
-        "alternatives": [
-          { "text": "<string>" },
-          { "text": "<string>", "right": true }
-        ]
-      }
-      "..."
-    ]
-  }
-  ```
-
-- **Validação:**
-
-  A validação dos campos ```name```, ```mode``` e ```password``` é a mesma da criação.
-  - ```add```:
-    - Cada item deve possuir um campo ```question: string```;
-    - Cada item deve possuir um campo ```alternatives: array``` em que cada elemento desse novo array deve ser um objeto que possui uma propriedade ```text: string```. Um e apenas um dos elementos de ```alternatives``` deve possuir uma propriedade ```right: true```.
-
-  - ```remove```:
-    - Deve ser um array;
-    - Deve todos os elementos devem ser números;
-    - Cada elemento deve ser o id de uma das questões existentes no quiz.
-
-
-
-#### DELETE: (Autenticação necessária)
-- **Funcionamento:**
-  Permite ao criador do quiz deletá-lo.
-
-<hr>
 
 ## **PATH: /quizzes/:id/answer - POST**
 

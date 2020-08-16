@@ -128,6 +128,29 @@ export class QuizzesController {
     }
 
     /**
+     * **web: /quizzes/:id - PUT**
+     * 
+     * Permite o autor atualizar seu quiz
+     */
+    @APIRoute
+    async update(request: APIRequest, response: Response, next: NextFunction) {
+        // throw new Error('test')
+        const user = request.user.info;
+        const { quiz, body } = request;
+
+        // Certifica que o usuário é o autor do quiz
+        this.validator.isQuizAuthor({ quiz, user });
+
+        // Valida a atualização do quiz
+        const validData = await this.validator.updateValidation({ ...body, quiz });
+
+        // Atualiza quiz
+        const updatedQuiz = await this.repo.updateQuiz({ ...validData, quiz });
+
+        return response.send(updatedQuiz);
+    }
+
+    /**
      * **web: /quizzes/:id - DELETE**
      * 
      * Permite o autor apagar seu quiz

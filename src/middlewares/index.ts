@@ -124,7 +124,7 @@ export async function getFriendship(request: APIRequest, response: Response, nex
  * Pega o quiz usando a URL.
  */
 export async function getQuiz(request: APIRequest, response: Response, next: NextFunction) {
-    const id = Number(request.params.id);
+    const id = Number(request.params.quizId);
 
     if (!isNaN(id)) {
         const quiz = await getRepository(Quizzes)

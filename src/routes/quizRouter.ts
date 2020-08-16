@@ -14,11 +14,15 @@ routes.get('/', controller.list);
 routes.post('/', auth_require, is_teacher, controller.create);
 
 // Leitura
-routes.get('/public/:id([0-9]+)', auth_require, getQuiz, controller.readPublic);
-routes.post('/private/:id([0-9]+)', auth_require, getQuiz, controller.readPrivate);
+routes.get('/public/:quizId([0-9]+)', auth_require, getQuiz, controller.readPublic);
+routes.post('/private/:quizId([0-9]+)', auth_require, getQuiz, controller.readPrivate);
+
+// Atualização de quiz
+routes.put('/:quizId', auth_require, is_teacher, getQuiz, controller.update);
+
 
 // Apagar o quiz
-routes.delete('/:id([0-9]+)', auth_require, is_teacher, getQuiz, controller.delete);
+routes.delete('/:quizId([0-9]+)', auth_require, is_teacher, getQuiz, controller.delete);
 
 // // Leitura
 // routes.get('/', controller.list);
