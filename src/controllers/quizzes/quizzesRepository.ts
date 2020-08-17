@@ -61,6 +61,7 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
      */
     async listQuizzes({ params, queries }: IListQuizzesInput) {
         const order = queries.order || null;
+        
         // Cria o query builder
         const quizListQueryBuilder = this.createQueryBuilder('quiz')
             .leftJoin('quiz.topic', 'topic')

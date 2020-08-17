@@ -11,6 +11,9 @@ export default {
     posts: {
         min_title_size: 5
     },
+    post_containers: {
+        min_name_size: 5
+    },
     quizzes: {
         min_name_size: 5,
         min_password_size: 5,

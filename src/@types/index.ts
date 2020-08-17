@@ -31,7 +31,6 @@ export interface APIRequest extends Request{
     google_data?: google_data,
     topic?: Topics,
     post?: Posts,
-    post_list?: Array<Posts>,
     container?: Containers,
     quiz?: Quizzes,
     friendship?: Friendships,

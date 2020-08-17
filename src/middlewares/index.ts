@@ -153,20 +153,34 @@ export async function getUser(request: APIRequest, response: Response, next: Nex
 
 
 // Tenta pegar o container
-export async function getContainer(request: APIRequest, response: Response, next: NextFunction) {
-    const id = Number(request.params.id);
+export function getContainer() {
+    return async function (request: APIRequest, response: Response, next: NextFunction) {
+        const id = Number(request.params.postContainerId);
 
-    if (id) {
-        const container = await getRepository(Containers).findOne({
-            relations: ['author', 'posts'],
-            where: { id }
-        });
-        if (container) {
-            request.container = container;
-            return next();
+
+        if (id) {
+            const containerQueryBuilder = getRepository(Containers)
+                .createQueryBuilder('postContainer')
+                .leftJoin('postContainer.author', 'author')
+                .leftJoin('postContainer.posts', 'posts')
+                .select([
+                    'postContainer',
+                    'author.id', 'author.username', 'author.email', 'author.image_url',
+                    'posts.id', 'posts.title', 'posts.description', 'posts.academic_level'
+                ])
+                .where('postContainer.id = :id', { id })
+            
+            // Carrega container
+            const container = await containerQueryBuilder.getOne();
+
+            if (container) {
+                request.container = container;
+                return next();
+            }
+            // Retorna não encontrado
+            return response.status(codes.NOT_FOUND).send({ message: "Container de posts não encontrado" })
         }
-        return response.status(codes.NOT_FOUND).send({ message: "Container de posts não encontrado" })
+        return next();
     }
-    return next();
 }
 
