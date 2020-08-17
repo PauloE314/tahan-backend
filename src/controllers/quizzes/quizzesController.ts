@@ -178,6 +178,35 @@ export class QuizzesController {
     }
 
     /**
+     * **web: /quizzes/:id/like - POST**
+     * 
+     * Alterna o estado de like de um quiz
+     */
+    @APIRoute
+    async like(request: APIRequest, response: Response, next: NextFunction) {
+        const user = request.user.info;
+        const { quiz } = request;
+        
+        const quizLikesData = await this.repo.getQuizLikesData({ id: quiz.id, user });
+
+        // Remove o like caso ele exista
+        if (quizLikesData.user_liked) {
+            quiz.likes = quiz.likes.filter(likeUser => likeUser.id !== user.id);
+
+            await this.repo.save(quiz);
+            return response.send({ message: "Like removido" });
+        }
+
+        // Cria um novo like
+        else {
+            quiz.likes.push(user);
+
+            await this.repo.save(quiz);
+            return response.send({ message: "Like adicionado" });
+        }
+    }
+
+    /**
      * **web: /quizzes/:id/comments - POST**
      * 
      * Lista os comentários de um quiz
@@ -238,7 +267,6 @@ export class QuizzesController {
         await this.commentsRepo.deleteComment(quizComment);
 
         return response.send({ message: "Comentário apagado com sucesso" });
-
     }
 
     /**

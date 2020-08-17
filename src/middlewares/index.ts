@@ -9,7 +9,6 @@ import { Quizzes } from "@models/quiz/Quizzes";
 import { Containers } from "@models/Posts/Containers";
 import { Solicitations } from "@models/friends/Solicitations";
 import { Friendships } from "@models/friends/Friendships";
-import { PostCommentRepository } from "@controllers/posts/postsRepository";
 import { codes } from "@config/server";
 
 
@@ -59,29 +58,6 @@ export function getPost(limit: 'short' | 'medium' | 'long' = 'short') {
 }
 
 /**
- * Tenta pegar o comentário de uma postagem
- */
-export function getPostComment() {
-    return async function(request: APIRequest, response: Response, next: NextFunction) {
-        const id = Number(request.params.postCommentId);
-
-        const postCommentQueryBuilder = getCustomRepository(PostCommentRepository)
-            .createQueryBuilder('comment')
-            .leftJoinAndSelect('comment.author', 'user')
-            .where('comment.id = :id', { id })
-            
-        const comment = await postCommentQueryBuilder.getOne();
-
-        if (!comment)
-            return response.status(codes.NOT_FOUND).send({ message: "Comentário não encontrado" });
-
-        request.postComment = comment;
-
-        return next();
-    }
-}
-
-/**
  * Pega os dados de uma solicitação de amizade pela URL
  */
 export async function getSolicitation(request: APIRequest, response: Response, next: NextFunction) {
@@ -124,29 +100,40 @@ export async function getFriendship(request: APIRequest, response: Response, nex
 /**
  * Pega o quiz usando a URL.
  */
-export async function getQuiz(request: APIRequest, response: Response, next: NextFunction) {
-    const id = Number(request.params.quizId);
+export function getQuiz(limit: 'full' | 'likes' = 'full') {
+    return async function (request: APIRequest, response: Response, next: NextFunction) {
+        const id = Number(request.params.quizId);
 
-    if (!isNaN(id)) {
-        const quiz = await getRepository(Quizzes)
-            .createQueryBuilder('quiz')
-            .leftJoinAndSelect('quiz.questions', 'question')
-            .leftJoinAndSelect('question.alternatives', 'alternative')
-            .leftJoinAndSelect('question.rightAnswer', 'right_answer')
-            .leftJoinAndSelect('quiz.author', 'author')
-            .leftJoinAndSelect('quiz.topic', 'topic')
-            .where('quiz.id = :id', { id })
-            .addSelect('quiz.mode')
-            .addSelect('quiz.password')
-            .getOne();
+        if (!isNaN(id)) {
+            const quizQueryBuilder = getRepository(Quizzes)
+                .createQueryBuilder('quiz')
+                .where('quiz.id = :id', { id })
+                .addSelect('quiz.mode')
+                .addSelect('quiz.password')
+                .leftJoinAndSelect('quiz.author', 'author')
 
-        if (!quiz)
-            return response.status(codes.NOT_FOUND).send({ message: "Quiz não encontrado" });
+            if (limit === 'full')
+                quizQueryBuilder
+                    .leftJoinAndSelect('quiz.questions', 'question')
+                    .leftJoinAndSelect('question.alternatives', 'alternative')
+                    .leftJoinAndSelect('question.rightAnswer', 'right_answer')
+                    .leftJoinAndSelect('quiz.topic', 'topic')
 
-        request.quiz = quiz;
+            else if (limit === 'likes')
+                quizQueryBuilder
+                    .leftJoin('quiz.likes', 'like')
+                    .addSelect(['like.id'])
+
+            const quiz = await quizQueryBuilder.getOne();
+
+            if (!quiz)
+                return response.status(codes.NOT_FOUND).send({ message: "Quiz não encontrado" });
+
+            request.quiz = quiz;
+        }
+
+        return next();
     }
-
-    return next();
 }
 
 // Tenta encontrar o usuário

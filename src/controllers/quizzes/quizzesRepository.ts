@@ -164,13 +164,15 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
                 .getOne();
             
             return {
-                count: quiz.likes,
+                //@ts-ignore
+                count: <number>quiz.likes,
                 user_liked: userLiked ? true : false
             }
         }
 
         return {
-            count: quiz.likes,
+            //@ts-ignore
+            count: <number>quiz.likes,
             user_liked: false
         };
     }
@@ -282,14 +284,7 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
 
         return gameHistoric;
     }
-    
 
-    /**
-     * Retorna as respostas dos quizzes
-     */
-    getQuizAnswers(quiz: Quizzes): any {
-        return {};
-    }
 
     // Repositório de questões
     get questionsRepo() {

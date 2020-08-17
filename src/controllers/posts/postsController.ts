@@ -131,7 +131,6 @@ export class PostsController {
     async like(request: APIRequest, response: Response, next: NextFunction) {
         const user = request.user.info;
         const { post } = request;
-        // const likesRepo = getRepository(Likes);
 
         const postLiked = await this.repo.userLikedPost(user.id, post.id);
 
