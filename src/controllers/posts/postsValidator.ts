@@ -1,4 +1,3 @@
-import { ICreateData, IUpdateData, ICommentData, ICommentValidatedData } from "./postsTypes";
 import { getRepository } from "typeorm";
 import { Posts } from "@models/Posts/Posts";
 import { BaseValidator, validateFields } from "src/utils/validators";
@@ -7,7 +6,42 @@ import { ValidationError } from "src/utils";
 import { Topics } from "@models/Topics";
 import { Users } from "@models/User";
 import { Comments } from "@models/Posts/Comments";
+import { TContentType } from "@models/Posts/Contents";
 
+interface ICreatePostInput {
+    title: any,
+    contents: any,
+    academic_level: any,
+    topic: any,
+    description: any,
+}
+interface ICreatePostOutput {
+    title: string,
+    contents: Array<{ type: TContentType, data: string }>,
+    academic_level: 'médio' | 'fundamental' | 'superior',
+    topic: Topics,
+    description: string,
+}
+
+interface IUpdatePostInput {
+    post: Posts,
+    author: Users,
+    title?: any,
+    add?: any,
+    remove?: any,
+    academic_level?: any,
+    description?: any
+}
+
+interface IUpdatePostOutput {
+    title?: string,
+    contents?: {
+        add?: Array<{ type: TContentType, data: string }>,
+        remove?: Array<number>
+    },
+    academic_level?: 'médio' | 'fundamental' | 'superior',
+    description?: any
+}
 /**
  * Validador dos posts.
  */
@@ -16,7 +50,7 @@ export class PostsValidator extends BaseValidator {
     /**
      * Valida os campos de criação de uma postagem
      */ 
-    async create({ title, contents, academic_level, description, topic }: ICreateData) {
+    async create({ title, contents, academic_level, description, topic }: ICreatePostInput) {
         const { min_title_size } = configs.posts;
         const response = await validateFields({
             title: {
@@ -44,7 +78,7 @@ export class PostsValidator extends BaseValidator {
             }
         });
 
-        return {
+        return <ICreatePostOutput>{
             title: response.title,
             contents: response.contents,
             academic_level: response.academic_level,
@@ -56,7 +90,7 @@ export class PostsValidator extends BaseValidator {
     /**
      * Valida os dados de update das postagens
      */
-    async update({ post, title, academic_level, add, remove, description, author }: IUpdateData) {
+    async update({ post, title, academic_level, add, remove, description, author }: IUpdatePostInput) {
         const { min_title_size } = configs.posts;
 
         this.isPostAuthor(post, author);
@@ -94,7 +128,7 @@ export class PostsValidator extends BaseValidator {
             },
         });
 
-        return {
+        return <IUpdatePostOutput>{
             title: response.title,
             contents: { add: response.add, remove: response.remove },
             academic_level: response.academic_level,
@@ -102,28 +136,7 @@ export class PostsValidator extends BaseValidator {
         }
     }
 
-    /**
-     * Valida os dados de criação de um comentário de posts
-     */
-    async comment({ text, reference }: ICommentData) {
-        
-        const response = await validateFields({
-            text: {
-                data: text,
-                rules: check => check.isString()
-            },
-            reference: {
-                data: reference,
-                rules: check => check.isNumber().custom(validateCommentReference),
-                optional: true
-            }
-        })
-        
-        return <ICommentValidatedData>{
-            text: response.text,
-            reference: response.reference ? response.reference : undefined
-        };
-    }
+    
 
     /**
      * Certifica que o usuário é o autor da postagem
@@ -133,15 +146,7 @@ export class PostsValidator extends BaseValidator {
             throw new ValidationError("Essa rota só é válida para o autor da postagem", codes.PERMISSION_DENIED);
     }
 
-    /**
-     * Certifica que o usuário é o autor de um comentário
-     */
-    isPostCommentAuthor(data: { user: Users, postComment: Comments }) {
-        const { user, postComment } = data;
-
-        if (postComment.author.id !== user.id)
-            throw new ValidationError("Essa rota só é válida para o autor do comentário", codes.PERMISSION_DENIED)
-    }
+    
 }
 
 
@@ -192,14 +197,3 @@ function validateRemoveContents(remove: Array<number>, post: Posts) {
     return remove;
 }
 
-/**
- * Checa se um comentário existe
- */
-async function validateCommentReference(id: number) {
-    const comment = await getRepository(Comments).findOne(id);
-
-    if (!comment)
-        throw new ValidationError("Referência inválida");
-
-    return comment;
-}

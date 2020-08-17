@@ -29,4 +29,16 @@ routes.post('/:quizId/answer', auth_require, is_student, getQuiz, controller.ans
 // Estatísticas do quiz
 routes.get('/:quizId/games', auth_require, is_teacher, getQuiz, controller.games);
 
+
+
+// Criação de comentário    
+routes.post('/:quizId([0-9]+)/comments', auth_require, getQuiz, controller.createComments);   
+
+// Listagem de comentários
+routes.get('/:quizId([0-9]+)/comments', auth_require, getQuiz, controller.listComments);
+
+// Apagar comentário
+routes.delete('/comments/:quizCommentId([0-9]+)', auth_require, controller.deleteComment);
+
+
 export default routes;

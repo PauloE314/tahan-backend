@@ -412,6 +412,103 @@ HTTP/1.1 200
 
 Essa resposta corresponde tanto para jogos multiplayer ou singleplayer. Também vale notar que o campo ```id``` se refere ao id do histórico de partida, não ao do quiz.
 
+
+### **Comentários**
+- **Autenticação**: necessária
+- **Grupo de usuários**: todos
+
+
+Assim como as postagens, os quizzes podem ter comentários o funcionamento dessa feature é praticamente igual aos comentários das postagens, assim, essa documentação será um pouco mais direta (veja os comentários de postagens [aqui](./topics-and-posts#escrever-comentários))
+
+### **Escrevendo comentários**
+
+Para escrever um comentário, basta enviar uma requisição **POST** para a rota ```/quizzes/:id/comments``` (com ```:id``` sendo o id numérico do comentário). É necessário que alguns dados sejam enviados no processo:
+- ```text```: o comentário em si. Deve ser uma string sem tamanho mínimo.
+- ```reference?```: uma referência a outro comentário. Deve ser o id do outro comentário.
+
+Modelo de requisição:
+```HTTP
+POST /quizzes/1/comment HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+Content-Type: application/json
+
+{
+  "text": "<string>",
+  "reference": 1
+}
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "id": "<number>"
+  "text": "<string>",
+  "reference": {
+    "id": "<number>",
+    "text": "<string>",
+  },
+  "created_at": "<Date | string>",
+}
+```
+
+### **Vendo comentários**
+
+Para ver a lista de usuários, basta realizar uma requisição **GET** para a rota ```quizzes/:id/comments```.
+
+Modelo de requisição:
+```HTTP
+GET /quizzes/1/comments HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+[
+  {
+    "id": "<number>",
+    "text": "<string>",
+    "created_at": "<Date | string>",
+    "reference": "<number>",
+    "author": {
+      "id": "<number>",
+      "username": "<string>",
+      "image_url": "<string>"
+    }
+  },
+  "..."
+]
+```
+
+### **Apagando comentários**
+
+É possível o autor de um comentário apagá-lo. Para isso, basta realizar uma requisição **DELETE** para a rota ```/quizzes/comments/:id```.
+
+
+Modelo de requisição:
+```HTTP
+DELETE /posts/comments/1 HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "message": "Comentário apagado com sucesso"
+}
+```
+
 <br>
 <br>
 <br>

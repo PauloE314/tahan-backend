@@ -51,7 +51,6 @@ routes.post(
 )
 
 // Comentários
-
 routes.get(
     '/:id([0-9]+)/comments',
     auth_require, getPost('short'),
@@ -66,8 +65,8 @@ routes.post(
 
 routes.delete(
     '/comments/:postCommentId([0-9]+)',
-    auth_require, getPostComment(),
-    controller.deleteComment.bind(controller)
+    auth_require,
+    controller.deleteComment
 )
 
 

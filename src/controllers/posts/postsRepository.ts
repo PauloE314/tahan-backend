@@ -1,10 +1,30 @@
-import { IUpdateValidatedData, IUpdateRepoData, ICreateRepoData, ICommentRepoData } from "./postsTypes";
 import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
 import { Posts } from "@models/Posts/Posts";
 import { EntityRepository, getRepository } from "typeorm";
-import { Contents } from "@models/Posts/Contents";
-import { Comments } from "@models/Posts/Comments";
+import { TContentType, Contents } from "@models/Posts/Contents";
 import { Users } from "@models/User";
+import { Topics } from "@models/Topics";
+
+
+interface ICreatePostInput {
+    title: string,
+    contents: Array<{ type: TContentType, data: string }>,
+    academic_level: 'médio' | 'fundamental' | 'superior',
+    topic: Topics,
+    description: string,
+    author: Users
+}
+
+interface IUpdatePostInput {
+    title?: string,
+    contents?: {
+        add?: Array<{ type: TContentType, data: string }>,
+        remove?: Array<number>
+    },
+    academic_level?: 'médio' | 'fundamental' | 'superior',
+    description?: any,
+    post: Posts
+}
 
 /**
  * Repositório dos posts da aplicação.
@@ -80,7 +100,7 @@ export class PostsRepository extends BaseRepository<Posts> {
     /**
      * Tenta pegar um quiz individualmente e lidar com comentários, likes, etc.
      */
-    async getFullPost({ id, params, user }) {
+    async getFullPost({ id, user }: { id: number, params: any, user: Users }) {
 
         const post = await getRepository(Posts).createQueryBuilder("post")
             .where("post.id = :id", { id })
@@ -114,7 +134,7 @@ export class PostsRepository extends BaseRepository<Posts> {
     /**
      * Criação de postagens.
      */
-    async createPosts({ author, title, contents, academic_level, description, topic }: ICreateRepoData) {
+    async createPosts({ author, title, contents, academic_level, description, topic }: ICreatePostInput) {
         const post = new Posts();
         post.author = author;
         post.title = title;
@@ -136,7 +156,7 @@ export class PostsRepository extends BaseRepository<Posts> {
     /**
      * Atualização de postagem
      */
-    async updatePost({ post, title, description, academic_level, contents }: IUpdateRepoData) {
+    async updatePost({ post, title, description, academic_level, contents }: IUpdatePostInput) {
         post.title = title || post.title;
         post.description = description || post.description;
         post.academic_level = academic_level || post.academic_level;
@@ -193,53 +213,3 @@ export class PostsRepository extends BaseRepository<Posts> {
 
 
 
-
-@EntityRepository(Comments)
-export class PostCommentRepository extends BaseRepository<Comments> {
-    /**
-     * Retorna a lista de comentários de uma postagem
-     */
-    async listPostComments(data: { postId: number }) {
-        const { postId } = data;
-
-        const commentQueryBuilder = getRepository(Comments).createQueryBuilder('comment')
-            .leftJoin('comment.post', 'post')
-            .leftJoin('comment.author', 'author')
-            .where('post.id = :postId', { postId })
-            .loadRelationIdAndMap('comment.reference', 'comment.reference')
-            .select([
-                'comment',
-                'author.id', 'author.username', 'author.image_url',
-            ])
-
-        const comments = await commentQueryBuilder.getMany();
-
-        return comments;
-    }
-
-
-    /**
-     * Escreve o comentário de um usuário
-     */
-    async writeComment({ author, post, text, reference }: ICommentRepoData) {
-        const commentary = new Comments();
-
-        commentary.author = author;
-        commentary.post = post;
-        commentary.text = text;
-
-        if (reference)
-            commentary.reference = reference;
-
-        const saved = await getRepository(Comments).save(commentary);
-
-        return saved;
-    }
-
-    /**
-     * Apaga comentário
-     */
-    async deleteComment(postComment: Comments) {
-        await this.remove(postComment);
-    }
-}

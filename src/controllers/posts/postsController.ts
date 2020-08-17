@@ -3,16 +3,22 @@ import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 import { APIRoute } from "src/utils";
 import { codes } from "@config/server";
-import { PostsRepository, PostCommentRepository } from "./postsRepository";
+
+import { PostsRepository } from "./postsRepository";
+import { PostCommentRepository } from "./postCommentRepository";
 import { PostsValidator } from "./postsValidator";
+import { PostCommentValidator } from "./postCommentValidator";
 
 /**
  * Controlador de rotas relacionadas aos posts da aplicação.
  */
 export class PostsController {
+
     validator = new PostsValidator();
-    repository = PostsRepository;
-    commentsRepository = PostCommentRepository;
+    commentValidator = new PostCommentValidator();
+
+    get repo() { return getCustomRepository(PostsRepository) }
+    get commentsRepo() { return getCustomRepository(PostCommentRepository) }
 
 
     /**
@@ -173,7 +179,7 @@ export class PostsController {
         const user = request.user.info;
         const { text, reference } = request.body;
 
-        const validatedData = await this.validator.comment({ text, reference });
+        const validatedData = await this.commentValidator.comment({ text, reference });
 
         const comment = await this.commentsRepo.writeComment({
             author: user,
@@ -189,30 +195,21 @@ export class PostsController {
     }
 
     /**
-     * **web: /posts/comments:id - POST**
+     * **web: /posts/comments/:id - DELETE**
      * 
      * Permite apagar um comentário
      */
     @APIRoute
     async deleteComment(request: APIRequest, response: Response, next: NextFunction) {
-        const { postComment } = request;
         const user = request.user.info;
+        const id = Number(request.params.postCommentId);
 
-        this.validator.isPostCommentAuthor({ user, postComment });
+        const postComment = await this.commentValidator.postCommentExists({ id });
+
+        this.commentValidator.isPostCommentAuthor({ user, postComment });
 
         await this.commentsRepo.deleteComment(postComment);
 
         return response.send({ message: "Comentário apagado com sucesso" });
-
-    }
-
-    
-
-    get repo() {
-        return getCustomRepository(this.repository);
-    }
-
-    get commentsRepo() {
-        return getCustomRepository(this.commentsRepository)
     }
 }

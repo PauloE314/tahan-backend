@@ -1,21 +1,27 @@
-import { getCustomRepository, getRepository } from "typeorm";
+import { getCustomRepository } from "typeorm";
+
 import { QuizzesRepository } from "./quizzesRepository";
+import { QuizCommentRepository } from "./quizCommentRepository";
 import { QuizzesValidator } from "./quizzesValidator";
+import { QuizCommentsValidator } from "./quizCommentValidator";
+
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 import { APIRoute } from "src/utils";
 import { IFilterAndPaginateInput } from "src/utils/bases";
-import { Quizzes } from "@models/quiz/Quizzes";
-import bcrypt from 'bcrypt';
 import { codes } from "@config/server";
-import { GameHistoric } from "@models/games/GameHistoric";
+import bcrypt from 'bcrypt';
 
 /**
  * Controlador de rotas relacionadas aos quizzes da aplicação.
  */
 export class QuizzesController {
-    repository = QuizzesRepository
-    validator = new QuizzesValidator()
+
+    validator = new QuizzesValidator();
+    commentValidator = new QuizCommentsValidator();
+
+    get repo() { return getCustomRepository(QuizzesRepository) }
+    get commentsRepo() { return getCustomRepository(QuizCommentRepository) }
 
     /**
      * **web: /quizzes/ - GET**
@@ -172,6 +178,70 @@ export class QuizzesController {
     }
 
     /**
+     * **web: /quizzes/:id/comments - POST**
+     * 
+     * Lista os comentários de um quiz
+     */
+    @APIRoute
+    async createComments(request: APIRequest, response: Response, next: NextFunction) {
+        const { quiz } = request;
+        const { text, reference } = request.body;
+        const user = request.user.info;
+
+        const validatedData = await this.commentValidator.comment({ text, reference });
+
+        const comment = await this.commentsRepo.writeComment({
+            quiz,
+            author: user,
+            ...validatedData
+        });
+
+        // Normaliza os dados de resposta 
+        delete comment.quiz;
+        delete comment.author;
+
+        return response.status(codes.CREATED).send(comment);
+    }
+
+    /**
+     * **web: /quizzes/:id/comments - GET**
+     * 
+     * Lista os comentários de um quiz
+     */
+    @APIRoute
+    async listComments(request: APIRequest, response: Response, next: NextFunction) {
+        const { quiz } = request;
+        
+        const comments = await this.commentsRepo.listPostComments({
+            quizId: quiz.id
+        });
+
+        return response.send(comments);
+    }
+
+    /**
+     * **web: /quizzes/comments/:id - DELETE**
+     * 
+     * Apaga um comentário de um quiz
+     */
+    @APIRoute
+    async deleteComment(request: APIRequest, response: Response, next: NextFunction) {
+        const user = request.user.info;
+        const { quizCommentId } = request.params;
+
+        // Certifica que comentário existe
+        const quizComment = await this.commentValidator.quizCommentExists({ id: Number(quizCommentId) });
+
+        // Certifica que o usuário é o autor do comentário
+        this.commentValidator.isQuizCommentAuthor({ user, quizComment });
+
+        await this.commentsRepo.deleteComment(quizComment);
+
+        return response.send({ message: "Comentário apagado com sucesso" });
+
+    }
+
+    /**
      * **web: /quizzes/:id/answer - POST**
      * 
      * Permite um aluno responder um quiz
@@ -215,10 +285,5 @@ export class QuizzesController {
         const statistics = await this.repo.getQuizStatistics({ quiz });
 
         return response.send(statistics);
-    }
-    
-
-    get repo() {
-        return getCustomRepository(this.repository);
     }
 }

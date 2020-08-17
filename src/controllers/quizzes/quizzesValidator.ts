@@ -1,11 +1,11 @@
 import { BaseValidator, validateFields } from "src/utils/validators";
-import { IValidCreateQuiz, IValidQuestions } from "./quizzesTypes";
 import { Quizzes } from "@models/quiz/Quizzes";
 import { getRepository } from "typeorm";
 import { ValidationError } from "src/utils";
-import config from "src/config/server";
+import config, { codes } from "src/config/server";
 import { Topics } from "@models/Topics";
 import { Users } from "@models/User";
+import { QuizComments } from "@models/quiz/QuizComments";
 
 /**
  * Interfaces de validação
@@ -17,6 +17,21 @@ interface ICreateQuizzesInput {
     topic: any,
     questions: any
 }
+export type IValidQuizOutput = Promise<{
+    name: string,
+    mode: string,
+    password?: string,
+    questions: IValidQuestionsOutput,
+    topic: Topics
+}>
+ 
+export type IValidQuestionsOutput = Array<{
+    question: string,
+    alternatives: Array<{
+        text: string,
+        right: boolean
+    }>
+}>
 
 interface IUpdateQuizzesInput {
     quiz: Quizzes,
@@ -33,7 +48,6 @@ interface IQuizAnswerInput {
     answers: any
 }
 
-
 /**
  * Validador dos quizzes.
  */
@@ -45,7 +59,7 @@ export class QuizzesValidator extends BaseValidator {
         minQuestSize: config.quizzes.min_questions
     };
 
-    async createValidation({ name, mode, password, topic, questions }: ICreateQuizzesInput): IValidCreateQuiz {
+    async createValidation({ name, mode, password, topic, questions }: ICreateQuizzesInput): IValidQuizOutput {
         const { minNameSize, minPassSize } = this.rules;
         const questionValidator = new QuestionValidator();
         const modes = ['public', 'private'];
@@ -213,6 +227,9 @@ export class QuizzesValidator extends BaseValidator {
 
 
 
+
+
+
 type ICreateQuestionsInput = Array<{
     question: any,
     alternatives: Array<{
@@ -230,7 +247,7 @@ class QuestionValidator extends BaseValidator {
      * Valida a criação de questões
      */
     createValidation(validateSize?: boolean) {
-        return function (input: ICreateQuestionsInput): IValidQuestions {
+        return function (input: ICreateQuestionsInput): IValidQuestionsOutput {
             const response = [];
             const {
                 min_alternatives: minAlt,
@@ -329,3 +346,4 @@ function isRemoveQuestionValid(idList: Array<number>) {
         return data;
     }
 }
+

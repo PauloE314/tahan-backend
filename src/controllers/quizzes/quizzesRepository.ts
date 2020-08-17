@@ -10,6 +10,8 @@ import bcrypt from 'bcrypt';
 import config from 'src/config/server';
 import { PlayerScore } from "@models/games/PlayerScore";
 import { GameHistoric } from "@models/games/GameHistoric";
+import { QuizComments } from "@models/quiz/QuizComments";
+import { Posts } from "@models/Posts/Posts";
 
 
 
@@ -349,7 +351,6 @@ export class QuestionsRepository extends BaseRepository<Questions> {
         return getCustomRepository(Quizzes);
     }
 }
-
 
 /**
  * Interfaces de entrada de dados
