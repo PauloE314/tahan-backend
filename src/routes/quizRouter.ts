@@ -20,24 +20,13 @@ routes.post('/private/:quizId([0-9]+)', auth_require, getQuiz, controller.readPr
 // Atualização de quiz
 routes.put('/:quizId', auth_require, is_teacher, getQuiz, controller.update);
 
-
 // Apagar o quiz
 routes.delete('/:quizId([0-9]+)', auth_require, is_teacher, getQuiz, controller.delete);
 
-// // Leitura
-// routes.get('/', controller.list);
-// routes.get('/:id', getQuiz, validator.read_quiz_validation, controller.read);
+// Responder quiz
+routes.post('/:quizId/answer', auth_require, is_student, getQuiz, controller.answer);
 
-// // Update
-// routes.put('/:id', auth_require, is_teacher, getQuiz, validator.update_validation, controller.update);
-
-// // Delete
-// routes.delete('/:id', auth_require, is_teacher, getQuiz, validator.delete_validation, controller.delete);
-
-// // Responder pergunta
-// routes.post('/:id/answer', auth_require, is_student, getQuiz, validator.answer_validation, controller.answer);
-
-// // Ver estatísticas de questão
-// routes.get('/:id/games', auth_require, is_teacher, getQuiz, validator.games_validation, controller.games);
+// Estatísticas do quiz
+routes.get('/:quizId/games', auth_require, is_teacher, getQuiz, controller.games);
 
 export default routes;

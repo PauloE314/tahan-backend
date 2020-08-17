@@ -6,33 +6,7 @@ import { Containers } from "@models/Posts/Containers";
 import { Quizzes } from "@models/quiz/Quizzes";
 import { BaseValidator } from "src/utils/validators";
 
-/**
- * Interface do controlador de rotas dos usuários da aplicação.
- */
-export interface IUsersController {
-    signIn: IApiResponse,
-    refresh: IApiResponse,
-    
-    read: IApiResponse,
-    posts: IApiResponse,
-    quizzes: IApiResponse,
-    postContainers: IApiResponse,
 
-    delete: IApiResponse
-}
-
-/**
- * Interface do repositório dos usuários.
- */
-export interface IUsersRepository extends BaseRepository<Users> {
-    createOrUpdate(data: google_data, occupation: string): Promise<Users>;
-    createLoginToken(id: number, secret_key: string, expireTime: any): string;
-    findUsers(params: any): Promise<IPaginatedData<Users>>;
-    findUserPosts(authorId: any, params: any): Promise<IPaginatedData<Posts>>;
-    findUserPostContainers(authorId: any, params: any): Promise<IPaginatedData<Containers>>;
-    findUserQuizzes(authorId: any, params: any): Promise<IPaginatedData<Quizzes>>;
-    deleteUser(user: Users): Promise<void>
-}
 
 /**
  * Validador de ações do controlador de usuários.

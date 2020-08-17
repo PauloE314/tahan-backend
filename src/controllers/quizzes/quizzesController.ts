@@ -7,6 +7,8 @@ import { APIRoute } from "src/utils";
 import { IFilterAndPaginateInput } from "src/utils/bases";
 import { Quizzes } from "@models/quiz/Quizzes";
 import bcrypt from 'bcrypt';
+import { codes } from "@config/server";
+import { GameHistoric } from "@models/games/GameHistoric";
 
 /**
  * Controlador de rotas relacionadas aos quizzes da aplicação.
@@ -176,17 +178,43 @@ export class QuizzesController {
      */
     @APIRoute
     async answer(request: APIRequest, response: Response, next: NextFunction) {
-        const user = request.user.info;
+        const user = request.user.info; 
         const { quiz } = request;
-        const { answer } = request.body;
+        const { answers, password } = request.body;
+
+        // Valida a senha
+        if (quiz.mode === 'private') {
+            // Compara a senha
+            const passwordMatches = await bcrypt.compare(password || '-1', quiz.password)
+            if(!passwordMatches) 
+                return response.status(codes.PERMISSION_DENIED).send({ message: 'Senha inválida' });
+        }
 
         // Valida respostas do quiz
-        this.validator.validateQuizAnswer({ answer, quiz });
+        this.validator.validateQuizAnswer({ answers, quiz });
 
         // Cria resposta
-        const report = await this.repo.createQuizAnswer({ answer, user, quiz });
+        const report = await this.repo.createQuizAnswer({ answers, user, quiz });
 
         return response.send(report);
+    }
+
+    /**
+     * **web: /quizzes/:id/games - POST**
+     * 
+     * Permite o professor ver dados dos jogos de um quiz.
+     */
+    @APIRoute
+    async games(request: APIRequest, response: Response, next: NextFunction) {
+        const { quiz } = request;
+        const user = request.user.info;
+
+        // Certifica que é o autor do quiz
+        this.validator.isQuizAuthor({ quiz, user });
+
+        const statistics = await this.repo.getQuizStatistics({ quiz });
+
+        return response.send(statistics);
     }
     
 

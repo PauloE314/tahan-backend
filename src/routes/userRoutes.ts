@@ -5,8 +5,7 @@ import { auth_require } from '@middlewares/auth';
 import { UsersRepository } from '@controllers/users/UsersRepository';
 
 const routes = Router({ mergeParams: true });
-const validator = new UserValidator();
-const controller = new UserController(validator, UsersRepository);
+const controller = new UserController();
 
 
 // Autenticação

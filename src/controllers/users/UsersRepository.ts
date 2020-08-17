@@ -1,7 +1,6 @@
 import { EntityRepository, getRepository } from "typeorm";
 import { Users } from "@models/User";
 import { BaseRepository, IPaginatedData } from "src/utils/bases";
-import { IUsersRepository } from "@controllers/users/usersTypes";
 import { google_data } from "src/@types";
 import jwt from 'jsonwebtoken';
 import { Posts } from "@models/Posts/Posts";
@@ -9,9 +8,15 @@ import { Containers } from "@models/Posts/Containers";
 import { Quizzes } from "@models/quiz/Quizzes";
 
 
+interface IUserQuizzesInput {
+    user: Users,
+    params: any,
+    getPrivates: boolean    
+}
+
 
 @EntityRepository(Users)
-export class UsersRepository extends BaseRepository<Users> implements IUsersRepository {
+export class UsersRepository extends BaseRepository<Users> {
 
     /**
      * Filtra e lista os usuários da aplicação 
@@ -117,22 +122,27 @@ export class UsersRepository extends BaseRepository<Users> implements IUsersRepo
         return serializedPostContainerList
     }
    
-    async findUserQuizzes(authorId: any, params: any) {
+    async findUserQuizzes({ user, params, getPrivates }: IUserQuizzesInput) {
         
         // Lista de quizzes
         const quizzes = getRepository(Quizzes)
             .createQueryBuilder('quiz')
             .leftJoinAndSelect('quiz.topic', 'topic')
             .loadRelationIdAndMap('quiz.questions', 'quiz.questions')
+            .addSelect('quiz.mode')
+
+        if (!getPrivates)
+            quizzes.where('quiz.mode = "public"');
         
         // Aplica filtro e paginação
         const serializedQuizList = await this.filterAndPaginate(quizzes, {
             count: params.count,
             page: params.page,
             filter: {
-                author: { operator: 'equal', data: authorId },
+                author: { operator: 'equal', data: user.id },
                 topic: { operator: 'equal', data: params.topic },
-                name: { operator: 'like', data: params.name }
+                name: { operator: 'like', data: params.name },
+                mode: { operator: 'equal', data: params.mode }
             }
         });
 

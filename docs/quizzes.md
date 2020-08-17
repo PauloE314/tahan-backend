@@ -308,67 +308,117 @@ Content-Type: application/json
 ```
 
 
-<br>
-<br>
-<br>
-<br>
-<br>
+## **Respondendo quizzes**
+- **Autenticação**:  necessária
+- **Grupo de usuários**: alunos
+- **Rota**: ```/quizzes/:id/answer```
+
+Responder os quizzes é, de certa forma, a funcionalidade principal dessa seção. Para fazê-lo, basta enviar uma requisição **POST** para a rota ```/quizzes/:id/answer``` (com ```id``` sendo o id numérico do quiz requisitado). A autenticação é necessária (por motivo óbvios) e os dados de envio têm certas regras:
+- ```password```: a senha do quiz. Deve ser uma string, mas esse campo só é necessário quando o quiz for privado.
+- ```answers```: é o corpo central das respostas. Deve ser um array de objetos, cada objeto condizendo a uma das questões do quiz (ou seja, a quantidade de itens no array deve ser a mesma de questões do quiz). Cada item deve conter:
+  - ```question```: o id da questão a ser respondida. Deve ser um número e deve corresponder a uma das questões do quiz. Cada objeto do array de respostas deve conter um valor na propriedade ```question``` único (não é possível responder mais de uma vez a mesma questão) e para cada questão deve haver um objeto com essa propriedade (```question```) que condiz com seu id.
+  - ```answer```: a resposta da questão. Deve ser um número e corresponder ao id da alternativa da resposta. Não será certificado se existe alguma alternativa com esse id.
 
 
+Modelo de requisição:
+```HTTP
+POST /quizzes/1/answer HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+Content-Type: application/json
 
-## **PATH: /quizzes/:id/answer - POST**
+{
+  "password": "<string>",
+  "answers": [
+    {
+      "question": "<number>",
+      "answer": "<number>"
+    },
+    "..."
+  ]
+}
+```
 
-#### POST: (Autenticação necessária)
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
 
-- **Funcionamento:**
-  Permite um aluno responder um quiz. Os dados de envio devem ser no formato: 
-  ```json
-  {
-    "password": "<string>",
-    "answer": [
-      {
-        "question": "<number>",
-        "answer": "<number>"
-      },
+{
+  "answers": [
+    {
+      "question": "<number>",
+      "answer": "<number>",
+      "rightAnswer": "<number>",
+      "isRight": "<boolean>"
+    },
+    {
+      "question": "<number>",
+      "answer": "<number>",
+      "rightAnswer": "<number>",
+      "isRight": "<boolean>"
+    },
       "..."
-    ]
-  }
-  ```
+  ],
+  "score": "<number>"
+}
+```
 
-  A resposta será no formato:
-  ```json
+Na resposta, o campo ```isRight``` dirá se a questão estava correta ou não e o campo ```rightAnswer``` conterá a alternativa correta. O score é calculado como uma divisão simples da quantidade de acertos e a quantidade de questões totais. O único dado que será salvo no banco da dados será o score do usuário e sua relação com o quiz, ou seja, não serão salvos os dados exatos de quais questões estavam corretas ou incorretas.
+
+
+
+## **Estatísticas**
+**(feature em testes)**
+
+- **Autenticação**:  necessária
+- **Grupo de usuários**: autor do quiz (professor)
+- **Rota**: ```/quizzes/:id/games```
+
+Parte do objetivo dos quizzes é permitir a avaliação dos jogadores por meio de estatísticas. Essa feature ainda está em desenvolvimento, assim, por hora, os dados retornados por ela estarão bem ruins.
+
+Para a obtenção das estatísticas de um quiz, é necessário realizar uma requisição **GET** para a rota ```/quizzes/:id/games``` (com ```id``` sendo o id numérico do quiz).
+
+Modelo de requisição:
+```HTTP
+GET /quizzes/1/games HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+
+[
   {
-    "answers": [
-      {
-        "question": "<number>",
-        "answer": "<number>",
-        "rightAnswer": "<number>",
-        "isRight": "<boolean>"
-      },
-      {
-        "question": "<number>",
-        "answer": "<number>",
-        "rightAnswer": "<number>",
-        "isRight": "<boolean>"
-      },
-        "..."
-    ],
-    "score": "<number>"
-  }
-  ```
+    "id": "<number>",
+    "played_at": "<Date | string>",
+    "is_multiplayer": "<boolean>",
+    "player_1_score": {
+      "id": "<number>",
+      "score": "<number>",
+      "player": "<number>"
+    },
+    "player_2_score": "<PlayerScore | null>",
+    "quiz": {
+      "id": "<number>",
+      "created_at": "<Date | string>"
+    }
+  },
+    "..."
+]
+```
 
-  As respostas individuais não são armazenadas no banco de dados, apenas o score.
+Essa resposta corresponde tanto para jogos multiplayer ou singleplayer. Também vale notar que o campo ```id``` se refere ao id do histórico de partida, não ao do quiz.
 
-- **Validação:**
-  - ```password```:
-    - Só é necessário quando o quiz for privado;
-    - Deve ser um array;
-  - ```answer```:
-    - Deve ser um array;
-    - Cada elemento do array deve possuir uma propriedade ```question: number``` e uma ```answer: number```;
-    - A propriedade ```question``` dos elementos do array deve ser um inteiro e reference a um ```id``` de uma das questões do quiz;
-    - Não pode haver questões sem resposta.
-    - A propriedade ```answer``` dos elementos do array deve ser um inteiro;
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
 
 
 

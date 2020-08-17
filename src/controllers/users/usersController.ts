@@ -3,17 +3,16 @@ import {  getCustomRepository } from 'typeorm';
 
 import { APIRequest } from 'src/@types';
 import { APIRoute } from 'src/utils';
-import { IUsersController, IUsersValidator, IUsersRepository } from './usersTypes';
+import { IUsersValidator } from './usersTypes';
 
 import configs from '@config/server';
+import UserValidator from './usersValidator';
+import { UsersRepository } from './UsersRepository';
 
 
-export default class UserController implements IUsersController {
-
-  constructor(
-    public validator: IUsersValidator,
-    public repository: new () => IUsersRepository,
-  ) {  }
+export default class UserController {
+  validator = new UserValidator();
+  repository = UsersRepository;
 
   /**
    * **web: /users/ - GET**
@@ -75,7 +74,10 @@ export default class UserController implements IUsersController {
   @APIRoute
   async read(request: APIRequest, response: Response, next: NextFunction) {
     const { target } = request.params;
-    const user = target == 'self' ? request.user: await this.validator.getUser(Number(target));
+
+    const user = target == 'self' ?
+      request.user:
+      await this.validator.getUser(Number(target));
 
     return response.send(user);
   }
@@ -93,7 +95,10 @@ export default class UserController implements IUsersController {
     const { target } = request.params;
     const params = request.query;
 
-    const requestedUser = target === 'self' ? request.user.info: await this.validator.getUser(Number(target));
+    const requestedUser = target === 'self' ?
+      request.user.info:
+      await this.validator.getUser(Number(target));
+
     const teacher = this.validator.isTeacher(requestedUser);
 
     const posts = await this.repo.findUserPosts(teacher.id, params);
@@ -114,10 +119,19 @@ export default class UserController implements IUsersController {
     const { target } = request.params;
     const params = request.query;
 
-    const requestedUser = target == 'self' ? request.user.info: await this.validator.getUser(Number(target));
-    const teacher = this.validator.isTeacher(requestedUser);
+    // Pega o alvo da requisição
+    const requestedUser = target == 'self' ?
+      request.user.info:
+      await this.validator.getUser(Number(target));
 
-    const quizzes = await this.repo.findUserQuizzes(teacher.id, params);
+    // const teacher = this.validator.isTeacher(requestedUser);
+    const teacher = requestedUser;
+
+    const quizzes = await this.repo.findUserQuizzes({
+      params,
+      user: teacher,
+      getPrivates: request.user.info.id === requestedUser.id
+    });
 
     return response.send(quizzes);
   }
@@ -134,7 +148,10 @@ export default class UserController implements IUsersController {
     const { target } = request.params;
     const params = request.query;
 
-    const requestedUser = target == 'self' ? request.user.info: await this.validator.getUser(Number(target));
+    const requestedUser = target == 'self' ?
+      request.user.info:
+      await this.validator.getUser(Number(target));
+      
     const teacher = this.validator.isTeacher(requestedUser);
 
     const postContainers = await this.repo.findUserPostContainers(teacher.id, params);

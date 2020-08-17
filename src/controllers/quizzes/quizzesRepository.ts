@@ -1,6 +1,6 @@
 import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
 import { Quizzes } from "@models/quiz/Quizzes";
-import { EntityRepository, getCustomRepository, getConnection } from "typeorm";
+import { EntityRepository, getCustomRepository, getConnection, getRepository } from "typeorm";
 import { Alternatives } from "@models/quiz/Alternatives";
 import { Topics } from "@models/Topics";
 import { Questions } from "@models/quiz/Questions";
@@ -8,6 +8,8 @@ import { Users } from "@models/User";
 import { ValidationError } from "src/utils";
 import bcrypt from 'bcrypt';
 import config from 'src/config/server';
+import { PlayerScore } from "@models/games/PlayerScore";
+import { GameHistoric } from "@models/games/GameHistoric";
 
 
 
@@ -38,7 +40,7 @@ interface IUpdateQuizInput {
 interface IQuizAnswerInput {
     quiz: Quizzes,
     user: Users,
-    answer: Array<{
+    answers: Array<{
         question: number,
         answer: number
     }>
@@ -226,8 +228,57 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
     /**
      * Cria uma resposta para o usuários
      */
-    async createQuizAnswer({ answer, user, quiz }: IQuizAnswerInput) {
+    async createQuizAnswer({ answers, user, quiz }: IQuizAnswerInput) {
+        // Corrige as questões
+        const serializedAnswers = answers.map(answer => {
+            const question = quiz.questions.find(question => question.id === answer.question);
+            return {
+                question: question.id,
+                answer: answer.answer,
+                rightAnswer: question.rightAnswer.id,
+                isRight: question.rightAnswer.id === answer.answer
+            };
+        });
 
+        // Pega a lista de respostas corretas
+        const correctAnswers = serializedAnswers.filter(answer => answer.isRight);
+
+        // Score do usuário
+        const score = (correctAnswers.length / quiz.questions.length) * 10;
+
+        // Cria o score do player
+        const playerScore = new PlayerScore();
+        playerScore.player = user;
+        playerScore.score = score;
+
+        // Registra o jogo
+        const game = new GameHistoric();
+        game.is_multiplayer = false;
+        game.player_1_score = playerScore;
+        game.quiz = quiz;
+        // Salva o jogo
+        await getRepository(GameHistoric).save(game);
+        
+        // Retorna os dados
+        return { answers: serializedAnswers, score };
+    }
+
+    /**
+     * Retorna uma análise das estatísticas de um quiz
+     */
+    async getQuizStatistics({ quiz }: { quiz: Quizzes }) {
+        const gameHistoric = await getRepository(GameHistoric)
+        .createQueryBuilder('game')
+        .leftJoinAndSelect('game.quiz', 'quiz')
+        .leftJoinAndSelect('game.player_1_score', 'score_1')
+        .leftJoinAndSelect('game.player_2_score', 'score_2')
+        .loadRelationIdAndMap('score_1.player', 'score_1.player')
+        .loadRelationIdAndMap('score_2.player', 'score_2.player')
+        .where('game.quiz.id = :id', { id: quiz.id })
+        .select(['game', 'score_1', 'score_2', 'quiz.id', 'quiz.created_at'])
+        .getMany();
+
+        return gameHistoric;
     }
     
 
@@ -238,6 +289,7 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
         return {};
     }
 
+    // Repositório de questões
     get questionsRepo() {
         return getCustomRepository(QuestionsRepository);
     }

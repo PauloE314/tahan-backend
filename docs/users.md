@@ -189,9 +189,12 @@ Essa funcionalidade só está disponível para alvos que são professores (por e
 
 É possível obter os quizzes de um certo usuário através de uma requisição **GET** na rota ```/users/id/quizzes``` (para outros usuários) ou ```users/self/quizzes``` para o usuário que fez a requisição (a restrição de apenas para professores também está valendo); a resposta será no mesmo modelo.
 
+Os quizzes privados só serão visíveis para os quizzes do usuário que faz a requisição.
+
 Também é permitido o filtro (além de paginação e ordenação) pelos seguintes parâmetros (query params):
 - ```topic```: id de um tópico a qual o quiz deve pertencer. É um filtro absoluto.
-- ```name```: o nome do quiz. É um filtro relativo
+- ```name```: o nome do quiz. É um filtro relativo.
+- ```mode```: o modo do quiz. Esse filtro só faz sentido quando o usuário que faz a requisição for o autor dos quizzes. É um filtro absoluto, os valores aceitos são ```public``` e ```private```
 
 
 Modelo de requisição:
@@ -213,6 +216,7 @@ Content-Type: application/json
       "id": "<number>",
       "name": "fooBar",
       "created_at": "<Date | string>",
+      "mode": "public | private",
       "topic": {
         "id": "<number>",
         "name": "<string>"

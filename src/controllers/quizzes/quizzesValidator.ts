@@ -30,7 +30,7 @@ interface IUpdateQuizzesInput {
 
 interface IQuizAnswerInput {
     quiz: Quizzes,
-    answer: any
+    answers: any
 }
 
 
@@ -170,8 +170,33 @@ export class QuizzesValidator extends BaseValidator {
     /**
      * Validação de resposta de quiz
      */
-    validateQuizAnswer({ answer, quiz }: IQuizAnswerInput) {
+    validateQuizAnswer({ answers, quiz }: IQuizAnswerInput) {
+        const questionList = quiz.questions.map(res => res.id);
+        const answeredQuestions: Array<number> = [];
 
+        // Certifica que é um array
+        if (!Array.isArray(answers))
+            this.RaiseError({ answers: "Dado inválido" });
+
+        // Valida a quantidade de questões
+        if (answers.length !== questionList.length)
+            this.RaiseError({ answers: "Quantidade inválida de respostas" });
+
+        for (const response of answers) {
+            const { answer, question } = response;
+
+            // Valida a quantidade de respostas
+            if (answer === undefined || question === undefined)
+                this.RaiseError({ answers: "Resposta mal formatada"});
+            
+            // Certifica que cada resposta terá apenas uma pergunta
+            if (!questionList.includes(question) || answeredQuestions.includes(question))
+                this.RaiseError({ answers: "Resposta inválida" });
+
+            answeredQuestions.push(question);
+        }
+        
+        return <Array<{ question: number, answer: number }>>answers;
     }
 
     /**

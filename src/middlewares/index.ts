@@ -10,6 +10,7 @@ import { Containers } from "@models/Posts/Containers";
 import { Solicitations } from "@models/friends/Solicitations";
 import { Friendships } from "@models/friends/Friendships";
 import { PostCommentRepository } from "@controllers/posts/postsRepository";
+import { codes } from "@config/server";
 
 
 // Tenta encontrar um tópico pelo id
@@ -19,7 +20,7 @@ export async function getTopic(request: APIRequest, response: Response, next: Ne
     const topic = await getRepository(Topics).findOne({ id: topic_id });
 
     if (!topic) {
-        return response.status(401).send({ message: "Seção não encontrada" });
+        return response.status(codes.NOT_FOUND).send({ message: "Seção não encontrada" });
     }
 
     request.topic = topic;
@@ -50,7 +51,7 @@ export function getPost(limit: 'short' | 'medium' | 'long' = 'short') {
         const post = await postQueryBuilder.getOne();
 
         if (!post)
-            return response.send({ message: "Postagem não encontrada" });
+            return response.status(codes.NOT_FOUND).send({ message: "Postagem não encontrada" });
 
         request.post = post;
         return next();
@@ -72,7 +73,7 @@ export function getPostComment() {
         const comment = await postCommentQueryBuilder.getOne();
 
         if (!comment)
-            return response.status(404).send({ message: "Comentário não encontrado" });
+            return response.status(codes.NOT_FOUND).send({ message: "Comentário não encontrado" });
 
         request.postComment = comment;
 
@@ -92,7 +93,7 @@ export async function getSolicitation(request: APIRequest, response: Response, n
     });
 
     if (!solicitation)
-        return response.status(404).send({ message: "Solicitação não encontrada" });
+        return response.status(codes.NOT_FOUND).send({ message: "Solicitação não encontrada" });
     
     request.solicitation = solicitation;
 
@@ -113,7 +114,7 @@ export async function getFriendship(request: APIRequest, response: Response, nex
     });
 
     if (!friendship) 
-        return response.status(404).send({ message: "Amizade não encontrada" });
+        return response.status(codes.NOT_FOUND).send({ message: "Amizade não encontrada" });
 
     request.friendship = friendship;
 
@@ -139,9 +140,8 @@ export async function getQuiz(request: APIRequest, response: Response, next: Nex
             .addSelect('quiz.password')
             .getOne();
 
-
         if (!quiz)
-            return response.send({ message: "Quiz não encontrado" });
+            return response.status(codes.NOT_FOUND).send({ message: "Quiz não encontrado" });
 
         request.quiz = quiz;
     }
@@ -160,7 +160,7 @@ export async function getUser(request: APIRequest, response: Response, next: Nex
         next();
     }
     catch(err) {
-        return response.send({name: err.name, message: err.message})
+        return response.status(codes.NOT_FOUND).send({name: err.name, message: err.message})
     }
 }
 
@@ -178,7 +178,7 @@ export async function getContainer(request: APIRequest, response: Response, next
             request.container = container;
             return next();
         }
-        return response.status(400).send({ message: "Container de posts não encontrado" })
+        return response.status(codes.NOT_FOUND).send({ message: "Container de posts não encontrado" })
     }
     return next();
 }
