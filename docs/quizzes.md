@@ -413,6 +413,35 @@ HTTP/1.1 200
 Essa resposta corresponde tanto para jogos multiplayer ou singleplayer. Também vale notar que o campo ```id``` se refere ao id do histórico de partida, não ao do quiz.
 
 
+
+## **Likes**
+- **Autenticação**:  necessária
+- **Grupo de usuários**: todos
+- **Rota**: ```/quizzes/:id/likes```
+
+O sistema de likes dos quizzes é igual ao sistema de likes das postagens (veja os likes das postagens [aqui](./topics-and-posts#likes)). Assim como nesse sistema, basta realizar uma requisição **POST** para a rota ```/quizzes/:id/likes```, o próprio sistema checará se o usuário já deu like no quiz ou não, sempre alternando o estado do like.
+
+
+
+Modelo de requisição:
+```HTTP
+POST /quizzes/1/like HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "message": "Like adicionado | Like removido"
+}
+```
+
+
 ### **Comentários**
 - **Autenticação**: necessária
 - **Grupo de usuários**: todos
