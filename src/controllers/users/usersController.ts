@@ -5,7 +5,7 @@ import { APIRequest } from 'src/@types';
 import { APIRoute } from 'src/utils';
 import { IUsersValidator } from './usersTypes';
 
-import configs from '@config/server';
+import configs, { codes } from '@config/server';
 import UserValidator from './usersValidator';
 import { UsersRepository } from './UsersRepository';
 
@@ -47,7 +47,7 @@ export default class UserController {
     const user = await this.repo.createOrUpdate(validatedData.google_data, occupation);
     const loginToken = this.repo.createLoginToken(user.id, secret_key, jwtTime);
 
-    return response.send({ user, login_token: loginToken });
+    return response.status(codes.CREATED).send({ user, login_token: loginToken });
   }
 
   /**

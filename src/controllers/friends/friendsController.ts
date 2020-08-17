@@ -7,6 +7,7 @@ import UserValidator from '@controllers/users/usersValidator';
 import { FriendsRepository } from './friendsRepository';
 import { FriendsValidator } from './friendsValidator';
 import { Solicitations } from '@models/friends/Solicitations';
+import { codes } from '@config/server';
 
 
 /**
@@ -60,7 +61,7 @@ export class FriendsController {
         const newSolicitation = await this.repo.createSolicitation(sender, receiver);
 
         // Retorna os dados da amizade
-        return response.send(newSolicitation);
+        return response.status(codes.CREATED).send(newSolicitation);
     }
 
     /**

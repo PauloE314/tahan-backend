@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import { auth_user } from 'src/utils';
 import { APIRequest } from "src/@types";
-
+import { codes } from "@config/server";
 
 
 /*
@@ -21,9 +21,9 @@ export async function auth_require(request: APIRequest, response: Response, next
             return response.status(406).send({message: err.message});
             
         else if (valid_error_names.includes(err.name))
-            return response.status(401).send({message: err.message});
+            return response.status(codes.PERMISSION_DENIED).send({message: err.message});
 
-        return response.status(500).send({name: err.name, message: err.message});
+        return response.status(codes.SERVER_ERROR).send({name: err.name, message: err.message});
     }
 }
 
@@ -32,7 +32,7 @@ export async function is_teacher(request: APIRequest, response: Response, next: 
     const user = request.user.info;
 
     if (!(user.occupation == 'teacher')) {
-        return response.status(401).send({message: 'Permissão negada, apenas professores podem executar essa ação'});
+        return response.status(codes.PERMISSION_DENIED).send({message: 'Permissão negada, apenas professores podem executar essa ação'});
     }
 
     return next();
@@ -42,7 +42,7 @@ export async function is_student(request: APIRequest, response: Response, next: 
     const user = request.user.info;
 
     if (!(user.occupation === "student")) {
-        return response.status(401).send({message: 'Permissão negada, apenas alunos podem executar essa ação'});
+        return response.status(codes.PERMISSION_DENIED).send({message: 'Permissão negada, apenas alunos podem executar essa ação'});
     }
 
     return next();

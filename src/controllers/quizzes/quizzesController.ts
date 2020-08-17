@@ -77,7 +77,7 @@ export class QuizzesController {
         const quiz = await this.repo.createQuiz({ mode, name, questions, topic, password, author });
 
         // Retorna dados
-        return response.send(quiz);
+        return response.status(codes.CREATED).send(quiz);
     }
 
     /**
