@@ -1,144 +1,223 @@
 # **Containers para postagens**
 
-## **PATH: /post-containers/ - GET, POST**
 
-#### GET (Autenticação não necessária):
+Esse arquivo é destinado à documentação de funcionalidades dos containers para postagens do projeto.
 
-- **Funcionamento:**
+Esses containers são de um professor poder agrupar suas postagens, afim de facilitar o entendimento dos alunos que vão consumir esses ensinos. No geral, as funcionalidades dos containers se tratam de um CRUD simples.
 
-  Retorna a lista de postagens. Permite o filtro por ```name``` e pelo ```id``` do autor:
-  - post-containers/?name=:string
-  - post-containers/?author=:string
+## **Visualização dos containers**
 
-
-  ```json
-  {
-    "page": {
-      "current": "<number>",
-      "total": "<number>"
-    },
-    "count": "<number>",
-    "found": "<number>",
-    "data": [
-      {
-        "id": "<number>",
-        "name": "<string>",
-        "posts": [
-          {
-            "id": "<number>",
-            "title": "<string>",
-            "description": "<string>",
-            "created_at": "<Date | string>",
-            "academic_level": "fundamental | médio | superior"
-          }
-        ],
-        "author": "<number>"
-      }
-    ]
-  }
-
-  ```
-
-#### POST (Autenticação necessária):
-
-- **Funcionamento:**
-
-  Permite criar um novo container para posts. Os dados de envio devem ter o formato:
+### **Listagem de containers**
+- **Autenticação**:  não necessária
+- **Grupo de usuários**:  todos
+- **Rota**: ```/post-containers/```
 
 
-  ```json
-  [
+Para obter a listagem dos containers de postagens, basta realizar uma requisição **GET** para a rota ```/post-containers/```. Os dados retornados estão paginados e é permitido o filtro pelos parâmetros (query params):
+- ```author```: o username do autor do container. Causa um filtro relativo.
+- ```author_id```: o id do autor do container. Causa um filtro absoluto.
+- ```name```: nome do container. Causa um filtro relativo.
+
+Modelo de requisição:
+```HTTP
+GET /post-containers/ HTTP/1.1
+Host: tahan_api.com
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "..."
+  "data": [
     {
-      "name": "<string>",
-      "posts": ["<number>", "..."]
-    }
-  ]
-  ```
-
-- **Validação:**
-
-  - ```user```:
-    - Deve ser um professor;
-  - ```name```:
-    - Deve ser uma string;
-    - Deve ter mais de 3 caracteres;
-    - Deve ser único;
-  - ```posts```:
-    - Deve ser um array de inteiros;
-    - Os elementos do array devem se referir a ids de posts criados pelo usuário
-
-
-<hr>
-
-## **PATH: /post-containers/:id - GET, PUT, DELETE**
-
-#### GET (Autenticação não necessária):
-
-- **Funcionamento:**
-
-  Retorna os dados de um container em específico. Os dados de resposta são no modelo:
-
-  ```json
-  {
-    "id": "string>",
-    "name": "<string>",
-    "author": {
       "id": "<number>",
-      "username": "<string>",
-      "email": "<string>",
-      "occupation": "<string>",
-      "image_url": "<string>",
-      "created_at": "<string>"
-    },
-    "posts": [
-      {
-        "id": "<string>",
-        "title": "<string>",
-        "description": "<string>",
-        "created_at": "<string>",
-        "academic_level": "fundamental | médio | superior"
-      }
-    ]
-  }
-  ```
-
-
-#### PUT (Autenticação necessária):
-
-- **Funcionamento:**
-
-  Permite o professor que criou o container atualizá-lo. Os dados de envio devem seguir o seguinte modelo:
-
-  ```json
-  {
       "name": "<string>",
-      "add": ["<number>", "..."],
-      "remove": ["<number>", "..."]
-  }
-  ```
-- **Validação:**
+      "posts": [
+        {
+          "id": "<number>",
+          "title": "<string>",
+          "academic_level": "fundamental | médio | superior"
+        }
+      ],
+      "author": {
+        id: "<number>",
+        username: "<string>"
+      }
+    },
+    "..."
+  ]
+}
+```
 
-  - ```user```:
-    - Deve ser um professor;
-    - Deve ser o criador do container;
-  - ```name```:
-    - Deve ser uma string;
-    - Deve ter no mínimo 3 caracteres;
-    - Deve ser único;
-  - ```add```:
-    - Deve ser um array de inteiros;
-    - Cada elemento deve ser o id de um post criado pelo usuário;
-  - ```remove```:
-    - Deve ser um array de inteiros;
-    - Cada elemento deve ser o id de um post existente no container;
+### **Containers individuais**
+- **Autenticação**:  não necessária
+- **Grupo de usuários**:  todos
+- **Rota**: ```/post-containers/:id```
+
+Para ver os dados de um container individualmente, basta realizar uma requisição **GET** para a rota ```/post-containers/:id``` (com ```id``` sendo o id numérico da postagem).
+
+Modelo de requisição:
+```HTTP
+GET /post-containers/1 HTTP/1.1
+Host: tahan_api.com
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "id": "<number>",
+  "name": "<string>",
+  "author": {
+    "id": "<number>",
+    "username": "<string>",
+    "email": "<string>",
+    "image_url": "<string>"
+  },
+  "posts": [
+    {
+      "id": "<number>",
+      "title": "<string>",
+      "description": "<string>",
+      "academic_level": "fundamental | médio | superior",
+      "likes": "<number>"
+    },
+    "..."
+  ]
+}
+```
+
+## **Criando containers**
+- **Autenticação**:  necessária
+- **Grupo de usuários**:  professores
+- **Rota**: ```/post-containers/```
+
+Para criar containers é necessário realizar uma requisição **POST** para a rota ```/post-containers/```. É necessário ser um professor para tal e os dados de envio devem seguir as seguintes regras:
+- ```name```: o nome do container. Deve ser um nome único entre os containers do usuário. Deve ter mais que 5 letras.
+- ```posts```: a lista de postagens do container. Deve ser um array numérico em que cada item seja um id único de uma postagem. Não há quantidade mínima de postagens.
+
+Modelo de requisição:
+```HTTP
+POST /post-containers/ HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+Content-Type: application/json
+
+{
+  "name": "<string>",
+  "posts": ["<number>", "<number>", "..."]
+}
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+
+{
+  "id": "<number>",
+  "name": "<string>",
+  "author": {
+    "id": "<number>",
+    "username": "<string>",
+    "email": "<string>",
+    "image_url": "<string>",
+    "created_at": "<Date | string>"
+  },
+  "posts": [
+    {
+      "id": "<number>",
+      "title": "<string>",
+      "description": "<string>",
+      "academic_level": "fundamental | médio | superior",
+      "created_at": "<Date | string>",
+      "likes": "<number>"
+    },
+    "..."
+  ]
+}
+```
 
 
 
-#### DELETE (Autenticação necessária):
-- **Funcionamento:**
-  - Permite o professor que criou o container apagá-lo. Ao apagar o container, os posts não serão apagados.
+## **Atualizando containers**
+- **Autenticação**:  necessária
+- **Grupo de usuários**:  o criado do container (professores)
+- **Rota**: ```/post-containers/:id```
 
-- **Validação:**
-  - ```user```:
-    - Deve ser um professor;
-    - Deve ser o criador do container;
+Para atualizar um container, basta realizar uma requisição **PUT** na rota ```/post-containers/:id``` (com ```id``` sendo o id numérico do container). As regras dos dados de envio são exatamente iguais às da criação, exceto que não são todas obrigatórias.
+
+Modelo de requisição:
+```HTTP
+PUT /post-containers/ HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+Content-Type: application/json
+
+{
+  "name": "Novo nome",
+}
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+
+{
+  "id": "<number>",
+  "name": "Novo nome",
+  "author": {
+    "id": "<number>",
+    "username": "<string>",
+    "email": "<string>",
+    "image_url": "<string>",
+    "created_at": "<Date | string>"
+  },
+  "posts": [
+    {
+      "id": "<number>",
+      "title": "<string>",
+      "description": "<string>",
+      "academic_level": "fundamental | médio | superior",
+      "created_at": "<Date | string>",
+      "likes": "<number>"
+    },
+    "..."
+  ]
+}
+```
+
+
+## **Apagando containers**
+- **Autenticação**:  necessária
+- **Grupo de usuários**:  o criado do container (professores)
+- **Rota**: ```/post-containers/:id```
+
+Para apagar um container, basta realizar uma requisição **DELETE** na rota ```/post-containers/:id``` (com ```id``` sendo o id numérico do container).
+
+Modelo de requisição:
+```HTTP
+DELETE /post-containers/ HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+Content-Type: application/json
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+
+{
+  "message": "Container apagado com sucesso"
+}
+```

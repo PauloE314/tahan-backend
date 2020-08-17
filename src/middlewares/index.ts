@@ -153,7 +153,7 @@ export async function getUser(request: APIRequest, response: Response, next: Nex
 
 
 // Tenta pegar o container
-export function getContainer() {
+export function getContainer(limit: "likes" | "short" = 'short') {
     return async function (request: APIRequest, response: Response, next: NextFunction) {
         const id = Number(request.params.postContainerId);
 
@@ -163,12 +163,17 @@ export function getContainer() {
                 .createQueryBuilder('postContainer')
                 .leftJoin('postContainer.author', 'author')
                 .leftJoin('postContainer.posts', 'posts')
+                .leftJoin('posts.likes', 'likes')
                 .select([
                     'postContainer',
                     'author.id', 'author.username', 'author.email', 'author.image_url',
                     'posts.id', 'posts.title', 'posts.description', 'posts.academic_level'
                 ])
                 .where('postContainer.id = :id', { id })
+
+            if (limit === "likes")
+                containerQueryBuilder
+                    .loadRelationCountAndMap('posts.likes', 'postContainer.posts.likes');
             
             // Carrega container
             const container = await containerQueryBuilder.getOne();

@@ -20,7 +20,7 @@ Para obter a listagem de quizzes basta realizar uma requisição **GET** para a 
 - ```name```: nome do quiz. Causa um filtro relativo.
 - ```topic```: id do tópico a qual o quiz pertence. Causa um filtro absoluto.
 
-Também é permitido o filtro pela quantidade de likes, para isso, basta adicionar o parâmetro (query params) ```order=relevance``` na URL.
+Também é permitida a ordenação pela quantidade de likes, para isso, basta adicionar o parâmetro (query params) ```order=relevance``` na URL.
 
 Modelo de requisição:
 ```HTTP

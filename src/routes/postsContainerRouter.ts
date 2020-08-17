@@ -14,7 +14,7 @@ routes.post('/', auth_require, is_teacher, controller.create);
 
 
 // Visualização
-routes.get('/:postContainerId([0-9]+)/', getContainer(), controller.read);
+routes.get('/:postContainerId([0-9]+)/', getContainer("likes"), controller.read);
 
 // // Atualização
 routes.put("/:postContainerId([0-9]+)/", auth_require, is_teacher, getContainer(), controller.update);
