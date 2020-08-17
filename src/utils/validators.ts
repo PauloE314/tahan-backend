@@ -213,6 +213,34 @@ export class ElementValidator {
     }
 
     /**
+     * Verifica se é um array e itera sobre cada elemento
+     */
+    isArrayAndIterate(cb: IRule, message?: string) {
+        this.rules.push(
+            async (data: any) => {
+                // Certifica que é um array
+                if (!Array.isArray(data))
+                    throw new ValidationError(message || "Tipo de dado inválido, esperado: array, recebido " + typeof data);
+
+                const responses: Array<any> = [];
+
+                for (const element of data) {
+                    let response = cb(element);
+
+                    if (response instanceof Promise)
+                        response = await response;
+
+
+                    responses.push(response);
+                }
+                return responses;
+            }
+        )
+
+        return this;
+    }
+
+    /**
      * Regra que certifica que o elemento é um objeto.
      */
     isObject(message?: string) {

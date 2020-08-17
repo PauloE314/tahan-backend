@@ -160,7 +160,11 @@ A criação de postagens é feita por uma requisição **POST** na rota ```/post
 - ```title```: o título da postagem. Deve ter no mínimo 5 caracteres.
 - ```description```: a descrição principal da postagem. Deve ter no mínimo 10 caracteres.
 - ```academic_level```: o nível de dificuldade da postagem. São aceitos os valores ```fundamental```, ```médio``` e ```superior```.
-- ```contents```: a lista de conteúdos da postagem. Deve ser um array de objetos que possuam uma propriedade ```type``` (que represente o tipo do conteúdo) e ```data``` (que será o dado efetivo do conteúdo)
+- ```contents```: a lista de conteúdos da postagem. Deve ser um array de objetos, cada objeto deve possuir as seguintes propriedades:
+  - ```type```: representa o tipo do conteúdo, os tipos disponíveis são: ```title```, ```subtitle```, ```paragraph``` e ```topic```.
+  - ```data```: o dado efetivo do conteúdo. Deve ser uma string.
+  - ```position```: a posição do conteúdo. Deve ser um inteiro. Esse campo é mais um auxiliar, não é feita validação de posições.
+
 
 Modelo de requisição:
 ```HTTP 
@@ -175,7 +179,8 @@ Content-Type: application/json
   "contents": [
     {
       "type": "title | subtitle | topic | paragraph",
-      "data": "<string>"
+      "data": "<string>",
+      "position": "<number>"
     },
     "..."
   ]
@@ -195,7 +200,16 @@ HTTP/1.1 201
   "topic": {
     "id": "<number>",
     "name": "<string>"
-  }
+  },
+  "content": [
+    {
+      "id": "<number>",
+      "type": "title | subtitle | topic | paragraph",
+      "data": "<string>",
+      "position": "<number>"
+    },
+    "..."
+  ]
 }
 ```
 
@@ -216,7 +230,8 @@ Os dados a serem atualizados devem seguir as mesmas regras da criação, mas nã
   "add": [
     {
       "type": "title | subtitle | topic | paragraph",
-      "data": "<string>"
+      "data": "<string>",
+      "position": "<number>"
     },
   ]
 }
@@ -253,8 +268,10 @@ Content-Type: application/json
   },
   "contents": [
     {
+      "id": "<number>"
       "type": "title | subtitle | topic | paragraph",
-      "data": "<string>"
+      "data": "<string>",
+      "position": "<number>"
     },
     "..."
   ]

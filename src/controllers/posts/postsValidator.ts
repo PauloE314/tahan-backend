@@ -6,18 +6,18 @@ import { ValidationError } from "src/utils";
 import { Topics } from "@models/Topics";
 import { Users } from "@models/User";
 import { Comments } from "@models/Posts/Comments";
-import { TContentType } from "@models/Posts/Contents";
+import { TContentType, Contents } from "@models/Posts/Contents";
 
 interface ICreatePostInput {
     title: any,
     contents: any,
     academic_level: any,
     topic: any,
-    description: any,
+    description: any
 }
 interface ICreatePostOutput {
     title: string,
-    contents: Array<{ type: TContentType, data: string }>,
+    contents: Array<{ type: TContentType, data: string, position?: number }>,
     academic_level: 'médio' | 'fundamental' | 'superior',
     topic: Topics,
     description: string,
@@ -25,22 +25,21 @@ interface ICreatePostOutput {
 
 interface IUpdatePostInput {
     post: Posts,
-    author: Users,
     title?: any,
     add?: any,
     remove?: any,
     academic_level?: any,
-    description?: any
+    description?: any,
+    positions?: number
 }
 
 interface IUpdatePostOutput {
     title?: string,
-    contents?: {
-        add?: Array<{ type: TContentType, data: string }>,
-        remove?: Array<number>
-    },
+    add?: Array<{ type: TContentType, data: string, position?: number }>,
+    remove?: Array<number>
     academic_level?: 'médio' | 'fundamental' | 'superior',
-    description?: any
+    description?: string,
+    positions?: Array<{ id: number, position: number }>
 }
 /**
  * Validador dos posts.
@@ -66,7 +65,7 @@ export class PostsValidator extends BaseValidator {
             },
             contents: {
                 data: contents,
-                rules: check => check.isArray("object").custom(validateContents)
+                rules: check => check.isArrayAndIterate(validateContents)
             },
             description: {
                 data: description,
@@ -90,10 +89,8 @@ export class PostsValidator extends BaseValidator {
     /**
      * Valida os dados de update das postagens
      */
-    async update({ post, title, academic_level, add, remove, description, author }: IUpdatePostInput) {
+    async update({ post, title, academic_level, add, remove, description, positions }: IUpdatePostInput) {
         const { min_title_size } = configs.posts;
-
-        this.isPostAuthor(post, author);
         
         // Valida os campos
         const response = await validateFields({
@@ -112,13 +109,12 @@ export class PostsValidator extends BaseValidator {
             },
             add: {
                 data: add,
-                rules: check => check.isArray("any").custom(validateContents),
+                rules: check => check.isArrayAndIterate(validateContents),
                 optional: true
             },
             remove: {
                 data: remove,
-                rules: check => check.isArray("number")
-                    .custom(() => validateRemoveContents(remove, post)),
+                rules: check => check.isArrayAndIterate(validateRemoveContents(post.contents)),
                 optional: true
             },
             description: {
@@ -126,18 +122,24 @@ export class PostsValidator extends BaseValidator {
                 rules: check => check.isString().min(10),
                 optional: true
             },
+            position: {
+                data: positions,
+                rules: c => c.isArrayAndIterate(validateContentPosition(post.contents)),
+                optional: true
+            }
         });
 
         return <IUpdatePostOutput>{
             title: response.title,
-            contents: { add: response.add, remove: response.remove },
+            add: response.add,
+            remove: response.remove,
+            positions: response.position,
             academic_level: response.academic_level,
             description: response.description,
         }
     }
 
     
-
     /**
      * Certifica que o usuário é o autor da postagem
      */
@@ -153,20 +155,22 @@ export class PostsValidator extends BaseValidator {
 /**
  * Função que valida um conteúdo
  */
-function validateContents(data: Array<any>) {
+function validateContents(contentData: any) {
     const validTypes = ['title', 'subtitle', 'topic', 'paragraph'];
 
-    for (const item of data) {
-        const { type, data } = item;
+    const { type, data, position } = contentData;
 
-        if (!validTypes.includes(type))
-            throw new ValidationError("Tipo de conteúdo inválido (os tipos aceitos são: title, subtitle, topic, paragraph)");
+    if (!validTypes.includes(type))
+        throw new ValidationError("Tipo de conteúdo inválido (os tipos aceitos são: title, subtitle, topic, paragraph)");
 
-        if (typeof data !== 'string')
-            throw new ValidationError("Dado do conteúdo deve ser uma string");
-    }
+    if (typeof data !== 'string')
+        throw new ValidationError("Dado do conteúdo deve ser uma string");
+
+    if (typeof position !== 'number')
+        throw new ValidationError("A posição deve ser um número");
     
-    return data;
+    
+    return contentData;
 }
 
 /**
@@ -186,14 +190,35 @@ async function validateTopic(data: number) {
 /**
  * Checa se os conteúdos a serem removidos são válidos
  */
-function validateRemoveContents(remove: Array<number>, post: Posts) {
-    const contentListId = post.contents.map(content => content.id);
+function validateRemoveContents(contentList: Array<Contents>) {
+    const contentListId = contentList.map(content => content.id);
 
-    for (const contentId of remove) {
-        if (!contentListId.includes(contentId))
-            throw new ValidationError("O conteúdo não está presente na postagem");
+    return function (removeId: any) {
+        if (!contentListId.includes(Number(removeId)))
+            throw new ValidationError("Remoção inválida");
+        
+        return removeId;
     }
-    
-    return remove;
 }
 
+
+/**
+ * Valida a posição dos conteúdos
+ */
+function validateContentPosition(contents: Array<Contents>) {
+    const contentsListId = contents.map(content => content.id);
+
+    return function(data: any) {
+        const { id, position } = data;
+
+        // Certifica que são números
+        if (typeof id !== "number" || typeof position !== "number")
+            throw new ValidationError("Dados inválidos");
+
+        // Certifica que o id existe
+        if (!contentsListId.includes(id))
+            throw new ValidationError("Conteúdo inexistente");
+
+        return data;    
+    }
+}

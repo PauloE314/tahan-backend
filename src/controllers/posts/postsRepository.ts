@@ -8,7 +8,7 @@ import { Topics } from "@models/Topics";
 
 interface ICreatePostInput {
     title: string,
-    contents: Array<{ type: TContentType, data: string }>,
+    contents: Array<{ type: TContentType, data: string, position?: number }>,
     academic_level: 'médio' | 'fundamental' | 'superior',
     topic: Topics,
     description: string,
@@ -17,10 +17,9 @@ interface ICreatePostInput {
 
 interface IUpdatePostInput {
     title?: string,
-    contents?: {
-        add?: Array<{ type: TContentType, data: string }>,
-        remove?: Array<number>
-    },
+    add?: Array<{ type: TContentType, data: string, position?: number }>,
+    remove?: Array<number>,
+    positions?: Array<{ id: number, position: number }>,
     academic_level?: 'médio' | 'fundamental' | 'superior',
     description?: any,
     post: Posts
@@ -142,6 +141,7 @@ export class PostsRepository extends BaseRepository<Posts> {
             const newContent = new Contents();
             newContent.data = content.data;
             newContent.type = content.type;
+            newContent.position = content.position || -1;
             return newContent;
         });
         post.academic_level = academic_level;
@@ -156,28 +156,46 @@ export class PostsRepository extends BaseRepository<Posts> {
     /**
      * Atualização de postagem
      */
-    async updatePost({ post, title, description, academic_level, contents }: IUpdatePostInput) {
+    async updatePost({ post, title, description, academic_level, add, remove, positions }: IUpdatePostInput) {
         post.title = title || post.title;
         post.description = description || post.description;
         post.academic_level = academic_level || post.academic_level;
 
+
+        // Seta as posições dos conteúdos
+        if (positions) {
+            // Resolve promises
+            Promise.all(post.contents.map(async content => {
+                const contentPosition = positions.find(p => p.id === content.id);
+                // Atualiza a posição
+                if (contentPosition) {
+                    content.position = contentPosition.position;
+                    await getRepository(Contents).save(content);
+                }
+                
+                return content;
+            }));
+        }
+
         // Adiciona novos conteúdos
-        if (contents.add) {
-            const newContents = contents.add.map(content => {
+        if (add) {
+            const newContents = add.map(content => {
+                console.log(content.type)
                 const newContent = new Contents();
                 newContent.data = content.data;
                 newContent.type = content.type;
+                newContent.position = content.position || -1;
                 return newContent;
             })
             post.contents = [...post.contents, ...newContents];
         }
         // Remove conteúdos
-        if (contents.remove) {
+        if (remove) {
             const remainContentList: Array<Contents> = [];
             const removeContentList: Array<Contents> = [];
 
             for (const content of post.contents) {
-                if (contents.remove.includes(content.id))
+                if (remove.includes(content.id))
                     removeContentList.push(content);
 
                 else

@@ -89,14 +89,16 @@ export class PostsController {
      */
     @APIRoute
     async update(request: APIRequest, response: Response, next: NextFunction) {
-        const { title, add, remove, academic_level, description } = request.body;
+        const { title, add, remove, academic_level, description, positions } = request.body;
         const author = request.user.info;
         const post = request.post;
 
         // Certifica que é o autor
         this.validator.isPostAuthor(post, author);
 
-        const validatedData = await this.validator.update({ title, add, remove, academic_level, description, author, post });
+        const validatedData = await this.validator.update({
+            title, add, remove, academic_level, description, post, positions
+        });
 
         const updatedPost = await this.repo.updatePost({ ...validatedData, post });
 

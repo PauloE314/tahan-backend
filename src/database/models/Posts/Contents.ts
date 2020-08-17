@@ -18,6 +18,9 @@ export class Contents {
 
     @Column()
     data: string;
+
+    @Column({ default: -1 })
+    position: number;
 }
 
 export type TContentType = 'title' | 'subtitle' | 'paragraph' | 'topic'; 
