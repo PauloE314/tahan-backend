@@ -90,10 +90,8 @@ export class PostsRepository extends BaseRepository<Posts> {
             };
         
         
-        // Aplica filtro e paginação
-        const serializedPostList = await this.filterAndPaginate(postsQueryBuilder, filterPaginateInput);
-        
-        return serializedPostList;
+        // Aplica filtro e paginação        
+        return await this.filterAndPaginate(postsQueryBuilder, filterPaginateInput)
     }
     
     /**
@@ -148,9 +146,7 @@ export class PostsRepository extends BaseRepository<Posts> {
         post.description = description;
         post.topic = topic;
 
-
-        const saved = await this.save(post);
-        return saved;
+        return await this.save(post)
     }
 
     /**
@@ -207,8 +203,7 @@ export class PostsRepository extends BaseRepository<Posts> {
         }
 
         // Salva a postagem
-        const saved = await this.save(post);
-        return saved;
+        return await this.save(post);
     }
 
     /**

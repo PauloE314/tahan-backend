@@ -31,9 +31,7 @@ export class PostCommentRepository extends BaseRepository<Comments> {
                 'author.id', 'author.username', 'author.image_url',
             ])
 
-        const comments = await commentQueryBuilder.getMany();
-
-        return comments;
+        return await commentQueryBuilder.getMany()
     }
 
 
@@ -50,9 +48,7 @@ export class PostCommentRepository extends BaseRepository<Comments> {
         if (reference)
             commentary.reference = reference;
 
-        const saved = await getRepository(Comments).save(commentary);
-
-        return saved;
+        return await getRepository(Comments).save(commentary)
     }
 
     /**

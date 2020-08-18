@@ -7,8 +7,7 @@ import { getSolicitation, getFriendship } from '@middlewares/index';
 
 const router = Router({ mergeParams: true });
 
-const validator = new FriendsValidator();
-const controller = new FriendsController(FriendsRepository, validator);
+const controller = new FriendsController();
 
 
 // Listagem de solicitações

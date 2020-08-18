@@ -1,4 +1,4 @@
-import { IFriendsValidator, IFriendsRepository } from './friendsTypes';
+import { IFriendsValidator } from './friendsTypes';
 import { APIRequest } from 'src/@types';
 import { Response, NextFunction } from 'express';
 import { getCustomRepository, getRepository } from 'typeorm';
@@ -14,12 +14,11 @@ import { codes } from '@config/server';
  * Controlador de ações para amigos
  */
 export class FriendsController {
-    userValidator = new UserValidator();
 
-    constructor(
-        private repository: new() => IFriendsRepository,
-        private validator: IFriendsValidator
-    ) { }
+    userValidator = new UserValidator();
+    validator = new FriendsValidator();
+    
+    get repo() { return getCustomRepository(FriendsRepository) }
 
     /**
      * **web: /friends/<sended | received | all> - GET**
@@ -166,10 +165,5 @@ export class FriendsController {
         await this.repo.deleteFriendship(friendship);
 
         return response.send({ message: 'Amizade desfeita com sucesso' });
-    }
-
-
-    get repo() {
-        return getCustomRepository(this.repository);
     }
 }

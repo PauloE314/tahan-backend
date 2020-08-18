@@ -3,7 +3,6 @@ import {  getCustomRepository } from 'typeorm';
 
 import { APIRequest } from 'src/@types';
 import { APIRoute } from 'src/utils';
-import { IUsersValidator } from './usersTypes';
 
 import configs, { codes } from '@config/server';
 import UserValidator from './usersValidator';

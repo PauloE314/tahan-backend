@@ -32,9 +32,7 @@ export class QuizCommentRepository extends BaseRepository<QuizComments> {
                 'author.id', 'author.username', 'author.image_url',
             ])
 
-        const comments = await commentQueryBuilder.getMany();
-
-        return comments;
+        return await commentQueryBuilder.getMany();
     }
 
 
@@ -51,9 +49,7 @@ export class QuizCommentRepository extends BaseRepository<QuizComments> {
         if (reference)
             commentary.reference = reference;
 
-        const saved = await this.save(commentary);
-
-        return saved;
+        return await this.save(commentary);
     }
 
     /**

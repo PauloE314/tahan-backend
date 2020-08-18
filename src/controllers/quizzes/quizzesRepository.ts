@@ -87,12 +87,8 @@ export class QuizzesRepository extends BaseRepository<Quizzes>  {
                 .groupBy('quiz.id')
                 .orderBy('likes_count', 'DESC');
 
-
-
         // Pega a paginação e filtro
-        const listQuizzes = await this.filterAndPaginate(quizListQueryBuilder, params);
-
-        return listQuizzes;
+        return await this.filterAndPaginate(quizListQueryBuilder, params);
     }
 
     /**

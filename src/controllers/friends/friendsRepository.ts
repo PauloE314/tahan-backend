@@ -1,12 +1,12 @@
 import { EntityRepository, getRepository } from "typeorm";
 import { Users } from "@models/User";
-import { BaseRepository } from "src/utils/bases";
+import { BaseRepository, IPaginatedData } from "src/utils/bases";
 import { Friendships } from "@models/friends/Friendships";
-import { IFriendsRepository } from "@controllers/friends/friendsTypes";
 import { Solicitations } from "@models/friends/Solicitations";
 
+
 @EntityRepository(Friendships)
-export class FriendsRepository extends BaseRepository<Friendships> implements IFriendsRepository {
+export class FriendsRepository extends BaseRepository<Friendships> {
 
     /**
      * Retorna as solicitações de amizade que envolvam o usuário passado como parâmetro.
@@ -60,14 +60,13 @@ export class FriendsRepository extends BaseRepository<Friendships> implements IF
     /**
      * Envia uma solicitação de amizade 
      */
-    async createSolicitation (sender: Users, receiver: Users): Promise<Solicitations> {
+    async createSolicitation (sender: Users, receiver: Users) {
         // Cria a solicitação
         const solicitation = new Solicitations();
         solicitation.sender = sender;
         solicitation.receiver = receiver;
-        const saved = await getRepository(Solicitations).save(solicitation);
 
-        return saved;
+        return await getRepository(Solicitations).save(solicitation)
     }
         
     /**
@@ -135,8 +134,7 @@ export class FriendsRepository extends BaseRepository<Friendships> implements IF
         friendship.user_1 = data[0];
         friendship.user_2 = data[1];
 
-        const saved = await this.save(friendship);
-        return saved;
+        return await this.save(friendship)
     }
 
     /**

@@ -1,4 +1,3 @@
-import { ITopicsController } from "./topicsTypes";
 import { APIRoute } from "src/utils";
 import { APIRequest } from "src/@types";
 import { Response } from "express";
@@ -8,7 +7,7 @@ import { Topics } from "@models/Topics";
 /**
  * Controlador de rotas dos tópicos da aplicação. Tópicos são divisões preestabelecidas (por meios de 'seeds'), por exemplo, matemática, português, etc.
  */
-export class TopicsController implements ITopicsController {
+export class TopicsController {
 
     /**
    * **web: /users/ - GET**
@@ -18,7 +17,6 @@ export class TopicsController implements ITopicsController {
    */
     @APIRoute
     async list(request: APIRequest, response: Response) {
-        const topics = await getRepository(Topics).find();
-        return response.send(topics);
+        return response.send(await getRepository(Topics).find());
     }
 }

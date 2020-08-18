@@ -1,4 +1,3 @@
-import { IFriendsValidator, IFriendsRepository } from './friendsTypes';
 import { Users } from '@models/User';
 import { Friendships } from '@models/friends/Friendships';
 import { getRepository } from 'typeorm';
@@ -7,7 +6,7 @@ import { Solicitations } from '@models/friends/Solicitations';
 import { BaseValidator } from 'src/utils/validators';
 
 
-export class FriendsValidator extends BaseValidator implements IFriendsValidator  {
+export class FriendsValidator extends BaseValidator {
 
     /**
      * Valida o envio de solicitação de amizade 
@@ -69,7 +68,7 @@ export class FriendsValidator extends BaseValidator implements IFriendsValidator
         
         return {
             solicitation,
-            action
+            action: < 'accept' | 'deny'>action
         };
     }
     
@@ -100,8 +99,8 @@ export class FriendsValidator extends BaseValidator implements IFriendsValidator
             this.RaiseError("Envie uma mensagem válido");
 
         return {
-            message
-        }
+            message: <string>message
+        };
     }
 
 

@@ -3,13 +3,12 @@ import { validateFields } from 'src/utils/validators';
 import { getRepository } from 'typeorm';
 import { get_google_user_data } from 'src/utils';
 import { BaseValidator } from 'src/utils/validators';
-import { IUsersValidator } from './usersTypes';
 
 
 /**
  * Classe de validação de rotas do usuário
  */
-export default class UserValidator extends BaseValidator implements IUsersValidator {
+export default class UserValidator extends BaseValidator {
 
     /**
      * **Validação de entrada na aplicação, tanto para login, quanto para criação de usuário.**

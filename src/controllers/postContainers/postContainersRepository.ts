@@ -47,6 +47,7 @@ export class PostContainersRepository extends BaseRepository<Containers> {
         container.author = user;
         container.posts = posts;
         container.name = name;
+        
         return await this.save(container);
     }
 

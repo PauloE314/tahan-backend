@@ -70,8 +70,7 @@ export class UsersRepository extends BaseRepository<Users> {
      * Cria um token para login (JWT)
      */
     createLoginToken(id: number, secret_key: string, expireTime: any) {
-        const login_token = jwt.sign({ id }, secret_key, { expiresIn: expireTime });
-        return login_token;
+        return jwt.sign({ id }, secret_key, { expiresIn: expireTime });
     }
 
     /**
@@ -105,9 +104,7 @@ export class UsersRepository extends BaseRepository<Users> {
         const post_containers = getRepository(Containers)
             .createQueryBuilder('container')
             .loadRelationIdAndMap('container.posts', 'container.posts')
-            .leftJoin('container.author', 'author')
-            // .select(['container', 'posts'])
-
+            .leftJoin('container.author', 'author');
 
         // Aplica filtros
         const serializedPostContainerList = await this.filterAndPaginate(post_containers, {
@@ -119,7 +116,7 @@ export class UsersRepository extends BaseRepository<Users> {
             }
         });
 
-        return serializedPostContainerList
+        return serializedPostContainerList;
     }
    
     async findUserQuizzes({ user, params, getPrivates }: IUserQuizzesInput) {
