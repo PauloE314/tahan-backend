@@ -1,6 +1,6 @@
 import { EntityRepository, getRepository } from "typeorm";
 import { Users } from "@models/User";
-import { BaseRepository, IPaginatedData } from "src/utils/bases";
+import { BaseRepository, IPaginatedData } from "src/utils/baseRepository";
 import { google_data } from "src/@types";
 import jwt from 'jsonwebtoken';
 import { Posts } from "@models/Posts/Posts";

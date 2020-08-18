@@ -1,17 +1,16 @@
-import { getCustomRepository, getRepository } from "typeorm";
-import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
-import { APIRoute } from "src/utils";
-import { codes } from "@config/server";
+import { getCustomRepository} from "typeorm";
+import { APIRequest } from "src/@types";
 
 import { PostsRepository } from "./postsRepository";
 import { PostCommentRepository } from "./postCommentRepository";
 import { PostsValidator } from "./postsValidator";
 import { PostCommentValidator } from "./postCommentValidator";
 
-/**
- * Controlador de rotas relacionadas aos posts da aplicação.
- */
+import { APIRoute } from "src/utils";
+import { codes } from "@config/index";
+
+
 export class PostsController {
 
     validator = new PostsValidator();

@@ -1,12 +1,12 @@
 import { getRepository } from "typeorm";
+import { BaseValidator, validateFields, ValidationError } from "src/utils/baseValidator";
+
 import { Posts } from "@models/Posts/Posts";
-import { BaseValidator, validateFields } from "src/utils/validators";
-import configs, { codes } from 'src/config/server';
-import { ValidationError } from "src/utils";
 import { Topics } from "@models/Topics";
 import { Users } from "@models/User";
-import { Comments } from "@models/Posts/Comments";
 import { TContentType, Contents } from "@models/Posts/Contents";
+
+import configs, { codes } from '@config/index';
 
 interface ICreatePostInput {
     title: any,
@@ -45,16 +45,20 @@ interface IUpdatePostOutput {
  * Validador dos posts.
  */
 export class PostsValidator extends BaseValidator {
+    rules = {
+        minTitleSize: configs.posts.minTitleSize
+    }
 
     /**
      * Valida os campos de criação de uma postagem
      */ 
     async create({ title, contents, academic_level, description, topic }: ICreatePostInput) {
-        const { min_title_size } = configs.posts;
+        const { minTitleSize } = this.rules;
+
         const response = await validateFields({
             title: {
                 data: title,
-                rules: check => check.isString().min(min_title_size)
+                rules: check => check.isString().min(minTitleSize)
             },
             academic_level: {
                 data: academic_level,
@@ -90,13 +94,13 @@ export class PostsValidator extends BaseValidator {
      * Valida os dados de update das postagens
      */
     async update({ post, title, academic_level, add, remove, description, positions }: IUpdatePostInput) {
-        const { min_title_size } = configs.posts;
+        const { minTitleSize } = this.rules;
         
         // Valida os campos
         const response = await validateFields({
             title: {
                 data: title,
-                rules: check => check.isString().min(min_title_size),
+                rules: check => check.isString().min(minTitleSize),
                 optional: true
             },
             academic_level: {
@@ -147,8 +151,6 @@ export class PostsValidator extends BaseValidator {
         if (post.author.id !== user.id) 
             throw new ValidationError("Essa rota só é válida para o autor da postagem", codes.PERMISSION_DENIED);
     }
-
-    
 }
 
 

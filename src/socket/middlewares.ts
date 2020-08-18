@@ -1,5 +1,5 @@
 import { auth_user } from "../utils/";
-import { Err } from '../utils/classes';
+import { Err } from '../utils/baseError';
 import { APISocket } from 'src/@types/socket';
 import { GameErrors, SocketEvents } from "@config/socket"
 import { Server } from "socket.io";

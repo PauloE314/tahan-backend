@@ -1,6 +1,7 @@
 import { EntityRepository, getRepository } from "typeorm";
+
 import { Users } from "@models/User";
-import { BaseRepository, IPaginatedData } from "src/utils/bases";
+import { BaseRepository } from "src/utils/baseRepository";
 import { Friendships } from "@models/friends/Friendships";
 import { Solicitations } from "@models/friends/Solicitations";
 

@@ -1,9 +1,10 @@
+import { getRepository } from 'typeorm';
+import { BaseValidator, ValidationError } from 'src/utils/baseValidator';
+
 import { Users } from '@models/User';
 import { Friendships } from '@models/friends/Friendships';
-import { getRepository } from 'typeorm';
-import { ValidationError } from 'src/utils';
 import { Solicitations } from '@models/friends/Solicitations';
-import { BaseValidator } from 'src/utils/validators';
+
 
 
 export class FriendsValidator extends BaseValidator {
@@ -96,7 +97,7 @@ export class FriendsValidator extends BaseValidator {
         const { message } = data;
         // Certifica que o texto é uma string
         if (typeof message !== 'string')
-            this.RaiseError("Envie uma mensagem válido");
+            this.RaiseError("Envie uma mensagem válida");
 
         return {
             message: <string>message

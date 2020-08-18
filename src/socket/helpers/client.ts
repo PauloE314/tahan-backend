@@ -3,7 +3,7 @@ import { APISocket } from "src/@types/socket";
 import { Users } from "@models/User";
 import { GameErrorModel, GameErrors, SocketEvents } from '@config/socket';
 import GameQuiz from './game';
-import { Err } from "src/utils/classes";
+import { Err } from "src/utils/baseError";
 
 
 interface ClientList {

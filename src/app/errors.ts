@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { APIRequest } from 'src/@types';
 import { ValidationError } from 'src/utils';
-import { codes } from '@config/server';
+import { codes } from '@config/index';
 
 
 

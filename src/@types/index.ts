@@ -29,13 +29,11 @@ export interface google_data {
 export interface APIRequest extends Request{
     user?: user_interface,
     google_data?: google_data,
-    topic?: Topics,
     post?: Posts,
     container?: Containers,
     quiz?: Quizzes,
     friendship?: Friendships,
-    solicitation?: Solicitations,
-    postComment?: Comments
+    solicitation?: Solicitations
 }
 
 export type IApiResponse = (request: APIRequest, response: Response, next?: NextFunction) => Response | Promise<Response>

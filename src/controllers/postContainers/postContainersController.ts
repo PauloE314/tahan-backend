@@ -1,12 +1,17 @@
+import { Response } from "express";
 import { getCustomRepository } from "typeorm";
 import { APIRequest } from "src/@types";
-import { Response } from "express";
 import { APIRoute } from "src/utils";
+
 import { PostContainersValidator } from "./postContainersValidator";
 import { PostContainersRepository } from "./postContainersRepository";
-import { IFilterAndPaginateInput } from "src/utils/bases";
-import { codes } from "@config/server";
+import { IFilterAndPaginateInput } from "src/utils/baseRepository";
 
+import { codes } from "@config/index";
+
+/**
+ * Controlador das rotas de containers para postagens
+ */
 export class PostContainersController {
 
     validator = new PostContainersValidator();

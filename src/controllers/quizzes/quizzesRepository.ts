@@ -1,19 +1,19 @@
-import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
-import { Quizzes } from "@models/quiz/Quizzes";
 import { EntityRepository, getCustomRepository, getConnection, getRepository } from "typeorm";
+
+import { BaseRepository, IFilterAndPaginateInput } from "src/utils/baseRepository";
+import { ValidationError } from "src/utils/baseValidator";
+
+import { Quizzes } from "@models/quiz/Quizzes";
 import { Alternatives } from "@models/quiz/Alternatives";
 import { Topics } from "@models/Topics";
 import { Questions } from "@models/quiz/Questions";
 import { Users } from "@models/User";
-import { ValidationError } from "src/utils";
-import bcrypt from 'bcrypt';
-import config from 'src/config/server';
 import { PlayerScore } from "@models/games/PlayerScore";
 import { GameHistoric } from "@models/games/GameHistoric";
-import { QuizComments } from "@models/quiz/QuizComments";
-import { Posts } from "@models/Posts/Posts";
 
 
+import bcrypt from 'bcrypt';
+import config from '@config/index';
 
 /**
  * Interfaces do repositório

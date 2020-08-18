@@ -8,8 +8,8 @@ import { QuizCommentsValidator } from "./quizCommentValidator";
 import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 import { APIRoute } from "src/utils";
-import { IFilterAndPaginateInput } from "src/utils/bases";
-import { codes } from "@config/server";
+import { IFilterAndPaginateInput } from "src/utils/baseRepository";
+import { codes } from "@config/index";
 import bcrypt from 'bcrypt';
 
 /**

@@ -1,8 +1,5 @@
-import { Repository, QueryBuilder, getCustomRepository, SelectQueryBuilder } from "typeorm";
-import { Users } from "@models/User";
-import { APIRequest } from "src/@types";
-import { Response, NextFunction, Router } from "express";
-import configs from '@config/server';
+import { Repository, SelectQueryBuilder } from "typeorm";
+import configs from '@config/index';
 
 
 export interface IPaginatedData<T> {
@@ -40,7 +37,7 @@ export class BaseRepository<T> extends Repository<T> {
     /**
      * Filtra os dados de um selectQueryBuilder
      */
-    filter <new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: IFilterInput): SelectQueryBuilder<new_T> {
+    filter <Tp>(queryBuilder: SelectQueryBuilder<Tp>, params: IFilterInput): SelectQueryBuilder<Tp> {
 
         const connectors = {
             equal: '=',
@@ -54,14 +51,16 @@ export class BaseRepository<T> extends Repository<T> {
             const data = params[fieldName];
             const getFromEntity = data.getFromEntity !== undefined? data.getFromEntity: true;
             const name = data.name || fieldName;
-            const connector = connectors[data.operator]
+            const connector = connectors[data.operator];
 
+            // Certifica que o dado existe
             if (data.data !== undefined) {
-                // Primeiro lado da equação
+                
                 const firstEqualSide = getFromEntity ? `${entity}.${fieldName}`: `${fieldName}`;
 
                 const validData = connector === 'like' ? `%${data.data}%`: data.data;
 
+                // Realiza o WHERE
                 queryBuilder.andWhere(`${firstEqualSide} ${connector} :${name}`, { [name]: validData });
             }
         }
@@ -71,13 +70,13 @@ export class BaseRepository<T> extends Repository<T> {
     /**
      * Aplica a paginação nos dados de um selectQueryBuilder.
      */
-    async paginate<new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: IPaginateInput): Promise<IPaginatedData<new_T>> {
+    async paginate<Tp>(queryBuilder: SelectQueryBuilder<Tp>, params: IPaginateInput): Promise<IPaginatedData<Tp>> {
         // Dados de entrada
         const request_page = Number(params.page);
         const request_count = Number(params.count);
         // Limpa dados
         const page = Math.max((!isNaN(request_page) ? request_page : 1), 1);
-        const count = Math.max((!isNaN(request_count) ? request_count : configs.default_pagination), 1);
+        const count = Math.max((!isNaN(request_count) ? request_count : configs.defaultPagination), 1);
         // Aplica paginação
         queryBuilder
             .skip((page - 1) * count)
@@ -94,13 +93,12 @@ export class BaseRepository<T> extends Repository<T> {
             found,
             data
         }
-
     }
 
     /**
      * Aplica a paginação e o filtro em seleções no banco de dados
      */
-    async filterAndPaginate <new_T>(queryBuilder: SelectQueryBuilder<new_T>, params: IFilterAndPaginateInput): Promise<IPaginatedData<new_T>> {
+    async filterAndPaginate <Tp>(queryBuilder: SelectQueryBuilder<Tp>, params: IFilterAndPaginateInput): Promise<IPaginatedData<Tp>> {
         // Separa os parâmetros
         const { filter, ...paginationParams } = params;
         // Aplica filtro

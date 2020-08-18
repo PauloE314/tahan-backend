@@ -1,6 +1,7 @@
-import { BaseRepository } from "src/utils/bases";
-import { Containers } from "@models/Posts/Containers";
 import { EntityRepository } from "typeorm";
+import { BaseRepository } from "src/utils/baseRepository";
+
+import { Containers } from "@models/Posts/Containers";
 import { Users } from "@models/User";
 import { Posts } from "@models/Posts/Posts";
 

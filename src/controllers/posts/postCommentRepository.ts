@@ -1,6 +1,7 @@
-import { Comments } from "@models/Posts/Comments";
 import { getRepository, EntityRepository } from "typeorm";
-import { BaseRepository } from "src/utils/bases";
+import { BaseRepository } from "src/utils/baseRepository";
+
+import { Comments } from "@models/Posts/Comments";
 import { Posts } from "@models/Posts/Posts";
 import { Users } from "@models/User";
 

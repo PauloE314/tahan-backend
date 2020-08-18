@@ -13,8 +13,10 @@ routes.get('/', controller.list);
 // Criação
 routes.post('/', auth_require, is_teacher, controller.create);
 
-// Leitura
+// Leitura de quizzes públicos
 routes.get('/public/:quizId([0-9]+)', auth_require, getQuiz(), controller.readPublic);
+
+// Leitura de quizzes privados
 routes.post('/private/:quizId([0-9]+)', auth_require, getQuiz(), controller.readPrivate);
 
 // Atualização de quiz

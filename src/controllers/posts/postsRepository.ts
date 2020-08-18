@@ -1,6 +1,7 @@
-import { BaseRepository, IFilterAndPaginateInput } from "src/utils/bases";
-import { Posts } from "@models/Posts/Posts";
 import { EntityRepository, getRepository } from "typeorm";
+import { BaseRepository, IFilterAndPaginateInput } from "src/utils/baseRepository";
+
+import { Posts } from "@models/Posts/Posts";
 import { TContentType, Contents } from "@models/Posts/Contents";
 import { Users } from "@models/User";
 import { Topics } from "@models/Topics";

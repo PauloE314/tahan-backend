@@ -1,9 +1,10 @@
-import { QuizComments } from "@models/quiz/QuizComments";
 import { getRepository } from "typeorm";
-import { codes } from "@config/server";
+import { validateFields, BaseValidator, ValidationError } from "src/utils/baseValidator";
+
 import { Users } from "@models/User";
-import { validateFields, BaseValidator } from "src/utils/validators";
-import { ValidationError } from "src/utils";
+import { QuizComments } from "@models/quiz/QuizComments";
+
+import { codes } from "@config/index";
 
 /**
  * Validador de comentários de quizzes
@@ -37,6 +38,7 @@ export class QuizCommentsValidator extends BaseValidator {
      * Certifica que um usuário é o autor de um comentário
      */
     isQuizCommentAuthor({ user, quizComment }: { user: Users, quizComment: QuizComments }) {
+
         if (quizComment.author.id !== user.id)
             this.RaiseError(
                 "Essa rota só é válida para o autor do comentário",
@@ -52,11 +54,13 @@ export class QuizCommentsValidator extends BaseValidator {
     async quizCommentExists({ id }: { id: number }) {
         const quizCommentRepo = getRepository(QuizComments);
 
+        // Carrega comentário
         const comment = quizCommentRepo.findOne({
             relations: ['author'],
             where: { id }
         });
 
+        // Verifica se ele existe
         if (!comment)
             this.RaiseError("Comentário não encontrado", codes.NOT_FOUND);
 

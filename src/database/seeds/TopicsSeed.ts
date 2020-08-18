@@ -1,6 +1,5 @@
 import { getRepository } from "typeorm"
 import { Topics } from '@models/Topics';
-import { Seed } from 'src/utils/classes';
 
 interface topic {
     name: string
@@ -18,7 +17,7 @@ const topics: topic[] = [
     }
 ]
 
-export default class TopicsSeed extends Seed {
+export default class TopicsSeed {
     public async execute() {
         const topicRepo = getRepository(Topics);
 

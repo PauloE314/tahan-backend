@@ -11,23 +11,23 @@ const controller = new FriendsController();
 
 
 // Listagem de solicitações
-router.get('/solicitations/', auth_require, controller.listSolicitations.bind(controller));
+router.get('/solicitations/', auth_require, controller.listSolicitations);
+
+// Envio de solicitação
+router.post('/solicitations/', auth_require, controller.sendSolicitation);
+
+// Resposta de solicitação
+router.post('/solicitations/:solicitationId([0-9]+)/answer/', auth_require, getSolicitation(), controller.answerSolicitation);
+
+// Delete de solicitação
+router.delete('/solicitations/:solicitationId([0-9]+)', auth_require, getSolicitation(), controller.deleteSolicitation);
 
 
-router.post('/solicitations/', auth_require, controller.sendSolicitation.bind(controller));
+// Listagem de amigos
+router.get('/', auth_require, controller.listFriends);
 
-router.post('/solicitations/:solicitationId([0-9]+)/answer/', auth_require, getSolicitation, controller.answerSolicitation.bind(controller));
-
-router.delete('/solicitations/:solicitationId([0-9]+)', auth_require, getSolicitation, controller.deleteSolicitation.bind(controller));
-
-
-
-// Amigos
-router.get('/', auth_require, controller.listFriends.bind(controller));
-
-// router.get('/:friendshipId([0-9]+)', auth_require, getFriendship, controller.readFriendship.bind(controller))
-
-router.delete('/:friendshipId([0-9]+)', auth_require, getFriendship, controller.deleteFriendship.bind(controller))
+// Delete de amizade
+router.delete('/:friendshipId([0-9]+)', auth_require, getFriendship, controller.deleteFriendship)
 
 
 export default router;

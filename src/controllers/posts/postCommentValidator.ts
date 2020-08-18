@@ -1,9 +1,10 @@
-import { BaseValidator, validateFields } from "src/utils/validators";
+import { getRepository } from "typeorm";
+import { BaseValidator, validateFields, ValidationError } from "src/utils/baseValidator";
+
 import { Users } from "@models/User";
 import { Comments } from "@models/Posts/Comments";
-import { codes } from "@config/server";
-import { getRepository } from "typeorm";
-import { ValidationError } from "src/utils";
+
+import { codes } from "@config/index";
 
 export class PostCommentValidator extends BaseValidator {
 

@@ -1,8 +1,9 @@
+import { EntityRepository } from "typeorm";
+import { BaseRepository } from "src/utils/baseRepository";
+
 import { QuizComments } from "@models/quiz/QuizComments";
 import { Quizzes } from "@models/quiz/Quizzes";
 import { Users } from "@models/User";
-import { EntityRepository } from "typeorm";
-import { BaseRepository } from "src/utils/bases";
 
 interface ICreateQuizCommentInput {
     author: Users,

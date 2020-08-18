@@ -1,14 +1,14 @@
 import { Users } from '@models/User';
-import { validateFields } from 'src/utils/validators';
+import { validateFields } from 'src/utils/baseValidator';
 import { getRepository } from 'typeorm';
-import { get_google_user_data } from 'src/utils';
-import { BaseValidator } from 'src/utils/validators';
+import { getGoogleUserData } from 'src/utils';
+import { BaseValidator } from 'src/utils/baseValidator';
 
 
 /**
  * Classe de validação de rotas do usuário
  */
-export default class UserValidator extends BaseValidator {
+export class UserValidator extends BaseValidator {
 
     /**
      * **Validação de entrada na aplicação, tanto para login, quanto para criação de usuário.**
@@ -18,7 +18,7 @@ export default class UserValidator extends BaseValidator {
     public async signIn (access_token: any, occupation: any) {
         
         // Pega os dados do google
-        const google_data = await get_google_user_data(access_token);
+        const google_data = await getGoogleUserData(access_token);
 
         // Certifica que ele existe
         if (!google_data)

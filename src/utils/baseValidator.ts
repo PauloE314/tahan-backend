@@ -1,117 +1,27 @@
 import { APIRequest } from "../@types";
-import { Response, NextFunction, response } from "express";
-import { ValidationError, auth_user } from ".";
+import { auth_user } from ".";
+import { codes } from "@config/index";
 
 
-
-interface validation_errors {
-    name: string,
-    message: any
-}
-
-type method = (data: any, options: any) => Promise<any> | any;
-
-interface method_list {
-    [name: string]: method
-}
 
 /**
- * Validador de rotas
+ * Erro de validação
  */
-export class Validator {
-    public errors: Array<validation_errors>;
-    private methods: method_list;
-    
+export class ValidationError extends Error {
+    name = 'ValidationError';
+    code = codes.BAD_REQUEST;
+    message: any;
 
-    constructor(methods?: method_list) {
-        const custom_methods = methods ? methods : {};
-        // Salva métodos do usuário e predefinidos
-        this.methods = { ...custom_methods, is_array, is_string, is_object, is_number };
-        // Zera os erros
-        this.errors = [];
-    }
-
-    /**
-     * Retorna se tais campos são são válidos 
-     */
-    public are_all_valid(input: Array<string>) {
-        for (const field of input) {
-            if (this.errors[field] !== undefined)
-                return false;
-        }
-        return true
-    }
-
-    /**
-     * Valida o campo passado como parâmetro
-     */
-    public async validate(input: {[name: string]: any}, methods: Array<method>, options?: any) {
-        // Pega os dados do objeto
-        const op = options ? options : { optional: false, save: true };
-        const name = Object.keys(input)[0];
-        const data = input[name];
-        const save = op.save !== false;
-
-        // Checa se o dado é opcional
-        if (data == undefined)
-            if (op.optional)
-                return {
-                    is_valid: true,
-                    data: null,
-                    errors: null
-                }
-
-        // Testa o dado em cada validator
-        for(const method of methods) {
-
-            // Executa o método
-            const response = await method(data, options);
-
-            // Lida com os erros
-            if (response !== null && response !== undefined) {
-                const err = { name, message: response };
-                // Salva
-                if (save)
-                    this.errors.push(err);
-
-                // Retorna resposta adequada
-                return {
-                    is_valid: false,
-                    data,
-                    error: err
-                }
-            }
-        }
-        return {
-            is_valid: true,
-            data
-        };
-    }
-
-    /**
-     * Retorna a resposta para o usuário
-     */
-    public resolve(request: APIRequest, response: Response, next: NextFunction, status_code?: number) {
-        const code = status_code ? status_code : 400;
-        const returning_errors = {};
-        // Checa se há um erro
-        for (const error of this.errors) {
-            if (error)
-                returning_errors[error.name] = error.message;
-        }
-        // Retorna os errors
-        if (Object.keys(returning_errors).length)
-            return response.status(code).send({
-                message: returning_errors
-            });
-        // Retorna para a próxima
-        return next();
+    constructor(message: any, code?: number) {
+        super();
+        this.message = message;
+        if (code)
+            this.code = code;
     }
 }
 
-
 /**
- * Validador de elementos. Permite validar campos de forma dinâmica
+ * Validador de elementos. Permite validar campos de forma dinâmica.
  */
 export class ElementValidator {
     rules: Array<IRule> = [];
@@ -360,7 +270,6 @@ export class ElementValidator {
 }
 
 
-type IRule = (data: any, options?: any) => string | number | Array<any> | Object | null | boolean;
 
 interface IValidatorInput {
     [name: string]: {
@@ -373,10 +282,11 @@ interface IValidatorInput {
 type IValidatedOutput<T> = Promise<{
     [name in keyof T]: any
 }>
+
+type IRule = (data: any, options?: any) => string | number | Array<any> | Object | null | boolean;
 /**
  * Função que valida os campos passados como parâmetro. Caso ocorra alguma incongruência, o erro ValidationError é ativado. É possível criar campos customizados, mas em caso de erro, é necessário ativar um ValidationError também.
  */
-// Func<T>(input: IInput & T): IOutput<T>
 export async function validateFields <T>(data: IValidatorInput & T): IValidatedOutput<T> {
     const errors: any = {};
     const response: any  = {};
@@ -430,59 +340,6 @@ export async function validateFields <T>(data: IValidatorInput & T): IValidatedO
 }
 
 
-
-
-/**
- * Validator simples que checa se um elemento é uma string
- */
-export async function is_string (data: any, options: any) {
-    if (data == undefined)
-        return "Esse dado é obrigatório";
-        
-    if (typeof data !== 'string' && !(data instanceof String)) {
-        return `Esse formato de dado não é válido (esperado: string, obtido: ${typeof data})`;
-    }
-}
-
-/**
- * Validator simples que checa se um elemento é um array
- */
-export async function is_array (data: any, options: any) {
-    if (data == undefined)
-        return "Esse dado é obrigatório";
-
-    if (!Array.isArray(data)) {
-        return `Esse formato de dado não é válido (esperado: array, obtido: ${typeof data})`;
-    }
-}
-
-/**
- * Validator simples que checa se um elemento é um objeto
- */
-export async function is_object (data: any, options: any) {
-    if (data == undefined)
-        return "Esse dado é obrigatório";
-
-    if (Array.isArray(data) || (typeof data !== 'object' && !(data instanceof Object))) {
-        return `Esse formato de dado não é válido (esperado: object, obtido: ${typeof data})`;
-    }
-
-}
-
-
-/**
- * Validator simples que checa se um elemento é um número
- */
-export async function is_number (data: any, options: any) {
-    if (data == undefined)
-        return "Esse dado é obrigatório";
-    
-    if (typeof data !== 'number' && !(data instanceof Number)) {
-        return `Esse formato de dado não é válido (esperado: number, obtido: ${typeof data})`;
-    }
-}
-
-
 /**
  * Classe base para validators
  */
@@ -495,7 +352,9 @@ export class BaseValidator {
         throw new ValidationError(data, code);
     }
 
-    // Autenticação necessária
+    /**
+     * Método que obriga a validação de autenticação
+     */
     async authRequire(request: APIRequest) {
         const token = request.headers.authorization;
         const valid_error_names = ['TokenExpiredError', "JsonWebTokenError", "Error"];

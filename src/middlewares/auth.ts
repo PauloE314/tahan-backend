@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import { auth_user } from 'src/utils';
 import { APIRequest } from "src/@types";
-import { codes } from "@config/server";
+import { codes } from "@config/index";
 
 
 /*

@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from 'path';
 
-import { Seed } from 'src/utils/classes';
 import { createConnection } from 'typeorm';
 
 const argv = process.argv;
@@ -50,9 +49,7 @@ async function main () {
 async function createSeed(name: string) {
     const seedName = name + 'Seed.ts';
     const seedPath = path.resolve('src', 'database', 'seeds', seedName)
-    const data = `import { Seed } from 'src/@types/global'
-
-export default class ${name + 'Seed'} extends Seed {
+    const data = `export default class ${name + 'Seed'} {
     public async execute() {
 
     }
@@ -151,13 +148,8 @@ async function executeSeed(filename: string): Promise<void | string[]> {
                 ERROR(`A exportação 'default' do módulo '${filename}' não existe`, false)
                 errors.push(filename)
             }
-
-            if (!(seed_default.prototype instanceof Seed)) {
-                ERROR(`A exportação 'default' do módulo '${filename}' não herda a classe Seed`, false);
-                errors.push(filename)
-            }
             else {
-                const seed: Seed = new seed_default();
+                const seed: any = new seed_default();
                 RUNNING(filename + colors.bold + colors.blue);
                 await seed.execute();
                 console.log(colors.default)

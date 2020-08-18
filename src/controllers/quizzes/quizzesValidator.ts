@@ -1,11 +1,10 @@
-import { BaseValidator, validateFields } from "src/utils/validators";
+import { BaseValidator, validateFields } from "src/utils/baseValidator";
 import { Quizzes } from "@models/quiz/Quizzes";
 import { getRepository } from "typeorm";
-import { ValidationError } from "src/utils";
-import config, { codes } from "src/config/server";
+import { ValidationError } from "src/utils/baseValidator";
+import config from "@config/index";
 import { Topics } from "@models/Topics";
 import { Users } from "@models/User";
-import { QuizComments } from "@models/quiz/QuizComments";
 
 /**
  * Interfaces de validação
@@ -54,9 +53,9 @@ interface IQuizAnswerInput {
 export class QuizzesValidator extends BaseValidator {
     // Regras estáticas do validator
     rules = {
-        minNameSize: config.quizzes.min_name_size,
-        minPassSize: config.quizzes.min_name_size,
-        minQuestSize: config.quizzes.min_questions
+        minNameSize: config.quizzes.minNameSize,
+        minPassSize: config.quizzes.minPasswordSize,
+        minQuestSize: config.quizzes.minQuestions
     };
 
     async createValidation({ name, mode, password, topic, questions }: ICreateQuizzesInput): IValidQuizOutput {
@@ -242,6 +241,12 @@ type ICreateQuestionsInput = Array<{
  * Validator de questões dos quizzes
  */
 class QuestionValidator extends BaseValidator {
+    rules = {
+        minAlt: config.quizzes.minAlternatives,
+        maxAlt: config.quizzes.maxAlternatives,
+        maxQuest: config.quizzes.maxQuestions,
+        minQuest: config.quizzes.minQuestions
+    }
 
     /**
      * Valida a criação de questões
@@ -249,12 +254,7 @@ class QuestionValidator extends BaseValidator {
     createValidation(validateSize?: boolean) {
         return function (input: ICreateQuestionsInput): IValidQuestionsOutput {
             const response = [];
-            const {
-                min_alternatives: minAlt,
-                max_alternatives: maxAlt,
-                min_questions: minQuest,
-                max_questions: maxQuest
-            } = config.quizzes;
+            const { minAlt, maxAlt, minQuest, maxQuest } = this.rules;
 
             const validateQuestSize = validateSize !== undefined ? validateSize : true; 
 

@@ -1,7 +1,7 @@
 import { createConnection } from 'typeorm';
 
 import app from './app/app';
-import configs from './config/server';
+import configs from './config/index';
 
 const { port } = configs;
 

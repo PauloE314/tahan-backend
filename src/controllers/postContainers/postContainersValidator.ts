@@ -1,11 +1,13 @@
-import { BaseValidator, validateFields } from "src/utils/validators";
+import { getRepository } from "typeorm";
+import { BaseValidator, validateFields, ValidationError } from "src/utils/baseValidator";
+
 import { Users } from "@models/User";
 import { Containers } from "@models/Posts/Containers";
-import { codes } from "@config/server";
-import { getRepository } from "typeorm";
 import { Posts } from "@models/Posts/Posts";
-import config from "src/config/server";
-import { ValidationError } from "src/utils";
+
+import config, { codes } from "@config/index";
+
+
 
 interface ICreatePostContainerInput {
     name: any,
@@ -34,7 +36,7 @@ type IUpdatePostContainerOutput = Promise<{
  */
 export class PostContainersValidator extends BaseValidator {
     rules = {
-        minNameSize: config.post_containers.min_name_size
+        minNameSize: config.postContainers.minNameSize
     }
 
     /**

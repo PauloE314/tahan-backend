@@ -1,9 +1,7 @@
 import { Router } from 'express';
-import { getPost, getPostComment } from '@middlewares/index';
+import { getPost } from '@middlewares/index';
 import { auth_require, is_teacher } from "@middlewares/auth"
 import { PostsController } from '@controllers/posts/postsController';
-import { PostsValidator } from '@controllers/posts/postsValidator';
-import { PostsRepository } from '@controllers/posts/postsRepository';
 
 
 const controller = new PostsController();
@@ -11,66 +9,32 @@ const routes = Router({ mergeParams: true });
 
 
 // Leitura de postagens
-routes.get(
-    '/',
-    controller.list.bind(controller)
-);
+routes.get('/', controller.list);
 
-routes.get(
-    '/:id([0-9]+)',
-    getPost('long'),
-    controller.read.bind(controller)
-);
+// Leitura de postagem
+routes.get('/:postId([0-9]+)', getPost('long'), controller.read);
 
-// Criação
-routes.post(
-    '/',
-    auth_require, is_teacher,
-    controller.create.bind(controller)
-);
+// Criação de postagens
+routes.post('/', auth_require, is_teacher, controller.create.bind(controller));
 
-// Update
-routes.put(
-    '/:id([0-9]+)/',
-    auth_require, is_teacher, getPost('medium'),
-    controller.update.bind(controller)
-);
+// Update de postagens
+routes.put('/:postId([0-9]+)/',  auth_require, is_teacher, getPost('medium'), controller.update);
 
-// Delete
-routes.delete(
-    '/:id([0-9]+)/',
-    auth_require, is_teacher, getPost('short'),
-    controller.delete.bind(controller)
-);
+// Delete de postagens
+routes.delete('/:postId([0-9]+)/', auth_require, is_teacher, getPost('short'), controller.delete);
 
 // Likes
-routes.post(
-    '/:id([0-9]+)/like',
-    auth_require, getPost('long'),
-    controller.like.bind(controller)
-)
+routes.post('/:postId([0-9]+)/like', auth_require, getPost('long'), controller.like);
 
-// Comentários
-routes.get(
-    '/:id([0-9]+)/comments',
-    auth_require, getPost('short'),
-    controller.listComments.bind(controller)
-    );
-    
-routes.post(
-    '/:id([0-9]+)/comments',
-    auth_require, getPost('short'),
-    controller.createComments.bind(controller)
-)   
+// Listagem de comentários
+routes.get('/:postId([0-9]+)/comments', auth_require, getPost('short'), controller.listComments);
 
-routes.delete(
-    '/comments/:postCommentId([0-9]+)',
-    auth_require,
-    controller.deleteComment
-)
+// Criação de comentários
+routes.post('/:postId([0-9]+)/comments', auth_require, getPost('short'), controller.createComments);
+
+// Delete de comentários
+routes.delete('/comments/:postCommentId([0-9]+)', auth_require, controller.deleteComment)
 
 
-// Criar
-// routes.post('/', controller.create);
 
 export default routes;

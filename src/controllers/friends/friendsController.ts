@@ -1,13 +1,13 @@
-import { IFriendsValidator } from './friendsTypes';
-import { APIRequest } from 'src/@types';
 import { Response, NextFunction } from 'express';
-import { getCustomRepository, getRepository } from 'typeorm';
+import { getCustomRepository } from 'typeorm';
+import { APIRequest } from 'src/@types';
 import { APIRoute } from 'src/utils';
-import UserValidator from '@controllers/users/usersValidator';
+
+import { UserValidator } from '@controllers/users/usersValidator';
 import { FriendsRepository } from './friendsRepository';
 import { FriendsValidator } from './friendsValidator';
-import { Solicitations } from '@models/friends/Solicitations';
-import { codes } from '@config/server';
+
+import { codes } from '@config/index';
 
 
 /**

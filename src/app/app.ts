@@ -5,7 +5,7 @@ import http, { Server } from 'http';
 import router from './router';
 import errorHandler from './errors';
 import useSocket from "../socket";
-import {getUser} from '@middlewares/index';
+import { getUser } from '@middlewares/index';
 
 import "reflect-metadata";
 import socket, { Server as socketServer } from 'socket.io';
@@ -39,7 +39,7 @@ class App {
         this.app.use(express.json());
         this.app.use(helmet());
         this.app.use(cors());
-        this.app.use(getUser);
+        this.app.use(getUser());
     }
 
     private routes() {

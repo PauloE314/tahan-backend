@@ -4,14 +4,15 @@ import {  getCustomRepository } from 'typeorm';
 import { APIRequest } from 'src/@types';
 import { APIRoute } from 'src/utils';
 
-import configs, { codes } from '@config/server';
-import UserValidator from './usersValidator';
+import configs, { codes } from '@config/index';
+import { UserValidator } from './usersValidator';
 import { UsersRepository } from './UsersRepository';
 
 
 export default class UserController {
+  
   validator = new UserValidator();
-  repository = UsersRepository;
+  get repo() { return getCustomRepository(UsersRepository) }
 
   /**
    * **web: /users/ - GET**
@@ -38,13 +39,13 @@ export default class UserController {
    */
   @APIRoute
   async signIn (request: APIRequest, response: Response, next: NextFunction) {
-    const { secret_key, jwtTime } = configs;
+    const { secretKey, jwtTime } = configs.security;
     const { access_token, occupation } = request.body;
 
     const validatedData = await this.validator.signIn(access_token, occupation);
 
     const user = await this.repo.createOrUpdate(validatedData.google_data, occupation);
-    const loginToken = this.repo.createLoginToken(user.id, secret_key, jwtTime);
+    const loginToken = this.repo.createLoginToken(user.id, secretKey, jwtTime);
 
     return response.status(codes.CREATED).send({ user, login_token: loginToken });
   }
@@ -56,10 +57,10 @@ export default class UserController {
    */
   @APIRoute
   async refresh(request: APIRequest, response: Response) {
-    const { secret_key, jwtTime } = configs;
+    const { secretKey, jwtTime } = configs.security;
     const { id } = request.user.info;
 
-    const newToken = this.repo.createLoginToken(id, secret_key, jwtTime);
+    const newToken = this.repo.createLoginToken(id, secretKey, jwtTime);
 
     return response.send({ login_token: newToken });
   }
@@ -171,9 +172,5 @@ export default class UserController {
     await this.repo.deleteUser(request.user.info);
 
     return response.send({ message: 'Usuário removido com sucesso' });
-  }
-  
-  get repo() {
-    return getCustomRepository(this.repository);
   }
 }

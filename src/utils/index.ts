@@ -4,30 +4,32 @@ import jwt from 'jsonwebtoken';
 import { google_data } from "src/@types"
 
 import { APIRequest, user_interface } from "src/@types";
-import configs, { codes } from '@config/server';
+import configs from '@config/index';
 import { Users } from '@models/User';
-import { getRepository, QueryBuilder, SelectQueryBuilder } from "typeorm";
-import { Quizzes } from "@models/quiz/Quizzes";
-import { Questions } from "@models/quiz/Questions";
-import { print } from "util";
-import { type } from "os";
-import { equal } from "assert";
+import { getRepository } from "typeorm";
 
 
-interface jwt_decoded {
+
+interface jwtDecoded {
     id: number;
     iat: number;
     exp: number;
+}
+
+interface IAuthUserInput {
+    token: string,
+    raiseError: boolean,
+    bearer?: boolean
 }
 
 
 /**
  * Autentica um usuário
  */
-export async function auth_user(input: { token: string, raiseError: boolean, bearer?: boolean}) : Promise<user_interface | void> {
+export async function auth_user(input: IAuthUserInput) : Promise<user_interface | void> {
     const { bearer, raiseError, token } = input;
 
-    const { secret_key } = configs;
+    const { secretKey } = configs.security;
     // Checa se existe um header de autenticação
     if (!token)
         if (raiseError)
@@ -37,32 +39,33 @@ export async function auth_user(input: { token: string, raiseError: boolean, bea
 
     // Checa formatação do Bearer token
     if (bearer !== false) {
-        const splited_header = token.split(' ');
+        const authHeaderList = token.split(' ');
         // Checa se ele está bem formatado
-        if (splited_header.length != 2 || splited_header[0] != "Bearer")
-            throw new Error('Header malformatado - uso: "Bearer <token>"');
+        if (authHeaderList.length != 2 || authHeaderList[0] != "Bearer")
+            throw new Error('Header mal-formatado - uso: "Bearer <token>"');
     }
 
-    const jwt_token = bearer !== false ? token.split(' ')[1] : token;
+    const jwtToken = bearer !== false ? token.split(' ')[1] : token;
 
     // Checa se o token está válido
     try{
-        const user_jwt_data = (<jwt_decoded>jwt.verify(jwt_token, secret_key));
-        // retorna o dado
-        const userRepo = getRepository(Users);
-        const user = await userRepo.findOne(user_jwt_data.id);
+        const userJwtToken = (<jwtDecoded>jwt.verify(jwtToken, secretKey));
+
+        // Carrega usuário
+        const user = await getRepository(Users).findOne(userJwtToken.id);
         
         // Caso o usuário exista, retorna seus dados
         if (user)
             return {
                 info: user,
                 date: {
-                    expires: String(new Date(user_jwt_data.exp *1000)),
-                    starts: String(new Date(user_jwt_data.iat *1000))
+                    expires: String(new Date(userJwtToken.exp *1000)),
+                    starts: String(new Date(userJwtToken.iat *1000))
                 }
             }
+
         // Caso não, retorna erro
-        throw new Error('O usuário não existe mais')
+        throw new Error('O usuário não existe mais');
     }
     // Lida com as exceptions do código
     catch(err) {
@@ -84,7 +87,7 @@ export async function auth_user(input: { token: string, raiseError: boolean, bea
 /**
  * Pega as informações do usuário dado um access token. Caso o toke de acesso seja inválido, retorna null ou erro
  */
-export async function get_google_user_data(access_token: string, options?: { raise: boolean }) : Promise<google_data|null>{
+export async function getGoogleUserData(access_token: string, options?: { raise: boolean }) : Promise<google_data|null>{
     const raise_error = options? options.raise : false;
     const url = "https://www.googleapis.com/oauth2/v1/userinfo?&access_token=";
     try {
@@ -106,11 +109,6 @@ export async function get_google_user_data(access_token: string, options?: { rai
     }
 }
 
-interface GetQuizResponse {
-    returning_question: Questions,
-    question: Questions
-}
-    
 
 // Executa um método um dado número de vezes
 export async function count_runner ( data: { times: number, execute?: (counter: number, stopTimmer: () => void) => any, on_time_over?: () => any }) {
@@ -133,6 +131,8 @@ export async function count_runner ( data: { times: number, execute?: (counter: 
     const stopTimmer = () => clearInterval(timmer);
 }
 
+
+
 // Gera uma string aleatória
 export function get_random_value(length: number, list?: Array<string>) {
     let result = '';
@@ -147,6 +147,7 @@ export function get_random_value(length: number, list?: Array<string>) {
     
     return result;
 }
+
 
 export function random_array(array: Array<any>) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -189,74 +190,3 @@ export function APIRoute (target: any, key:any, descriptor?: PropertyDescriptor)
 }
 
 
-
-
-
-
-/**
- * Função que automaticamente aplica paginação
- */
-export async function paginate<T>(query_builder: SelectQueryBuilder<T>, request: APIRequest) {
-    // Dados de entrada
-    const request_page = Number(request.query.page);
-    const request_count = Number(request.query.count);
-    // Limpa dados
-    const page = Math.max((!isNaN(request_page) ? request_page : 1), 1);
-    const count = Math.max((!isNaN(request_count) ? request_count : configs.default_pagination), 1);
-    // Aplica paginação
-    query_builder
-        .skip((page - 1) * count)
-        .take(count)
-    // Pega os dados
-    const [data, found] = await query_builder.getManyAndCount();
-        
-    return {
-        page: {
-            current: page,
-            total: Math.ceil(found / count)
-        },
-        count,
-        found,
-        data
-    }
-}
-
-
-/**
- * Função que aplica filtro. Cada parâmetro de entrada pode especificado o nome
- */
-export function filter<T>(query_builder: SelectQueryBuilder<T>, params: { [name: string]: { like?: any, equal?: any, name?: string } }) {
-    // Seta a entidade
-    const entity = query_builder.alias;
-
-    for(const field in params) {
-        const data = params[field];
-        // Certifica que o dado existe
-        const name = params[field].name ? params[field].name : field;
-
-        // Aplica like
-        if (data.like) 
-            query_builder.andWhere(`${entity}.${field} LIKE :${name}`, { [name]: `%${data.like}%`});
-        
-        // Aplica igual
-        else if (data.equal !== undefined)
-            query_builder.andWhere(`${entity}.${field} = :${name}`, { [name]: data.equal });
-
-        
-    }
-    return query_builder;
-}
-
-
-export class ValidationError extends Error {
-    name = 'ValidationError';
-    code = codes.BAD_REQUEST;
-    message: any;
-
-    constructor(message: any, code?: number) {
-        super();
-        this.message = message;
-        if (code)
-            this.code = code;
-    }
-}
