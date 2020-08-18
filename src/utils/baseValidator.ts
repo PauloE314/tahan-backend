@@ -1,5 +1,5 @@
 import { APIRequest } from "../@types";
-import { auth_user } from ".";
+import { authUser } from ".";
 import { codes } from "@config/index";
 
 
@@ -360,7 +360,7 @@ export class BaseValidator {
         const valid_error_names = ['TokenExpiredError', "JsonWebTokenError", "Error"];
 
         try {
-            const user = await auth_user({ token, raiseError: true});
+            const user = await authUser({ token, raiseError: true});
             if (user)
                 return user;
         }

@@ -40,15 +40,8 @@ export const GameStates = {
     Ended: 'ended'
 };
 
-
-/* Modelo de erro */
-export interface GameErrorModel {
-    name: string,
-    code: number,
-    message: string
-}
 /* Listagem de erros */
-export const GameErrors = {
+export const GameExceptions = {
     PermissionDenied: { name: 'permission-denied', code: 0, message: 'O usuário não tem permissão para essa ação'},
     DoubleUser: { name: 'double-user', code: 1, message: 'Já existe outro cliente usando essa conta'},
     UserDoesNotExist: { name: 'user-does-not-exist', code: 2, message: 'Usuário não existe' },

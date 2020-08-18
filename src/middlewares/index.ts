@@ -2,9 +2,8 @@ import { APIRequest } from "src/@types";
 import { Response, NextFunction } from "express";
 
 import { getRepository } from "typeorm";
-import { Topics } from "@models/Topics";
 import { Posts } from "@models/Posts/Posts";
-import { auth_user } from 'src/utils';
+import { authUser } from 'src/utils';
 import { Quizzes } from "@models/quiz/Quizzes";
 import { Containers } from "@models/Posts/Containers";
 import { Solicitations } from "@models/friends/Solicitations";
@@ -148,7 +147,7 @@ export function getUser() {
         const token = request.headers.authorization;
         try {
             // Autentica o usuário
-            const user = await auth_user({ token, raiseError: false});
+            const user = await authUser({ token, raiseError: false});
 
             // Caso ele esteja logado, salva seus dados
             if (user) 

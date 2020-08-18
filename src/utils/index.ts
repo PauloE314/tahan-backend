@@ -26,7 +26,7 @@ interface IAuthUserInput {
 /**
  * Autentica um usuário
  */
-export async function auth_user(input: IAuthUserInput) : Promise<user_interface | void> {
+export async function authUser(input: IAuthUserInput) : Promise<user_interface | void> {
     const { bearer, raiseError, token } = input;
 
     const { secretKey } = configs.security;

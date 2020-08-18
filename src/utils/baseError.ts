@@ -1,3 +1,5 @@
+import { SocketEvents } from "@config/socket";
+import { APISocket } from "src/@types/socket";
 /**
  * Erro base da aplicação que permite a utilização de vários dados, não apenas strings
  */
@@ -10,5 +12,26 @@ export class Err extends Error {
             name,
             data
         }
+    }
+}
+
+export interface GameErrorModel {
+    name: string,
+    code: number,
+    message: string
+}
+/**
+ * Erros base de jogo. Esses erros devem ser enviados para o usuário e não agir como um erro mesmo
+ */
+export class GameError {
+    public error: Err;
+
+    constructor(public gameError: GameErrorModel) {
+        this.error = new Err(SocketEvents.GameError, this.gameError);
+    }
+
+    // Envia o erro ao cliente
+    sendToClient(client: APISocket) {
+        client.emit(SocketEvents.GameError, this.gameError);
     }
 }

@@ -4,7 +4,7 @@ import cors from 'cors';
 import http, { Server } from 'http';
 import router from './router';
 import errorHandler from './errors';
-import useSocket from "../socket";
+import { useSocket } from "src/socket/index";
 import { getUser } from '@middlewares/index';
 
 import "reflect-metadata";

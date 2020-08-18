@@ -8,3 +8,4 @@ uploads/*
 test.*
 test
 database.sqlite
+__ignore*
