@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import { SocketClient } from "../helpers/clients";
 import { Room } from "../helpers/rooms";
 import { GameExceptions, SocketEvents } from "@config/socket";
-import { IRoomCreatedData } from "src/@types/socket";
+import { IRoomCreatedOutput } from "src/@types/socket";
 import { messagePrint } from "src/utils";
 
 /**
@@ -10,14 +10,18 @@ import { messagePrint } from "src/utils";
  */
 export function createRoom(io: Server, client: SocketClient, data: any) {
     try {
+        // Certifica que o jogador não está em outra sala
+        if (client.inRoom)
+            return client.emitError(GameExceptions.UserAlreadyInRoom);
+
         // Cria a sala
         const room = new Room();
 
         // Adiciona o cliente
-        room.addClient(client);
+        room.addClient(io, client);
 
         // Envia dados da sala
-        const response: IRoomCreatedData = { room_id: room.id }
+        const response: IRoomCreatedOutput = { room_id: room.id }
         client.emit(SocketEvents.RoomCreated, response);
 
         // Mensagem

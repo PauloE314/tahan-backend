@@ -41,6 +41,7 @@ export class SocketClient {
      * Envia mensagem para usuários da sala
      */
     emitToRoom(event: string, data?: any) {
+        console.log(data, this.roomId);
         this.socket.broadcast.to(this.roomId).emit(event, data);
     }
 

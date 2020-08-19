@@ -1,4 +1,4 @@
-# **Users**
+# **Usuários**
 
 Esse arquivo é destinado à documentação de funcionalidades que envolvem principalmente ações do usuário. Os usuários incluem professores e alunos, embora algumas ações sejam destinadas à apenas um dos dois grupos.
 

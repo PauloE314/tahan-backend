@@ -16,9 +16,6 @@ export async function leaveRoom(io: Server, client: SocketClient, data?: any) {
         return client.emitError(GameExceptions.RoomDoesNotExist);
     }
 
-    // Mensagem
-    messagePrint(`[USUÁRIO SAINDO DE SALA]: id: ${room.id}, total de usuários da sala: ${Object.keys(room.players.length)}, total de salas: ${Object.keys(Room.rooms).length}`);
-
     // Retira o usuário da sala
     await room.clientLeaveRoom(client, io);
 }

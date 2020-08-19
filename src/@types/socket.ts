@@ -10,6 +10,11 @@ export interface APISocket extends SocketIO.Socket {
 
 
 // Modelo de criação de sala
-export interface IRoomCreatedData {
+export interface IRoomCreatedOutput {
+    room_id: string
+}
+
+// Modelo de dados para entrar em sala
+export interface IJoinRoomInput {
     room_id: string
 }

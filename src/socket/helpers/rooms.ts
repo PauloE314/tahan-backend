@@ -16,8 +16,8 @@ export class Room {
     public id: string;
 
     // Jogadores
-    public players: Array<SocketClient> = [];
-    public mainPlayer: SocketClient;
+    public clients: Array<SocketClient> = [];
+    public mainClient: SocketClient;
 
     // Jogo
     get game() { return Game.getGame(this.id) }
@@ -44,30 +44,44 @@ export class Room {
     /**
      * Adiciona o cliente à sala
      */
-    addClient(client: SocketClient) {
+    addClient(io: Server, client: SocketClient) {
+        // Sai da sala antiga
+        if (client.roomId) {
+            client.room.clientLeaveRoom(client, io);
+        }
+
+        // Adiciona o usuário à sala
         client.roomId = this.id;
-        this.players.push(client);
+        client.socket.join(this.id);
+        
+        this.clients.push(client);
     }
 
     /**
      * Lida com a saída de um usuário da sala
      */
-    async clientLeaveRoom(client: SocketClient, io: Server) {        
-        client.roomId = undefined;
-
-        // Remove o jogador da lista de jogadores
-        this.players = this.players.filter(player => player.user.id !== client.user.id);
-
+    async clientLeaveRoom(client: SocketClient, io: Server) {
         // Avisa ao jogo que um jogador desconectou
         if (this.game)
             await this.game.clientLeave(client, io);
 
+        // Avisa aos demais jogadores que ele saiu da sala
+        client.emitToRoom(SocketEvents.PlayerLeaveRoom, client.user);
+
+        // Remove o jogador da lista de jogadores
+        this.clients = this.clients.filter(roomClient => roomClient.user.id !== client.user.id);
+
+        // Sai da sala do socket
+        client.socket.leave(client.roomId);    
+        client.roomId = undefined;
+
         // Avisa ao jogador que a saída da sala ocorreu bem
         client.emit(SocketEvents.RoomLeaved);
 
-        // Avisa aos demais jogadores que ele saiu do jogo
-        if (this.players.length !== 0)
-            client.emitToRoom(SocketEvents.PlayerLeaveRoom, client.user);
+        // Mensagem
+        if (this.clients.length !== 0) 
+            messagePrint(`[USUÁRIO SAINDO DE SALA]: username: ${client.user.username} id: ${this.id}, total de usuários da sala: ${this.clients.length}, total de salas: ${Object.keys(Room.rooms).length}`);
+        
 
         // Apaga a sala
         else {

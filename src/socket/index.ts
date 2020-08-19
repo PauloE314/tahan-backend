@@ -11,6 +11,8 @@ import { clientDisconnect } from './actions/disconnect';
 import { createRoom } from './actions/createRoom';
 import { leaveRoom } from './actions/leaveRoom';
 import { messagePrint } from 'src/utils';
+import { joinRoom } from './actions/joinRoom';
+import { Room } from './helpers/rooms';
 
 
 /**
@@ -25,7 +27,7 @@ export function useSocket(io: Server) {
     io.on(SocketEvents.ClientConnect, (socket: APISocket) => {
         // Cria um cliente
         const client = new SocketClient(socket, socket.client.user);
-
+        
         // Mensagem
         messagePrint(`[NOVO USUÁRIO]: username: ${client.user.username}, total de usuários: ${Object.keys(SocketClient.clients).length}`, 'green');
 
@@ -35,8 +37,8 @@ export function useSocket(io: Server) {
         // Sai da sala de jogo
         socket.on(SocketEvents.LeaveRoom, (data) => leaveRoom(io, client, data));
 
-        // // Entra em sala de jogo
-        // socket.on(SocketEvents.JoinMatch, (data) => actions.JoinMatch(io, client, data));
+        // Entra em sala de jogo
+        socket.on(SocketEvents.JoinRoom, (data) => joinRoom(io, client, data));
 
         // // Afirma estar pronto
         // socket.on(SocketEvents.Ready, (data) => actions.Ready(io, client, data));

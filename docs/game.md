@@ -74,8 +74,45 @@ socket.on("player-leave-room", (data) => {
 */
 })
 ```
-
 Caso o cliente se desconecte do socket, automaticamente será retirado da sala de jogo. Caso uma sala fique sem nenhum jogador, ela é destruída.
+
+
+### **Entrar em outras salas de jogo**
+Para entrar em outras salas de jogo, é necessário enviar uma mensagem com nome ```join-room``` e id da sala que se deseja entrar. Caso não ocorra nenhum erro na entrada, os dados do usuário serão enviados para todos os outros clientes da sala (com o nome ```player-join```) e uma mensagem diferente será enviada para o usuário que entrou notificando o sucesso (com o nome ```room-joined```).
+
+Modelo de mensagem enviada:
+```js
+// Joins to room
+const joinRoom = () => {
+    const code = "1234";
+
+    socket.emit("join-room", { room_id: code });
+}
+```
+
+Modelo de mensagem recebida pelo usuário:
+```js
+socket.on("room-joined", (data) => {
+/*
+    data: undefined
+*/
+})
+```
+
+Modelo de mensagem recebida pelos demais clientes:
+```js
+socket.on("player-join", (data) => {
+/*
+    data: {
+        id: Number,
+        username: String,
+        image_url: String
+        email: String
+    }
+*/
+})
+```
+
 
 
 

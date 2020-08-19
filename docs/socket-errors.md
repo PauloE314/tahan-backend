@@ -106,3 +106,15 @@ Segue a lista dos erros possíveis para essa etapa:
     }
     ```
 
+- ### **Usuário já está em sala:**
+    Ocorre quando o usuário vai criar ou entrar em uma sala, mas ainda está em outra.
+
+    Modelo de dados recebidos do erro:
+    ```json
+    {
+        "code": 5,
+        "name": "user-in-room",
+        "message": "O usuário já está em uma sala"
+    }
+    ```
+

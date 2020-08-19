@@ -4,9 +4,9 @@ export const SocketEvents = {
     ClientConnect: "connect",
     CreateRoom: "create-room",
     LeaveRoom: "leave-room",
-
-
     JoinRoom: "join-room",
+
+
     SetGame: "start-game",
     Ready: "ready",
     StartGame: "start-game",
@@ -18,11 +18,11 @@ export const SocketEvents = {
     GameError: "game-error",
     RoomCreated: "room-created",
     RoomLeaved: "room-leaved",
+    RoomJoined: "room-joined",
+    PlayerJoin: "player-join",
     PlayerLeaveRoom: "player-leave-room",
 
     
-    RoomJoined: "room-joined",
-    PlayerJoin: "player-join",
     OponentReady: "oponent-ready",
     MainPlayerOut: "main-player-out",
     SecondaryPlayerOut: "secondary-player-out",
@@ -56,6 +56,7 @@ export const GameExceptions = {
     UserDoesNotExist: { name: "user-does-not-exist", code: 2, message: "Usuário não existe" },
     CantCreateRoom: { name: "cant-create-room", code: 3, message: "Não foi possível criar a sala" },
     RoomDoesNotExist: { name: "room-does-not-exist", code: 4, message: "A sala não existe" },
+    UserAlreadyInRoom: { name: "user-in-room", code: 5, message: "O usuário já está em uma sala" },
 
 
     GameDoesNotExist: { name: "game-does-not-exist", code: 3, message: "O Jogo não existe" },
@@ -65,7 +66,6 @@ export const GameExceptions = {
     RoomIsFull: { name: "room-is-full", code: 7, message: "Esse jogo já possui 2 jogadores" },
     RoomIsEmpty: { name: "room-is-empty", code: 8, message: "Esse jogo está vazio" },
     RoomIncomplete: { name: "room-incomplete", code: 9, message: "Esse match não está completo" },
-    UserAlreadyInMatch: { name: "user-in-match", code: 10, message: "O usuário já está em um match" },
     UserNotInMatch: { name: "user-not-in-match", code: 11, message: "O usuário não está em um match" },
     UserAlreadyInGame: { name: "user-in-game", code: 12, message: "O usuário ainda está em jogo" },
     UserNotInGame: { name: "user-not-in-game", code: 13, message: "O usuário não está participando do jogo"},
