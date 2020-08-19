@@ -1,13 +1,83 @@
 # **Game**
 
-## **Connection**:
-Dados de envio:
-```json
-{
-    "JWT": "<string>",
-}
+Esse arquivo se destina à documentação do sistema de jogos multiplayer da aplicação.
+
+Tahan é um projeto que promete permitir que os professores criem jogos (quizzes) para avaliação e divertimento dos alunos públicos / privados. Tais jogos podem ser multiplayer ou singleplayer. Os jogos singleplayer podem ser renderizados diretamente no dispositivo dos alunos, entretanto, os jogos multiplayer, para manter a sincronia e segurança, devem ser monitorados por um sistema externo; essa tarefa fica a cargo da parte do servidor (a qual essa documentação se destina) que utiliza WebSockets para a comunicação jogador-servidor.
+
+Uma lista completa dos eventos e erros dos jogos se encontra [nesse](../src/config/socket.ts) arquivo (```src/config/socket.ts```). Nessa documentação será usado o JS como linguagem padrão nos exemplos de código. Também será em vários momentos usadas as palavras "mensagem" ou "evento" para denominar um dado enviado pelo WebSocket.
+
+## **Conexão**
+
+A conexão com o servidor TCP precisa ser feita de forma meio externa ao servidor HTTP, assim, é necessário o reenvio do token JWT do usuário (para mais informações veja a documentação de usuários).
+
+```js
+// Starts server connection
+const token = "<string>";
+const socket = io('tahan_api.com', {
+    path: '/socket', query: { token }
+});
 ```
-- JWT: Token de login do usuário.
+
+<br>
+<br>
+
+## **Salas de jogo**
+
+Uma sala de jogo é uma entidade volátil da aplicação que permite o monitoramento das ações anteriores ao jogo (como na sala de espera do League of Legends). Nela serão realizadas comunicações simples entre os jogadores e a seleção do quiz também ocorrerá nessa etapa.
+
+### **Criando salas de jogo**
+Para criar uma sala de jogo é necessário enviar uma mensagem com o nome ```create-room```. Caso tudo ocorra bem, uma mensagem com o nome ```room-created``` será enviada ao cliente contendo o id da sala que foi criada.
+
+Modelo de mensagem enviada:
+```js
+socket.emit("create-room");
+```
+
+Modelo de mensagem recebida:
+```js
+socket.on("room-created", (data) => {
+/*
+    data: {
+        room_id: Number
+    }
+*/
+})
+```
+
+### **Sair de salas de jogo**
+Para sair de uma sala de jogo é necessário enviar uma mensagem com o nome ```leave-room```. Não é necessário enviar nenhum dado adicional. Quando o usuário sair da sala, serão enviadas duas mensagens, uma para o usuário que saiu com o nome ```room-leaved``` notificando que o processo ocorreu com sucesso e outra para os demais jogadores da sala com o nome ```player-leave-room``` para notificar que um dos jogadores saiu da sala (será enviado também os dados do jogador que saiu).
+
+Modelo de mensagem enviada:
+```js
+socket.emit("leave-room");
+```
+
+Modelo de mensagem recebida pelo usuário:
+```js
+socket.on("leave-room", (data) => {
+/*
+    data: undefined
+*/
+})
+```
+
+Modelo de mensagem recebida pelos demais jogadores:
+```js
+socket.on("player-leave-room", (data) => {
+/*
+    data: {
+        id: Number,
+        username: String,
+        image_url: String,
+        email: String
+    }
+*/
+})
+```
+
+Caso o cliente se desconecte do socket, automaticamente será retirado da sala de jogo. Caso uma sala fique sem nenhum jogador, ela é destruída.
+
+
 
 <hr>
 

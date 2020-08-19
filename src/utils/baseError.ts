@@ -15,7 +15,7 @@ export class Err extends Error {
     }
 }
 
-export interface GameErrorModel {
+export interface IGameException {
     name: string,
     code: number,
     message: string
@@ -25,8 +25,10 @@ export interface GameErrorModel {
  */
 export class GameError {
     public error: Err;
+    public gameError: IGameException;
 
-    constructor(public gameError: GameErrorModel) {
+    constructor(gameError: IGameException) {
+        this.gameError = gameError;
         this.error = new Err(SocketEvents.GameError, this.gameError);
     }
 

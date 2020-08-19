@@ -8,6 +8,9 @@ import { socketAuth } from './middlewares/auth';
 import { socketUserValidation } from './middlewares/validateUser';
 import { SocketClient } from './helpers/clients';
 import { clientDisconnect } from './actions/disconnect';
+import { createRoom } from './actions/createRoom';
+import { leaveRoom } from './actions/leaveRoom';
+import { messagePrint } from 'src/utils';
 
 
 /**
@@ -20,11 +23,17 @@ export function useSocket(io: Server) {
     // Inicia a conexão
     try {
     io.on(SocketEvents.ClientConnect, (socket: APISocket) => {
-        // // Cria um cliente
+        // Cria um cliente
         const client = new SocketClient(socket, socket.client.user);
 
-        // // Cria jogo
-        // socket.on(SocketEvents.CreateMatch, (data) => actions.CreateMatch(io, client, data));
+        // Mensagem
+        messagePrint(`[NOVO USUÁRIO]: username: ${client.user.username}, total de usuários: ${Object.keys(SocketClient.clients).length}`, 'green');
+
+        // Cria sala de jogo
+        socket.on(SocketEvents.CreateRoom, (data) => createRoom(io, client, data));
+
+        // Sai da sala de jogo
+        socket.on(SocketEvents.LeaveRoom, (data) => leaveRoom(io, client, data));
 
         // // Entra em sala de jogo
         // socket.on(SocketEvents.JoinMatch, (data) => actions.JoinMatch(io, client, data));

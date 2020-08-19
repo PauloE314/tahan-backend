@@ -7,3 +7,9 @@ export interface ISocketClient extends SocketIO.Client {
 export interface APISocket extends SocketIO.Socket {
     client: ISocketClient
 }
+
+
+// Modelo de criação de sala
+export interface IRoomCreatedData {
+    room_id: string
+}

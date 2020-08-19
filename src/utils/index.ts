@@ -133,18 +133,25 @@ export async function count_runner ( data: { times: number, execute?: (counter: 
 
 
 
-// Gera uma string aleatória
-export function get_random_value(length: number, list?: Array<string>) {
-    let result = '';
+/**
+ * Gera uma string aleatória
+ */
+export function getRandomValue(length: number, list?: Array<string>) {
     const value_list = list || [];
+    // Certifica que não vai haver muitas tentativas
+    if (value_list.length > configs.generateRandomTimes)
+        return null;
+    
+    let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
-    for ( let i = 0; i < length; i++ ) {
+
+    for (let i = 0; i < length; i++) 
        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    if (value_list.includes(result))
-        return get_random_value(length, value_list);
     
+    if (value_list.includes(result))         
+        return getRandomValue(length, value_list);
+
     return result;
 }
 
@@ -190,3 +197,20 @@ export function APIRoute (target: any, key:any, descriptor?: PropertyDescriptor)
 }
 
 
+/**
+ * Print colorido para debug
+ */
+const colors = {
+    blue: "\x1b[34m",
+    green: '\x1b[32m',
+    red: '\x1b[31m',
+    yellow: '\x1b[33m',
+    default: '\x1b[0m'
+};
+type IColors = 'green' | 'red' | 'yellow' | 'default' | 'blue';
+
+export function messagePrint(data?: any, color?: IColors) {
+    const trueColor = color ? colors[color] : colors['yellow'];
+    
+    console.log(trueColor, data !== undefined ? data : '', '\x1b[0m');
+}

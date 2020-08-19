@@ -2,6 +2,7 @@ export default {
     port: 3000,
     defaultPagination: 5,
     cryptTimes: 10,
+    generateRandomTimes: 10000,
     security: {
         cryptTimes: 10,
         secretKey: "zKRk85IqOdErrmR4",

@@ -20,6 +20,6 @@ router.use("/quizzes/", quizRouter);
 
 router.use('/post-containers/', postContainersRouter);
 
-router.use("/tests/", testRouter);
+router.use("/socket-tests/", testRouter);
 
 export default router;

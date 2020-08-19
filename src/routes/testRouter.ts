@@ -1,22 +1,26 @@
 import { Router } from 'express';
-// import room_manager from 'src/socket/helpers/rooms';
-// import Client from 'src/socket/helpers/client';
+import { Room } from 'src/socket/helpers/rooms';
+import { SocketClient } from 'src/socket/helpers/clients';
 
 const routes = Router({ mergeParams: true });
 
 // Leitura
 routes.get('/', (request, response) => {
-    // const rooms = room_manager.all_rooms();
-    // const clients = Client.all_clients();
+    const rooms = Room.rooms;
+    const clients = SocketClient.clients;
 
-    // const client_list = Object.keys(clients).map(key => clients[key].user.username);
-    // const room_list = Object.keys(rooms).map(key => {
-    //     const are_playing = rooms[key].game ? true : false;
-    //     return { key, are_playing }
-    // });
-    return response.send('Não implementado ainda')
+    const clientList = Object.keys(clients).map(key => clients[key].user);
+    const roomList = Object.keys(rooms).map(key => {
+        const room = rooms[key];
 
-    // return response.send({ client_list, room_list });
+        return {
+            id: room.id,
+            players: room.players.map(player => player.user.username),
+            isPlaying: room.game ? true : false
+        }
+    });
+
+    return response.send({ clients: clientList, rooms: roomList });
 });
 
 // Criar
