@@ -21,6 +21,10 @@ export function startGame(io: Server, client: SocketClient, data?: any) {
     if (client.inGame)
         return client.emitError(GameExceptions.UserAlreadyInGame);
 
+    // Certifica que há pelo menos 2 jogadores
+    if (room.clients.length < 2)
+        return client.emitError(GameExceptions.RoomIncomplete);
+
     // Cria o jogo
     const game = new Game(room);
 

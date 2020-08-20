@@ -95,7 +95,9 @@ socket.on("new-main-player", (data) => {
 
 
 ### **Entrar em outras salas de jogo**
-Para entrar em outras salas de jogo, é necessário enviar uma mensagem com nome ```join-room``` e id da sala que se deseja entrar. Caso não ocorra nenhum erro na entrada, os dados do usuário serão enviados para todos os outros clientes da sala (com o nome ```player-join```) e uma mensagem diferente será enviada para o usuário que entrou notificando o sucesso (com o nome ```room-joined```).
+Para entrar em outras salas de jogo, é necessário enviar uma mensagem com nome ```join-room``` e id da sala que se deseja entrar. Caso não ocorra nenhum erro na entrada, os dados do usuário serão enviados para todos os outros clientes da sala (com o nome ```player-join```) e uma mensagem diferente será enviada para o usuário que entrou notificando o sucesso (com o nome ```room-joined```). A mensagem de sucesso do usuário conterá os dados dos usuários que já estão na sala e os dados do quiz, caso ele já tenha sido escolhido.
+
+
 
 Modelo de mensagem enviada:
 ```js
@@ -111,7 +113,30 @@ Modelo de mensagem recebida pelo usuário:
 ```js
 socket.on("room-joined", (data) => {
 /*
-    data: undefined
+    data: {
+        users: Array<{
+            id: Number,
+            username: String,
+            image_url: String
+            email: String
+        }>,
+        quiz?: {
+            id: Number,
+            name: String,
+            author: { 
+                id: Number,
+                username: String,
+                email: String,
+                occupation: "student" | "teacher",
+                created_at: <Date | string>
+            },
+            created_at: <Date | string>,
+            section: {
+                id: Number,
+                name: String
+            }
+        }
+    }
 */
 })
 ```
@@ -129,6 +154,8 @@ socket.on("player-join", (data) => {
 */
 })
 ```
+
+<br>
 
 ## **Escolhendo o quiz**
 Para escolher o quiz que se deseja jogar, basta enviar uma mensagem com o nome ```set-quiz``` e o ```id``` do quiz requerido. Apenas o jogador principal pode escolher o quiz. Caso o id seja válido, uma mensagem com o nome ```quiz-data``` contendo os dados do quiz será enviada para todos os jogadores.
@@ -168,8 +195,9 @@ socket.on("quiz-data", (data) => {
 ```
 
 É possível limpar o quiz, ou seja, "zerar" esse campo no sistema. Para isso, basta enviar ```-1``` na mensagem ```set-quiz```. Assim, os dados enviados para os demais usuários será ```null```.
+<br>
 
-## **Avisando estado do jogador:**
+## **Avisando estado do jogador**
 
 É possível para os jogadores avisarem um ao outro se estão prontos. Isso visa permitir a interatividade entre os usuários (embora não interfira ativamente nas regras de negócio da aplicação). Basta enviar uma mensagem com o nome ```ready``` que os demais jogadores receberão uma mensagem com o nome ```player-ready``` e os dados do jogador.
 
@@ -195,6 +223,13 @@ socket.on("player-ready", (data) => {
 */
 })
 ```
+
+<br>
+
+## **Começando o jogo**
+Para iniciar o jogo, o jogador principal precisa enviar uma mensagem chamada ```start-game``` (não é necessário nenhum dado). Todos os jogadores (incluindo o principal) receberão uma mensagem de confirmação com o nome ```game-start```. Essa ação é muito importante porque dará início ao loop do jogo.
+
+<br>
 
 <hr>
 

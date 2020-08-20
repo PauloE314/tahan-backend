@@ -15,19 +15,21 @@ export class Room {
 
     // Propriedades da sala de jogo
     public id: string;
+    public size: number;
 
     // Jogadores
     public clients: Array<SocketClient> = [];
-
     public mainClient: SocketClient;
 
     // Jogo
-    public quiz: Quizzes;
+    public quiz?: Quizzes;
     get game() { return Game.getGame(this.id) }
 
-    constructor() {
+    constructor(size: number) {
         const roomsIdList = Object.keys(Room.rooms);
+        
         this.id = getRandomValue(4, roomsIdList);
+        this.size = size;
 
         // Certifica que ainda há salas disponíveis
         if (!this.id)

@@ -8,14 +8,17 @@ import { messagePrint } from "src/utils";
 /**
  * Ação do socket que permite criar uma sala de jogo. O jogador que cria a sala de jogo se torna automaticamente seu jogador principal.
  */
-export function createRoom(io: Server, client: SocketClient, data: any) {
+export function createRoom(io: Server, client: SocketClient, data?: any) {
     try {
+        // const roomSize = data ? (data.size ? <number>data.size : 2) : 2;
+        const roomSize = 2;
+
         // Certifica que o jogador não está em outra sala
         if (client.inRoom)
             return client.emitError(GameExceptions.UserAlreadyInRoom);
 
         // Cria a sala
-        const room = new Room();
+        const room = new Room(roomSize);
 
         // Adiciona o cliente
         room.addClient(io, client);

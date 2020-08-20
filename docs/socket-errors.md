@@ -118,15 +118,64 @@ Segue a lista dos erros possíveis para essa etapa:
     }
     ```
 
+- ### **A sala está cheia:**
+    Ocorre quando o usuário tenta entrar em uma sala, mas ela já está cheia.
+
+    Modelo de dados recebidos do erro:
+    ```json
+    {
+        "code": 6,
+        "name": "room-is-full",
+        "message": "A sala está cheia"
+    }
+    ```
+
+
 - ### **Ação inválida:**
     Ocorre quando há uma ação inválida para o estado atual da aplicação, por exemplo, quando se tenta escolher o quiz, mas o jogador ainda está em game ou coisas desse tipo. É uma mensagem mais genérica para casos meio absurdos.
 
     Modelo de dados recebidos do erro:
     ```json
     {
-        "code": 6,
+        "code": 7,
         "name": "invalid-action",
         "message": "Ações inválidas"
     }
     ```
 
+
+- ### **Quiz não existe:**
+    Ocorre quando o jogador principal tenta escolher um quiz que não existe para uma partida.
+
+    Modelo de dados recebidos do erro:
+    ```json
+    {
+        "code": 8,
+        "name": "quiz-does-not-exist",
+        "message": "O quiz não existe"
+    }
+    ```
+
+- ### **O jogador já está em jogo:**
+    Ocorre quando um jogador tenta criar um jogo (começar o jogo, não uma sala), mas já está no meio de outro jogo.
+
+    Modelo de dados recebidos do erro:
+    ```json
+    {
+        "code": 9,
+        "name": "user-in-game",
+        "message": "O usuário ainda está em jogo"
+    }
+    ```
+
+- ### **Sala incompleta:**
+    Ocorre quando o jogador principal tenta começar o jogo, mas a sala está incompleta.
+
+    Modelo de dados recebidos do erro:
+    ```json
+    {
+        "code": 10,
+        "name": "room-incomplete",
+        "message": "A sala não está completa"
+    }
+    ```

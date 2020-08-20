@@ -23,16 +23,33 @@ export async function joinRoom(io: Server, client: SocketClient, data?: IJoinRoo
     // Certifica que a sala ainda não está cheia
     if (room.clients.length > 1)
         return client.emitError(GameExceptions.RoomIsFull);
+
+    // Dados da sala
+    const roomData: any = {
+        users: room.clients.map(player => player.user)
+    };
  
     // Adiciona o jogador à sala
     room.addClient(io, client);
-    
-    // Avisa ao usuário
-    client.emit(SocketEvents.RoomJoined);
 
     // Avisa aos demais usuários
     client.emitToRoom(SocketEvents.PlayerJoin, client.user);
 
+    // Checa se já foi escolhido o quiz
+    if (room.quiz) {
+        const { questions, ...serializedData } = room.quiz;
+
+        // Envia dados do quiz
+        roomData.quiz = serializedData;
+    }
+
+    console.log(roomData);
+
+     // Envia os dados da sala para o usuário
+     client.emit(SocketEvents.RoomJoined, roomData);
+
     // Mensagem
     messagePrint(`[USUÁRIO ENTROU EM SALA]: username: ${client.user.username}, roomId: ${room.id}, total de clientes na sala: ${room.clients.length}`);
+
+    return;
 }

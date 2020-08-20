@@ -71,10 +71,10 @@ export class Game {
     }
 
     /**
-     * Lista com a saída de um dos jogadores
+     * Lida com a saída de um dos jogadores
      */
     async clientLeave(io: Server, player: SocketClient) {
-
+        Game.removeGame(this.roomId);
     }
 
     /**

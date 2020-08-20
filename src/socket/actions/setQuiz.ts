@@ -29,6 +29,7 @@ export async function setQuiz(io: Server, client: SocketClient, data?: any) {
         messagePrint(`[LIMPAGEM DE QUIZ DA SALA]: roomId: ${room.id}, total de clientes na sala: ${room.clients.length}`);
 
         room.quiz = undefined;
+
         // Envia dados do quiz para todos
         return room.sendToAll(io, SocketEvents.QuizData, null);
     }
@@ -49,8 +50,8 @@ export async function setQuiz(io: Server, client: SocketClient, data?: any) {
     messagePrint(`[ESCOLHA DE QUIZ]: quizId: ${quiz.id}, roomId: ${room.id}, total de clientes na sala: ${room.clients.length}`);
 
     // Serializa o quiz
-    delete quiz.questions;
+    const { questions, ...serializedData } = quiz;
 
     // Envia dados do quiz para todos
-    room.sendToAll(io, SocketEvents.QuizData, quiz);
+    room.sendToAll(io, SocketEvents.QuizData, serializedData);
 }
