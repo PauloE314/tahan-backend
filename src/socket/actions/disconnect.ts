@@ -10,7 +10,7 @@ export async function clientDisconnect(io: Server, client: SocketClient, data: a
 
     // Retira o usuário da sala
     if (room) 
-        await room.clientLeaveRoom(client, io);
+        await room.clientLeaveRoom(io, client);
     
     // Desconecta o usuário
     client.disconnect(io);

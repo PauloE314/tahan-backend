@@ -15,6 +15,7 @@ import { joinRoom } from './actions/joinRoom';
 import { Room } from './helpers/rooms';
 import { setQuiz } from './actions/setQuiz';
 import { ready } from './actions/ready';
+import { startGame } from './actions/startGame';
 
 
 /**
@@ -49,7 +50,7 @@ export function useSocket(io: Server) {
         socket.on(SocketEvents.Ready, (data) => ready(io, client, data));
 
         // // Começa o jogo
-        // socket.on(SocketEvents.StartGame, (data) => actions.StartGame(io, client, data));
+        socket.on(SocketEvents.StartGame, (data) => startGame(io, client, data));
 
         // // Lida com as respostas do jogador
         // socket.on(SocketEvents.Answer, (data) => actions.Answer(io, client, data));

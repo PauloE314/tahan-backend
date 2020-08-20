@@ -155,8 +155,10 @@ export function getRandomValue(length: number, list?: Array<string>) {
     return result;
 }
 
-
-export function random_array(array: Array<any>) {
+/**
+ * Randomiza um array passado como input
+ */
+export function randomizeArray<T>(array: Array<T>) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const temp = array[i];

@@ -5,7 +5,7 @@ import { messagePrint } from "src/utils";
 import { Room } from "../helpers/rooms";
 
 /**
- * Ação que permite o jogador sair de uma sala de jogo. O resultado dessa ação é semelhante à desconexão.
+ * Ação que permite o jogador sair de uma sala de jogo. O resultado dessa ação é semelhante à desconexão, entretanto, não apaga o registro do usuário dos usuários online.
  */
 export async function leaveRoom(io: Server, client: SocketClient, data?: any) {
     const { room } = client;
@@ -17,5 +17,5 @@ export async function leaveRoom(io: Server, client: SocketClient, data?: any) {
     }
 
     // Retira o usuário da sala
-    await room.clientLeaveRoom(client, io);
+    await room.clientLeaveRoom(io, client);
 }

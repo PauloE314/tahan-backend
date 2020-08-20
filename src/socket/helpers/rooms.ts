@@ -50,7 +50,7 @@ export class Room {
     addClient(io: Server, client: SocketClient) {
         // Sai da sala antiga
         if (client.roomId) {
-            client.room.clientLeaveRoom(client, io);
+            client.room.clientLeaveRoom(io, client);
         }
 
         // Adiciona o usuário à sala
@@ -64,10 +64,10 @@ export class Room {
     /**
      * Lida com a saída de um usuário da sala
      */
-    async clientLeaveRoom(client: SocketClient, io: Server) {
+    async clientLeaveRoom(io: Server, client: SocketClient) {
         // Avisa ao jogo que um jogador desconectou
         if (this.game)
-            await this.game.clientLeave(client, io);
+            await this.game.clientLeave(io, client);
 
         // Avisa aos demais jogadores que ele saiu da sala
         client.emitToRoom(SocketEvents.PlayerLeaveRoom, client.user);

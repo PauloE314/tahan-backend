@@ -6,7 +6,7 @@ import { IRoomCreatedOutput } from "src/@types/socket";
 import { messagePrint } from "src/utils";
 
 /**
- * Ação do socket que permite criar uma sala de jogo
+ * Ação do socket que permite criar uma sala de jogo. O jogador que cria a sala de jogo se torna automaticamente seu jogador principal.
  */
 export function createRoom(io: Server, client: SocketClient, data: any) {
     try {

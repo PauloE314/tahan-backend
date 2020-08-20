@@ -6,7 +6,7 @@ import { Quizzes } from "@models/quiz/Quizzes";
 import { messagePrint } from "src/utils";
 
 /**
- * Ação que permite o jogador principal escolher um quiz 
+ * Ação que permite o jogador principal escolher um quiz. Os quizzes são armazenados nas salas se jogo, mas logo são migradas para uma instância real que representa um jogo ativo.
  */
 export async function setQuiz(io: Server, client: SocketClient, data?: any) {
     const quizId = data ? data.id : undefined;
@@ -22,7 +22,7 @@ export async function setQuiz(io: Server, client: SocketClient, data?: any) {
 
     // Certifica que o cliente não está em jogo
     if (client.inGame)
-        return client.emitError(GameExceptions.InvalidAction);
+        return client.emitError(GameExceptions.UserAlreadyInGame);
 
     // Limpa o quiz da sala
     if (quizId === -1) {

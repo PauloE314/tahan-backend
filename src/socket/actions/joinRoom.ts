@@ -6,7 +6,7 @@ import { Room } from "../helpers/rooms";
 import { messagePrint } from "src/utils";
 
 /**
- * Ação que permite um usuário entrar em uma sala de jogo.
+ * Ação que permite um usuário entrar em uma sala de jogo. Existe uma hierarquia entre os jogadores que entram na sala, de forma com que, caso o jogador principal saia do jogo, o jogador principal se torna o que entrou na sala logo após ele.
  */
 export async function joinRoom(io: Server, client: SocketClient, data?: IJoinRoomInput) {
     const code = data ? data.room_id : null;

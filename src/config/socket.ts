@@ -27,12 +27,12 @@ export const SocketEvents = {
     PlayerLeaveRoom: "player-leave-room",
     QuizData: "quiz-data",
     PlayerReady: "player-ready",
+    GameStart: "game-start",
 
     
 
     MainPlayerOut: "main-player-out",
     SecondaryPlayerOut: "secondary-player-out",
-    GameStartCounter: "game-start-counter",
 
     // Cíclo
     NextQuestion: "next-question",
@@ -66,6 +66,7 @@ export const GameExceptions = {
     RoomIsFull: { name: "room-is-full", code: 6, message: "Esse jogo já possui 2 jogadores" },
     InvalidAction: { name: "invalid-action", code: 7, message: "Ação inválida para esse estágio da aplicação" },
     QuizDoesNotExist: { name: "quiz-does-not-exist", code: 8, message: "O Quiz não existe" },
+    UserAlreadyInGame: { name: "user-in-game", code: 9, message: "O usuário ainda está em jogo" },
 
 
     GameDoesNotExist: { name: "game-does-not-exist", code: 3, message: "O Jogo não existe" },
@@ -73,6 +74,5 @@ export const GameExceptions = {
     RoomIsEmpty: { name: "room-is-empty", code: 8, message: "Esse jogo está vazio" },
     RoomIncomplete: { name: "room-incomplete", code: 9, message: "Esse match não está completo" },
     UserNotInMatch: { name: "user-not-in-match", code: 11, message: "O usuário não está em um match" },
-    UserAlreadyInGame: { name: "user-in-game", code: 12, message: "O usuário ainda está em jogo" },
     UserNotInGame: { name: "user-not-in-game", code: 13, message: "O usuário não está participando do jogo"},
 }
