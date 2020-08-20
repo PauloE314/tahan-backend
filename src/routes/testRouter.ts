@@ -15,8 +15,9 @@ routes.get('/', (request, response) => {
 
         return {
             id: room.id,
-            players: room.players.map(player => player.user.username),
-            isPlaying: room.game ? true : false
+            clients: room.clients.map(client => client.user.username),
+            arePlaying: room.game ? true : false,
+            quiz: room.quiz
         }
     });
 

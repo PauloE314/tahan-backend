@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ValidationError } from 'src/utils';
+import { ValidationError } from 'src/utils/baseValidator';
 import { codes } from '@config/index';
 
 

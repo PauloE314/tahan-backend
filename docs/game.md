@@ -43,6 +43,7 @@ socket.on("room-created", (data) => {
 */
 })
 ```
+O usuário que cria a sala de jogo se torna o jogador principal. Ele é que possui a responsabilidade de escolher o quiz e de habilitar a iniciação da partida.
 
 ### **Sair de salas de jogo**
 Para sair de uma sala de jogo é necessário enviar uma mensagem com o nome ```leave-room```. Não é necessário enviar nenhum dado adicional. Quando o usuário sair da sala, serão enviadas duas mensagens, uma para o usuário que saiu com o nome ```room-leaved``` notificando que o processo ocorreu com sucesso e outra para os demais jogadores da sala com o nome ```player-leave-room``` para notificar que um dos jogadores saiu da sala (será enviado também os dados do jogador que saiu).
@@ -75,6 +76,22 @@ socket.on("player-leave-room", (data) => {
 })
 ```
 Caso o cliente se desconecte do socket, automaticamente será retirado da sala de jogo. Caso uma sala fique sem nenhum jogador, ela é destruída.
+
+Caso o cliente que se desconectou seja o cliente principal, o cliente que entrou na sala logo depois dele será considerado o jogador principal. Uma mensagem é enviada em seguida com o nome ```new-main-player``` com as informações do novo jogador principal.
+
+Modelo de mensagem recebida:
+```js
+socket.on("new-main-player", (data) => {
+/*
+    {
+        id: Number,
+        username: String,
+        image_url: String,
+        email: String
+    }
+*/
+})
+```
 
 
 ### **Entrar em outras salas de jogo**
@@ -113,33 +130,76 @@ socket.on("player-join", (data) => {
 })
 ```
 
+## **Escolhendo o quiz**
+Para escolher o quiz que se deseja jogar, basta enviar uma mensagem com o nome ```set-quiz``` e o ```id``` do quiz requerido. Apenas o jogador principal pode escolher o quiz. Caso o id seja válido, uma mensagem com o nome ```quiz-data``` contendo os dados do quiz será enviada para todos os jogadores.
 
+Modelo de mensagem enviada:
+```js
+// Sets room's quiz
+const setQuiz = () => {
+    const quizId = "1";
 
+    socket.emit("set-quiz", { id: quizId });
+}
+```
+
+Modelo de mensagem recebida:
+```js
+socket.on("quiz-data", (data) => {
+/*
+    data: {
+        id: Number,
+        name: String,
+        author: { 
+            id: Number,
+            username: String,
+            email: String,
+            occupation: "student" | "teacher",
+            created_at: <Date | string>
+        },
+        created_at: <Date | string>,
+        section: {
+            id: Number,
+            name: String
+        }
+    }
+*/
+})
+```
+
+É possível limpar o quiz, ou seja, "zerar" esse campo no sistema. Para isso, basta enviar ```-1``` na mensagem ```set-quiz```. Assim, os dados enviados para os demais usuários será ```null```.
+
+## **Avisando estado do jogador:**
+
+É possível para os jogadores avisarem um ao outro se estão prontos. Isso visa permitir a interatividade entre os usuários (embora não interfira ativamente nas regras de negócio da aplicação). Basta enviar uma mensagem com o nome ```ready``` que os demais jogadores receberão uma mensagem com o nome ```player-ready``` e os dados do jogador.
+
+Modelo de mensagem enviada:
+```js
+// Says "I'm ready!"
+const ready = () => {
+    socket.emit("ready");
+}
+```
+
+Modelo de mensagem recebida:
+```js
+socket.on("player-ready", (data) => {
+/*
+    data: { 
+        id: Number,
+        username: String,
+        email: String,
+        occupation: "student" | "teacher",
+        created_at: <Date | string>
+    }
+*/
+})
+```
 
 <hr>
 
 ## **Mensagens (client -> server)**:
 
-### **CreateMatch**
-- **Nome da mensagem:** ```create-match```
-- **Dados de envio:** ```any```
-- **Detalhes:** Cria uma sala de jogo
-
-### **JoinMatch**
-- **Nome da mensagem:** ```join-match```
-- **Dados de envio:** 
-    ```json
-    {
-        "code": "<string>"
-    }
-    ```
-- **Detalhes:** Adiciona o usuário à sala que possui o código enviado. Caso o código seja inválido ou a sala já estiver cheia, retorna um erro.
-
-
-### **Ready**
-- **Nome da mensagem:** ```ready```
-- **Dados de envio:** ```any```
-- **Detalhes:** Avisa que o usuário está pronto. Esse evento irá chamar o evento de ```oponent-ready``` ao oponente. Esse evento também só pode ser chamado quando a sala de jogo estiver cheia, ou seja, com dois usuários.
 
 ### **StartGame**
 - **Nome da mensagem:** ```start-game```
@@ -165,80 +225,6 @@ socket.on("player-join", (data) => {
 
 
 ## **Eventos (server -> client)**:
-
-## ***Match***
-
-### **MatchCreated**:
-- **Nome do evento:** ```match-created```
-- **Dados recebidos:**
-    ```json
-    {
-        "match_code": "<string>"
-    }
-    ```
-- **Detalhes:** Avisa ao usuário que a sala foi criada com sucesso.
-
-### **MatchJoined**:
-- **Nome do evento:** ```match-joined```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa ao usuário que ele entrou na sala com sucesso.
-
-
-
-### **PlayerJoin**:
-- **Nome do evento:** ```player-join```
-- **Dados recebidos:**
-    ```json
-    {
-        "username": "<string>",
-        "email": "<string>",
-        "occupation": "<string>",
-        "created_at": "<string>"
-    }
-    ```
-- **Detalhes:** Avisa ao usuário (player 1) que um novo usuário (player 2) entrou na sala
-
-
-### **MainPlayerOut**:
-- **Nome do evento:** ```main-player-join```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa que o jogador principal (player 1) saiu da sala. Esse evento só é enviado quando o jogo não está ocorrendo. Quando o jogador principal sai, a sala é deletada.
-
-### **SecondaryPlayerOut**:
-- **Nome do evento:** ```secondary-player-join```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa que o jogador secundário (player 2) saiu da sala. Esse evento só é enviado quando o jogo não está ocorrendo. Quando jogador principal sai, a sala é mantida, mas, por motivos lógicos, não pode iniciar um jogo até que outro usuário entre.
-
-### **OponentReady**:
-- **Nome do evento:** ```oponent-ready```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa a um jogador que o seu oponente está pronto. Esse evento só é enviado quando o oponente ativa o evento de ```ready```.
-
-## ***Game***
-
-### **GameData**:
-- **Nome do evento:** ```game-data```
-- **Dados recebidos:** 
-    ```json
-    {
-        "id": "<number>",
-        "name": "<string>",
-        "author": { 
-            "id": "<number>",
-            "username": "<string>",
-            "email": "<string>",
-            "occupation": "<student | teacher>",
-            "created_at": "<Date | string>"
-        },
-        "created_at": "<Date | string>",
-        "section": {
-            "id": "<number>",
-            "name": "<string>"
-        }
-    }
-    ```
-- **Detalhes:** Envia os dados do quiz do jogo para ambos os usuários. Esse envio ocorre antes do começo da contagem inicial. 
-
 
 ### **GameStartCounter**:
 - **Nome do evento:** ```game-start-counter```

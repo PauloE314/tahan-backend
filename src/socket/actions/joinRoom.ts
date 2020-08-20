@@ -20,6 +20,10 @@ export async function joinRoom(io: Server, client: SocketClient, data?: IJoinRoo
     if (!room)
         return client.emitError(GameExceptions.RoomDoesNotExist);
 
+    // Certifica que a sala ainda não está cheia
+    if (room.clients.length > 1)
+        return client.emitError(GameExceptions.RoomIsFull);
+ 
     // Adiciona o jogador à sala
     room.addClient(io, client);
     

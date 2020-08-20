@@ -95,7 +95,7 @@ Segue a lista dos erros possíveis para essa etapa:
     ```
 
 - ### **Sala não existe:**
-    Ocorre quando o usuário não está em uma sala de jogo e tenta sair dela (com a mensagem ```leave-room```) ou quando o usuário tenta entrar em uma sala de jogo (com a mensagem ```join-room```) e o id da sala é inválido.
+    Ocorre quando o usuário não está em uma sala de jogo e tenta sair dela (com a mensagem ```leave-room```) ou quando o usuário tenta entrar em uma sala de jogo (com a mensagem ```join-room```) e o id da sala é inválido (ou coisas desse tipo).
 
     Modelo de dados recebidos do erro:
     ```json
@@ -115,6 +115,18 @@ Segue a lista dos erros possíveis para essa etapa:
         "code": 5,
         "name": "user-in-room",
         "message": "O usuário já está em uma sala"
+    }
+    ```
+
+- ### **Ação inválida:**
+    Ocorre quando há uma ação inválida para o estado atual da aplicação, por exemplo, quando se tenta escolher o quiz, mas o jogador ainda está em game ou coisas desse tipo. É uma mensagem mais genérica para casos meio absurdos.
+
+    Modelo de dados recebidos do erro:
+    ```json
+    {
+        "code": 6,
+        "name": "invalid-action",
+        "message": "Ações inválidas"
     }
     ```
 

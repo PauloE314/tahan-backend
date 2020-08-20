@@ -13,6 +13,8 @@ import { leaveRoom } from './actions/leaveRoom';
 import { messagePrint } from 'src/utils';
 import { joinRoom } from './actions/joinRoom';
 import { Room } from './helpers/rooms';
+import { setQuiz } from './actions/setQuiz';
+import { ready } from './actions/ready';
 
 
 /**
@@ -40,8 +42,11 @@ export function useSocket(io: Server) {
         // Entra em sala de jogo
         socket.on(SocketEvents.JoinRoom, (data) => joinRoom(io, client, data));
 
+        // Escolhe o quiz
+        socket.on(SocketEvents.SetQuiz, (data) => setQuiz(io, client, data));
+
         // // Afirma estar pronto
-        // socket.on(SocketEvents.Ready, (data) => actions.Ready(io, client, data));
+        socket.on(SocketEvents.Ready, (data) => ready(io, client, data));
 
         // // Começa o jogo
         // socket.on(SocketEvents.StartGame, (data) => actions.StartGame(io, client, data));

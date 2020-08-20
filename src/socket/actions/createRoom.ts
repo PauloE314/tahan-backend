@@ -19,6 +19,7 @@ export function createRoom(io: Server, client: SocketClient, data: any) {
 
         // Adiciona o cliente
         room.addClient(io, client);
+        room.mainClient = client;
 
         // Envia dados da sala
         const response: IRoomCreatedOutput = { room_id: room.id }

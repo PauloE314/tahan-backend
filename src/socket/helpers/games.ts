@@ -10,10 +10,11 @@ export class Game {
     static games: { [gameId: string]: Game } = {};
 
     public roomId: string;
-    public players: Array<SocketClient>;
     public quiz: Quizzes;
 
     get room() { return Room.getRoom(this.roomId) }
+    get players() { return this.room.clients }
+    
 
     constructor(room: Room) {
         this.roomId = room.id;

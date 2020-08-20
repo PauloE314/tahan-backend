@@ -4,6 +4,7 @@ import { Game } from "./games";
 import { getRandomValue, messagePrint } from "src/utils";
 import { Err } from "src/utils/baseError";
 import { SocketEvents } from "@config/socket";
+import { Quizzes } from "@models/quiz/Quizzes";
 
 /**
  * Classe base para as salas que precedem os jogos da aplicação.
@@ -17,9 +18,11 @@ export class Room {
 
     // Jogadores
     public clients: Array<SocketClient> = [];
+
     public mainClient: SocketClient;
 
     // Jogo
+    public quiz: Quizzes;
     get game() { return Game.getGame(this.id) }
 
     constructor() {
@@ -57,6 +60,7 @@ export class Room {
         this.clients.push(client);
     }
 
+
     /**
      * Lida com a saída de um usuário da sala
      */
@@ -78,9 +82,14 @@ export class Room {
         // Avisa ao jogador que a saída da sala ocorreu bem
         client.emit(SocketEvents.RoomLeaved);
 
-        // Mensagem
-        if (this.clients.length !== 0) 
+        // Caso a sala ainda tenha clientes
+        if (this.clients.length !== 0)  {
+            // Seta um novo cliente principal
+            this.mainClient = this.clients[0];
+
+            // Mensagem
             messagePrint(`[USUÁRIO SAINDO DE SALA]: username: ${client.user.username} id: ${this.id}, total de usuários da sala: ${this.clients.length}, total de salas: ${Object.keys(Room.rooms).length}`);
+        }
         
 
         // Apaga a sala
