@@ -227,7 +227,87 @@ socket.on("player-ready", (data) => {
 <br>
 
 ## **Começando o jogo**
-Para iniciar o jogo, o jogador principal precisa enviar uma mensagem chamada ```start-game``` (não é necessário nenhum dado). Todos os jogadores (incluindo o principal) receberão uma mensagem de confirmação com o nome ```game-start```. Essa ação é muito importante porque dará início ao loop do jogo.
+Para iniciar o jogo, o jogador principal precisa enviar uma mensagem chamada ```start-game``` (não é necessário nenhum dado). Todos os jogadores (incluindo o principal) receberão uma mensagem de confirmação com o nome ```game-start``` que contém os dados da primeira questão. Essa ação é muito importante porque dará início ao loop do jogo.
+
+Modelo de mensagem enviada:
+```js
+// Says "I'm ready!"
+const startGame = () => {
+    socket.emit("start-game");
+}
+```
+
+Modelo de mensagem recebida:
+```js
+socket.on("start-game", (data) => {
+/*
+    data: { 
+        id: Number,
+        question: String,
+        alternatives: Array<{
+            id: Number,
+            text: String
+        }>
+    }
+*/
+})
+```
+<br>
+
+## **Respondendo questões do jogo**
+
+Para responder uma questão do jogo, basta enviar uma mensagem ```answer``` contendo os dados da resposta escolhida. Logo em seguida, os demais jogadores receberão uma mensagem com o nome ```player-answered``` contendo os dados do usuário que respondeu a questão. Após o tempo acabar ou todos os jogadores responderem, uma mensagem ```question-answers``` será enviada contendo todos os dados dos usuários naquela questão.
+
+Após esse ciclo de ações o jogador principal será responsável por ativar a próxima questão com a mensagem ```next-question```, então uma mensagem com o nome ```question-data``` será enviada para todos os usuários com os dados dessa próxima questão.
+
+Modelo de mensagem enviada (resposta de questão):
+```js
+// Answer the current question
+const answerQuestion = () => {
+    const answerId = 1;
+
+    socket.emit("answer", { id: answerId });
+}
+```
+
+Modelo de mensagem recebida pelos demais jogadores:
+```js
+// Handles other players answers
+socket.on("player-answered", (data) => {
+/*
+    data: {
+        id: Number,
+        username: String,
+        email: String,
+        occupation: "student" | "teacher",
+        created_at: <Date | string>
+    }
+*/
+})
+```
+
+Modelo de mensagem enviada para a próxima questão:
+```js
+const nextQuestion = () => {
+    socket.emit("next-question");
+}
+```
+Modelo de mensagem recebida para a próxima questão:
+```js
+// Handles next question data
+socket.on("question-data", (data) => {
+/*
+    data: { 
+        id: Number,
+        question: String,
+        alternatives: Array<{
+            id: Number,
+            text: String
+        }>
+    }
+*/
+})
+```
 
 <br>
 
