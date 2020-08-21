@@ -16,6 +16,7 @@ import { Room } from './helpers/rooms';
 import { setQuiz } from './actions/setQuiz';
 import { ready } from './actions/ready';
 import { startGame } from './actions/startGame';
+import { answer } from './actions/answer';
 
 
 /**
@@ -53,7 +54,7 @@ export function useSocket(io: Server) {
         socket.on(SocketEvents.StartGame, (data) => startGame(io, client, data));
 
         // // Lida com as respostas do jogador
-        // socket.on(SocketEvents.Answer, (data) => actions.Answer(io, client, data));
+        socket.on(SocketEvents.Answer, (data) => answer(io, client, data));
 
         // Quando o jogador for desconectado
         socket.on(SocketEvents.ClientDisconnected, (data) => clientDisconnect(io, client, data));

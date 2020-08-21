@@ -36,10 +36,12 @@ export class Game {
 
     // Questão atual
     private currentQuestionIndex: number = 0;
-    get currentQuestion() {
-        try { return this.questionsStates[this.currentQuestionIndex]; } catch { return null }
-    }
+    get currentQuestion() { return this.questionsStates[this.currentQuestionIndex] }
+
+    // Contador
+    public timer: GameTimer;
     
+
 
     constructor(room: Room) {
         this.roomId = room.id;
@@ -66,6 +68,9 @@ export class Game {
             return questionState;
         });
 
+        // Cria contador
+        this.timer = new GameTimer(this);
+
         // Salva jogo
         Game.games[this.roomId] = this;
     }
@@ -74,13 +79,16 @@ export class Game {
      * Lida com a saída de um dos jogadores
      */
     async clientLeave(io: Server, player: SocketClient) {
+        // Para o temporizador
+        this.timer.stopTimer();
+
         Game.removeGame(this.roomId);
     }
 
     /**
      * Lida com a resposta do usuário
      */
-    answerQuestion(io: Server, player: SocketClient, answer: number) {
+    answerQuestion(player: SocketClient, answer: number) {
         // Checa se o usuário respondeu corretamente
         const answerIsRight = this.currentQuestion.question.rightAnswer.id === answer;
 
@@ -101,6 +109,8 @@ export class Game {
      */
     nextQuestion() {
         this.currentQuestionIndex++;
+
+        return this.currentQuestion;
     }
 
     /**
@@ -121,15 +131,87 @@ export class Game {
     }
 
     /**
+     * Pega dados seguros de uma questão
+     */
+    getSafeQuestionData(id?: number) {
+        // Carrega o estado da questão
+        const questionId = id !== undefined ? id: this.currentQuestionIndex;
+        const questionState = this.questionsStates[questionId];
+
+        // Certifica que ela existe
+        if (questionState) {
+            const { rightAnswer, quiz, ...safeData } = questionState.question;
+
+            // Retorna dados seguros
+            return safeData
+        }
+        else 
+            return null;
+    }
+
+    /**
      * Retorna um jogo
      */
     static getGame(gameId: string) {
         return Game.games[gameId];
     }
+
     /**
      * Apaga jogo
      */
     static removeGame(gameId: string) {
         delete Game.games[gameId];
+    }
+}
+
+
+interface ICountRunnerInput {
+    times: number,
+    execute?: (game: Game, counter: number, stopTimer: () => void) => any,
+    onTimeOver?: (game: Game) => any
+}
+/**
+ * Classe base para os temporizadores dos jogos. Esses temporizadores servem para auxiliar nas tarefas de rotina do jogo (como contagem de segundos, etc).
+ */
+class GameTimer {
+    timer: NodeJS.Timer;
+    count: number;
+    game: Game;
+
+    constructor(game: Game) {
+        this.game = game;
+    }
+    
+    /**
+     * Para o contador e zera sua contagem
+     */
+    public stopTimer() {
+        this.count = 0;
+        clearInterval(this.timer);
+    }
+
+    /**
+     * Inicia uma contagem e executa uma função a cada ciclo e ao fim da contagem como um todo.
+     */
+    public countRunner ({ times, execute, onTimeOver }: ICountRunnerInput) {
+        this.count = times;
+        
+        // Cria o contador
+        this.timer = setInterval(() => {
+    
+            // Para o contador e executa callback
+            if (this.count == 0) {
+                this.stopTimer();
+
+                if (onTimeOver)
+                    onTimeOver(this.game);
+            }
+    
+            // Executa callback
+            if (execute)
+                execute(this.game, this.count, this.stopTimer);
+    
+            this.count--;
+        }, 1000);
     }
 }

@@ -29,19 +29,21 @@ export const SocketEvents = {
     PlayerReady: "player-ready",
     GameStart: "game-start",
 
+    // Ciclo de jogo
+    GameTimer: "game-timer",
+    TimeOut: "time-out",
+    RightAnswer: "right-answer",
+    WrongAnswer: "wrong-answer",
+    PlayerAnswered: "player-answered",
+
     
 
     MainPlayerOut: "main-player-out",
     SecondaryPlayerOut: "secondary-player-out",
 
     // Cíclo
-    NextQuestion: "next-question",
-    AnswerCounter: "answer-counter",  
-    OponentAnswered: "oponent-answered",
-    RightAnswer: "right-answer",
-    WrongAnswer: "wrong-answer",
+    NextQuestion: "next-question",  
     BothAnswered: "both-answered",
-    TimeOut: "time-out",
     EndGame: "end-game",
     OponentOut: "oponent-out",
 };
@@ -68,11 +70,12 @@ export const GameExceptions = {
     QuizDoesNotExist: { name: "quiz-does-not-exist", code: 8, message: "O Quiz não existe" },
     UserAlreadyInGame: { name: "user-in-game", code: 9, message: "O usuário ainda está em jogo" },
     RoomIncomplete: { name: "room-incomplete", code: 10, message: "A sala não está completa" },
+    UserNotInGame: { name: "user-not-in-game", code: 13, message: "O usuário não está participando do jogo"},
+    QuestionAlreadyAnswered: { name: 'question-already-answered', code: 12, message: "O usuário já respondeu essa questão" },
 
 
     GameDoesNotExist: { name: "game-does-not-exist", code: 3, message: "O Jogo não existe" },
     MatchDoesNotExist: { name: "match-does-not-exist", code: 4, message: "Essa sessão de jogo não existe" },
     RoomIsEmpty: { name: "room-is-empty", code: 8, message: "Esse jogo está vazio" },
     UserNotInMatch: { name: "user-not-in-match", code: 11, message: "O usuário não está em um match" },
-    UserNotInGame: { name: "user-not-in-game", code: 13, message: "O usuário não está participando do jogo"},
 }

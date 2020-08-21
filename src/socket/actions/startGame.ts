@@ -2,32 +2,47 @@ import { Server } from "socket.io";
 import { SocketClient } from "../helpers/clients";
 import { GameExceptions, SocketEvents } from "@config/socket";
 import { Game } from "../helpers/games";
+import { clientIsInRoom, clientIsMainPlayer, clientIsInGame } from "../helpers/validator";
 
 /**
  * Ação que permite o início do jogo na aplicação. Os jogos são voláteis e armazenam estados úteis dos jogadores, suas pontuações e validam suas respostas, etc.
  */
 export function startGame(io: Server, client: SocketClient, data?: any) {
-    const { room } = client;
+    try {
+        // Certifica que o cliente está em uma sala, é o principal e não está em jogo
+        const room = clientIsInRoom(client, true);
+        const isMainPlayer = clientIsMainPlayer(client, room);
+        const isInGame = clientIsInGame(client, false);
 
-    // Certifica que o cliente está em uma sala
-    if (!room)
-        return client.emitError(GameExceptions.RoomDoesNotExist);
+        // Certifica que há pelo menos 2 jogadores
+        if (room.clients.length < 2)
+            return client.emitError(GameExceptions.RoomIncomplete);
 
-    // Certifica que o cliente é o cliente principal
-    if (room.mainClient.user.id !== client.user.id)
-        return client.emitError(GameExceptions.PermissionDenied);
+        // Cria o jogo
+        const game = new Game(room);
 
-    // Certifica que o cliente não está em jogo
-    if (client.inGame)
-        return client.emitError(GameExceptions.UserAlreadyInGame);
+        // Pega primeira questão
+        const questionData = game.getSafeQuestionData();
 
-    // Certifica que há pelo menos 2 jogadores
-    if (room.clients.length < 2)
-        return client.emitError(GameExceptions.RoomIncomplete);
+        // Avisa aos jogadores que o jogo foi criado
+        room.sendToAll(io, SocketEvents.GameStart, questionData);
 
-    // Cria o jogo
-    const game = new Game(room);
+        // Inicia contador
+        game.timer.countRunner({
+            times: 30,
+            execute: (game, count) => {
+                // Envia mensagem de tempo para todos da sala
+                game.room.sendToAll(io, SocketEvents.GameTimer, { count });
+            },
+            onTimeOver: (game) => {
+                // Envia mensagem de tempo acabado
+                game.room.sendToAll(io, SocketEvents.TimeOut);
+            }
+        })
 
-    // Avisa aos jogadores que o jogo foi criado
-    return room.sendToAll(io, SocketEvents.GameStart);
+    // Lida com possíveis erros
+    } catch(error) {
+        if (error.name !== SocketEvents.GameError)
+            throw error;
+    }
 }

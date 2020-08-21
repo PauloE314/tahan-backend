@@ -110,29 +110,6 @@ export async function getGoogleUserData(access_token: string, options?: { raise:
 }
 
 
-// Executa um método um dado número de vezes
-export async function count_runner ( data: { times: number, execute?: (counter: number, stopTimmer: () => void) => any, on_time_over?: () => any }) {
-    let counter = data.times;
-    const execute = data.execute ? data.execute : () => {};
-    const on_time_over = data.on_time_over ? data.on_time_over : () => {};
-    // Cria o contador
-    const timmer = setInterval(() => {
-        // Caso o contador acabe
-        if (counter == 0) {
-            stopTimmer();
-            on_time_over();
-        }
-
-        execute(counter, stopTimmer);
-
-        counter--;
-    }, 1000);
-    // Função de parar a contagem
-    const stopTimmer = () => clearInterval(timmer);
-}
-
-
-
 /**
  * Gera uma string aleatória
  */
@@ -171,7 +148,7 @@ export function randomizeArray<T>(array: Array<T>) {
 
 
 /**
- * Decorator que certifica que, caso ocorra um erro, o server são será quebrado. 
+ * Decorator que certifica que, caso ocorra um erro, o server são será quebrado. Dedicado a chamadas HTTP
  */
 export function APIRoute (target: any, key:any, descriptor?: PropertyDescriptor): any {
     let func = (...data: any) => {};
@@ -197,6 +174,7 @@ export function APIRoute (target: any, key:any, descriptor?: PropertyDescriptor)
         }
     };
 }
+
 
 
 /**

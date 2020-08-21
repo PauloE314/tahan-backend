@@ -8,6 +8,7 @@ export class Err extends Error {
     
     constructor(name: string, data: any) {
         super();
+        this.name = name;
         this.data = {
             name,
             data
