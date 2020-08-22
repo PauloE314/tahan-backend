@@ -1,25 +1,14 @@
 import { Server } from "socket.io";
 import { SocketClient } from "../helpers/clients";
-import { clientIsInGame, clientIsInRoom, clientIsMainPlayer } from "../helpers/validator";
 import { SocketEvents, GameExceptions } from "@config/socket";
 
 /**
  * Ação que permite o jogador ir para a próxima questão do quiz. Essa ação só é permitida quando todos os jogadores estiverem prontos.
  */
 export async function nextQuestion(io: Server, client: SocketClient, data?: any) {
-    try {        
-        // Certifica que o jogador que está realizando essa requisição é válido
-        const room = clientIsInRoom(client, true);
-        const game = clientIsInGame(client, true);
-        const isMainPlayer = clientIsMainPlayer(client, room);
-    
-        // Certifica que não estão em questão
-        if (game.state === 'onQuestion')
-            return client.emitError(GameExceptions.InvalidAction);
-    
-        // Certifica que todos estão prontos
-        if (!game.room.allReady())
-            return client.emitError(GameExceptions.NotAllReady);
+    try {
+        // Aplica validação de ação
+        const { game } = nextQuestionValidation(io, client, data);
     
         // Pega dados da questão
         const questionData = game.getSafeQuestionData();
@@ -62,4 +51,35 @@ export async function nextQuestion(io: Server, client: SocketClient, data?: any)
         if (error.name !== SocketEvents.GameError)
             throw error;
     }
+}
+
+
+/**
+ * Validação de solicitação para a próxima questão do jogo
+ */
+function nextQuestionValidation(io: Server, client: SocketClient, data?: any) {
+    const { room } = client;
+
+    // Certifica que o cliente está na sala
+    if (!room)
+        client.emitError(GameExceptions.RoomDoesNotExist).raise();
+
+    // Certifica que o cliente está em jogo
+    const { game } = room;
+    if (!game)
+        client.emitError(GameExceptions.GameDoesNotExist).raise();
+
+    // Certifica que o cliente é o jogador principal
+    if (client.user.id !== room.mainClient.user.id)
+        client.emitError(GameExceptions.PermissionDenied).raise();
+
+    // Certifica que o estado do jogo é válido
+    if (game.state !== 'onInterval')
+        client.emitError(GameExceptions.InvalidAction).raise();
+
+    // Certifica que todos estão prontos
+    if (!room.allReady())
+        client.emitError(GameExceptions.NotAllReady).raise();
+
+    return { room, game };
 }

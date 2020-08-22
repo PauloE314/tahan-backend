@@ -2,23 +2,17 @@ import { Server } from "socket.io";
 import { SocketClient } from "../helpers/clients";
 import { SocketEvents, GameExceptions } from "@config/socket";
 import { messagePrint } from "src/utils";
-import { clientIsInRoom } from "../helpers/validator";
 
 /**
  * Ação que permite o jogador afirmar que está pronto para os demais jogadores da sala.
  */
 export function ready(io: Server, client: SocketClient, data?: any) {
     try {
-        // Certifica que a sala existe
-        const room = clientIsInRoom(client, true);
-
-        // Certifica que a questão não está rodando
-        if (client.inGame)
-            if (client.room.game.runningQuestion)
-                return client.emitError(GameExceptions.InvalidAction);
+        // Aplica validação de prontidão
+        const { room } = readyValidation(io, client, data);
 
         // Mensagem
-        messagePrint(`[USUÁRIO PRONTO]: username: ${client.user.username}, roomId: ${room.id}, total de clientes na sala: ${room.clients.length}`);
+        messagePrint(`[USUÁRIO PRONTO]: username: ${client.user.username}, roomId: ${room.id}, total de clientes na sala: ${room.clientList.length}`);
 
         // Seta o usuário como pronto
         client.isReady = true;
@@ -31,4 +25,22 @@ export function ready(io: Server, client: SocketClient, data?: any) {
         if (error.name !== SocketEvents.GameError)
             throw error;
     }
+}
+
+/**
+ * Aplica a validação de prontidão
+ */
+function readyValidation(io: Server, client: SocketClient, data?: any) {
+    const { room } = client;
+
+    // Certifica que o cliente está em uma sala
+    if (!room)
+        client.emitError(GameExceptions.RoomDoesNotExist).raise();
+
+    // Certifica que a questão não está rodando
+    if (client.inGame)
+        if (client.room.game.state !== 'onInterval')
+            client.emitError(GameExceptions.InvalidAction).raise();
+
+    return { room };
 }

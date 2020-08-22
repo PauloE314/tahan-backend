@@ -1,7 +1,6 @@
 import { Server } from "socket.io";
 import { SocketClient } from "../helpers/clients";
 import { SocketEvents, GameExceptions } from "@config/socket";
-import { clientIsInRoom, clientIsInGame } from "../helpers/validator";
 import { messagePrint } from "src/utils";
 
 /**
@@ -10,16 +9,7 @@ import { messagePrint } from "src/utils";
 export function answer(io: Server, client: SocketClient, data: any) {
     try {
         // Certifica que o usuário está em sala e em jogo
-        const room = clientIsInRoom(client, true);
-        const game = clientIsInGame(client, true);
-
-        // Certifica que há uma questão pra responder
-        if (game.state !== 'onQuestion')
-            return client.emitError(GameExceptions.InvalidAction);
-        
-        // Certifica que o jogador ainda não respondeu a questão
-        if(game.currentQuestion.playerAnswers[client.user.id].state)
-            return client.emitError(GameExceptions.QuestionAlreadyAnswered);
+        const { room, game } = answerValidation(io, client, data);
             
         // Pega a resposta do usuário
         const answer = data ? data.id : -1;
@@ -65,4 +55,32 @@ export function answer(io: Server, client: SocketClient, data: any) {
         if (error.name !== SocketEvents.GameError)
             throw error;
     }
+}
+
+/**
+ * Valida a ação de responder uma questão
+ */
+function answerValidation(io: Server, client: SocketClient, data?: any) {
+    const { room } = client;
+
+    // Certifica que a sala existe
+    if (!room)
+        client.emitError(GameExceptions.RoomDoesNotExist).raise();
+
+    // Certifica que o jogo está acontecendo
+    const { game } = room;
+    if (!game)
+        client.emitError(GameExceptions.GameDoesNotExist).raise();
+
+    // Certifica que o estado do jogo é válido
+    if (game.state !== 'onQuestion')
+        client.emitError(GameExceptions.InvalidAction).raise();
+
+    // Certifica que o jogador ainda não respondeu
+    if (game.currentQuestion.playerAnswers[client.user.id].state !== null) {
+        client.emitError(GameExceptions.InvalidAction).raise();
+    }
+
+
+    return { game, room };
 }

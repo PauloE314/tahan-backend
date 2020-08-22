@@ -3,21 +3,17 @@ import { SocketClient } from "../helpers/clients";
 import { Room } from "../helpers/rooms";
 import { GameExceptions, SocketEvents } from "@config/socket";
 import { messagePrint } from "src/utils";
-import { clientIsInRoom } from "../helpers/validator";
 
 /**
  * Ação do socket que permite criar uma sala de jogo. O jogador que cria a sala de jogo se torna automaticamente seu jogador principal.
  */
 export function createRoom(io: Server, client: SocketClient, data?: any) {
     try {
-        // const roomSize = data ? (data.size ? <number>data.size : 2) : 2;
-        const roomSize = 2;
-
-        // Certifica que o jogador não está em outra sala
-        clientIsInRoom(client, false);
+        // Valida ação de criação
+        createRoomValidation(io, client, data);
 
         // Cria a sala
-        const room = new Room(roomSize);
+        const room = new Room(2);
 
         // Adiciona o cliente
         room.addClient(io, client);
@@ -41,4 +37,15 @@ export function createRoom(io: Server, client: SocketClient, data?: any) {
         if (error.name !== SocketEvents.GameError)
             throw error;
     }
+}
+
+/**
+ * Função de validação de criação de sala
+ */
+function createRoomValidation(io: Server, client: SocketClient, data?: any) {
+    const { room } = client;
+
+    // Certifica que o cliente não está em uma sala
+    if (room)
+        client.emitError(GameExceptions.UserAlreadyInRoom).raise();
 }

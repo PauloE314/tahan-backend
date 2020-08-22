@@ -2,6 +2,7 @@
 export const SocketEvents = {
     ///------------- Eventos do cliente -------------//
     ClientConnect: "connect",
+    ClientDisconnected: "disconnecting",
 
     // Ações com a sala
     CreateRoom: "create-room",
@@ -12,10 +13,6 @@ export const SocketEvents = {
     StartGame: "start-game",
     Answer: "answer",
     NextQuestion: "next-question",
-
-
-    ClientDisconnected: "disconnecting",
-
 
     //------------- Eventos do server -------------//
     GameError: "game-error",
@@ -39,23 +36,6 @@ export const SocketEvents = {
     QuestionData: "question-data",  
     EveryBodyAnswered: "every-body-answered",
     EndGame: "end-game",
-
-    
-
-    MainPlayerOut: "main-player-out",
-    SecondaryPlayerOut: "secondary-player-out",
-
-    // Cíclo
-    OponentOut: "oponent-out",
-};
-
-
-/* Listagem de estados do jogo */
-export const GameStates = {
-    Begin: "begin",
-    Playing: "playing",
-    BeforeEnd: "before-end",
-    Ended: "ended"
 };
 
 /* Listagem de erros */
@@ -71,13 +51,7 @@ export const GameExceptions = {
     QuizDoesNotExist: { name: "quiz-does-not-exist", code: 8, message: "O Quiz não existe" },
     UserAlreadyInGame: { name: "user-in-game", code: 9, message: "O usuário ainda está em jogo" },
     RoomIncomplete: { name: "room-incomplete", code: 10, message: "A sala não está completa" },
-    UserNotInGame: { name: "user-not-in-game", code: 13, message: "O usuário não está participando do jogo"},
-    QuestionAlreadyAnswered: { name: 'question-already-answered', code: 12, message: "O usuário já respondeu essa questão" },
-    NotAllReady: { name: 'not-all-ready', code: 14, message: "Ainda há usuários que não estão prontos"},
 
-
-    GameDoesNotExist: { name: "game-does-not-exist", code: 3, message: "O Jogo não existe" },
-    MatchDoesNotExist: { name: "match-does-not-exist", code: 4, message: "Essa sessão de jogo não existe" },
-    RoomIsEmpty: { name: "room-is-empty", code: 8, message: "Esse jogo está vazio" },
-    UserNotInMatch: { name: "user-not-in-match", code: 11, message: "O usuário não está em um match" },
+    NotAllReady: { name: 'not-all-ready', code: 11, message: "Ainda há usuários que não estão prontos"},
+    GameDoesNotExist: { name: "game-does-not-exist", code: 12, message: "O jogo não existe" },
 }

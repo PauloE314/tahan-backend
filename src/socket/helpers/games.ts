@@ -61,7 +61,7 @@ export class Game {
 
     constructor(room: Room) {
         this.roomId = room.id;
-        const { clients, quiz } = this.room;
+        const { clientList, quiz } = this.room;
 
         // Randomiza as questões
         const randomQuestions = randomizeArray(quiz.questions);
@@ -76,7 +76,7 @@ export class Game {
             };
 
             // Registra todos os clientes em cada questão
-            clients.forEach(client => questionState.playerAnswers[client.user.id] = {
+            clientList.forEach(client => questionState.playerAnswers[client.user.id] = {
                 answerId: null,
                 state: null
             });
@@ -129,14 +129,10 @@ export class Game {
 
         // // Salva o histórico de partida
         // await getRepository(GameHistoric).save(gameHistoric);
-        const player1 = this.room.clients[0];
-        const player2 = this.room.clients[1];
-
 
         // Calcula scores dos jogadores
         const playerScores: IPlayerScore = {};
-        
-        this.room.clients.forEach(client => {
+        this.room.clientList.forEach(client => {
             // Calcula score do jogador
             const playerScore = (this.questionsStates.filter(state => (
                 state.playerAnswers[client.user.id].state == 'right'
@@ -148,15 +144,24 @@ export class Game {
         // Cria dados de fim de jogo
         const endGameData: IEndGameData = { draw: false, winner: null, scores: playerScores };
 
+        // Ordena os scores dos jogadores
+        const sortedScores = Object.entries(playerScores).sort((p1, p2) => {
+            return p2[1] - p1[1];
+        });
+
+        // Dados dos usuários com maiores pontuações
+        const firstPlaceId = Number(sortedScores[0][0]);
+        const secondPlaceId = Number(sortedScores[1][0]);
+
         // Checa se deu empate
-        if (playerScores[player1.user.id] === playerScores[player2.user.id])
+        if (playerScores[firstPlaceId] === playerScores[secondPlaceId])
             endGameData.draw = true;
             
         // Escolher vencedor
         else
-            endGameData.winner = playerScores[player1.user.id] > playerScores[player2.user.id] ?
-                player1.user:
-                player2.user;
+            endGameData.winner = playerScores[firstPlaceId] > playerScores[secondPlaceId] ?
+                this.room.clients[firstPlaceId].user:
+                this.room.clients[secondPlaceId].user;
           
         // Avisa que o jogo acabou
         this.room.sendToAll(io, SocketEvents.EndGame, endGameData);

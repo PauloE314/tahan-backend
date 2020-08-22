@@ -2,7 +2,6 @@ import { Server } from "socket.io";
 import { SocketClient } from "../helpers/clients";
 import { GameExceptions, SocketEvents } from "@config/socket";
 import { Game } from "../helpers/games";
-import { clientIsInRoom, clientIsMainPlayer, clientIsInGame } from "../helpers/validator";
 import { nextQuestion } from "./nextQuestion";
 
 /**
@@ -10,32 +9,52 @@ import { nextQuestion } from "./nextQuestion";
  */
 export function startGame(io: Server, client: SocketClient, data?: any) {
     try {
-        // Certifica que o cliente está em uma sala, é o principal e não está em jogo
-        const room = clientIsInRoom(client, true);
-        clientIsMainPlayer(client, room);
-        clientIsInGame(client, false);
-
-        // Certifica que o qui já foi escolhido
-        if (!room.quiz)
-            return client.emitError(GameExceptions.QuizDoesNotExist);
-
-        // Certifica que há pelo menos 2 jogadores
-        if (room.clients.length < 2)
-            return client.emitError(GameExceptions.RoomIncomplete);
-
-        // Certifica que todos estão prontos
-        if (!room.allReady())
-            return client.emitError(GameExceptions.NotAllReady);
-
+        // Aplica validação de ação
+        const { room } = startGameValidation(io, client, data);
+        
         // Cria o jogo
-        new Game(room);
+        const game = new Game(room);
+        game.state = 'onInterval';
 
         // Próxima questão (no caso, a primeira)
-        nextQuestion(io, client, data);
+        return nextQuestion(io, client, data);
 
     // Lida com possíveis erros
     } catch(error) {
         if (error.name !== SocketEvents.GameError)
             throw error;
     }
+}
+
+/**
+ * Valida as ações de iniciação de jogo
+ */
+function startGameValidation(io: Server, client: SocketClient, data?: any) {
+    const { room } = client;
+
+    // Certifica que o cliente está em uma sala
+    if (!room) 
+        client.emitError(GameExceptions.RoomDoesNotExist).raise();
+
+    // Certifica que ele não está em jogo
+    if (client.inGame) 
+        client.emitError(GameExceptions.UserAlreadyInGame).raise();
+
+    // Certifica que é o cliente principal
+    if (client.user.id !== room.mainClient.user.id) 
+        client.emitError(GameExceptions.PermissionDenied).raise();
+
+    // Certifica que o quiz já foi escolhido
+    if (!room.quiz) 
+        client.emitError(GameExceptions.QuizDoesNotExist).raise();
+
+    // Certifica que há pelo menos 2 jogadores
+    if (room.clientList.length < 2) 
+        client.emitError(GameExceptions.RoomIncomplete).raise();
+
+    // Certifica que todos estão prontos
+    if (!room.allReady()) 
+        client.emitError(GameExceptions.NotAllReady).raise();
+
+    return { room };
 }

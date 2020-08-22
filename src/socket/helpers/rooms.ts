@@ -22,8 +22,8 @@ export class Room {
     public size: number;
 
     // Jogadores
-    // public clients: IClientList = {};
-    public clients: Array<SocketClient>
+    public clients: IClientList = {};
+    get clientList (): Array<SocketClient> { return Object.values(this.clients); }
     public mainClient: SocketClient;
 
     // Jogo
@@ -64,23 +64,28 @@ export class Room {
         client.roomId = this.id;
         client.socket.join(this.id);
         
-        this.clients.push(client);
+        this.clients[client.user.id] = client;
     }
 
     /**
      * Checa se todos estão prontos 
      */
     allReady() {
-        const allReady = !(this.clients.find(client => client.isReady === false));
+        for (const client of this.clientList) {
+            // Checa se um cliente não está pronto
+            if (client.isReady === false)
+                return false;
+        }
         
-        return allReady;
+        return true;
     }
 
     /**
      * Seta todos como não prontos 
      */
     setAllNotReady() {
-        this.clients.forEach(client => client.isReady = false);
+        for (const client of this.clientList)
+            client.isReady = false;
     }
 
 
@@ -96,7 +101,7 @@ export class Room {
         client.emitToRoom(SocketEvents.PlayerLeaveRoom, client.user);
 
         // Remove o jogador da lista de jogadores
-        this.clients = this.clients.filter(roomClient => roomClient.user.id !== client.user.id);
+        delete this.clients[client.user.id];
 
         // Sai da sala do socket
         client.socket.leave(client.roomId);    
@@ -106,12 +111,12 @@ export class Room {
         client.emit(SocketEvents.RoomLeaved);
 
         // Caso a sala ainda tenha clientes
-        if (this.clients.length !== 0)  {
+        if (Object.keys(this.clients).length !== 0)  {
             // Seta um novo cliente principal
             this.mainClient = this.clients[0];
 
             // Mensagem
-            messagePrint(`[USUÁRIO SAINDO DE SALA]: username: ${client.user.username} id: ${this.id}, total de usuários da sala: ${this.clients.length}, total de salas: ${Object.keys(Room.rooms).length}`);
+            messagePrint(`[USUÁRIO SAINDO DE SALA]: username: ${client.user.username} id: ${this.id}, total de usuários da sala: ${Object.keys(this.clients).length}, total de salas: ${Object.keys(Room.rooms).length}`);
         }
         
 

@@ -95,7 +95,15 @@ Segue a lista dos erros possíveis para essa etapa:
     ```
 
 - ### **Sala não existe:**
-    Ocorre quando o usuário não está em uma sala de jogo e tenta sair dela (com a mensagem ```leave-room```) ou quando o usuário tenta entrar em uma sala de jogo (com a mensagem ```join-room```) e o id da sala é inválido (ou coisas desse tipo).
+    Ocorre quando alguma ação necessita que o cliente esteja em uma sala de jogo, mas não está. No geral, pode ocorrer quando o usuário tenta:
+    - Responder uma questão.
+    - Entrar em uma sala de jogo.
+    - Sair de uma sala de jogo.
+    - Avançar para a próxima questão.
+    - Afirmar sua prontidão.
+    - Escolher um quiz.
+    - Começar um jogo.
+
 
     Modelo de dados recebidos do erro:
     ```json
@@ -107,7 +115,9 @@ Segue a lista dos erros possíveis para essa etapa:
     ```
 
 - ### **Usuário já está em sala:**
-    Ocorre quando o usuário vai criar ou entrar em uma sala, mas ainda está em outra.
+    Ocorre quando o usuário já está em uma sala e o usuário tenta:
+    - Criar em uma sala.
+    - Entrar em uma sala.
 
     Modelo de dados recebidos do erro:
     ```json
@@ -119,7 +129,8 @@ Segue a lista dos erros possíveis para essa etapa:
     ```
 
 - ### **A sala está cheia:**
-    Ocorre quando o usuário tenta entrar em uma sala, mas ela já está cheia.
+    Ocorre quando a sala já tem 2 usuários, mas o usuário tenta:
+    - Entrar na sala.
 
     Modelo de dados recebidos do erro:
     ```json
@@ -132,7 +143,11 @@ Segue a lista dos erros possíveis para essa etapa:
 
 
 - ### **Ação inválida:**
-    Ocorre quando há uma ação inválida para o estado atual da aplicação, por exemplo, quando se tenta escolher o quiz, mas o jogador ainda está em game ou coisas desse tipo. É uma mensagem mais genérica para casos meio absurdos.
+    É um erro genérico que ocorre em alguns momentos. No geral, pode ocorrer quando o usuário tenta:
+    -  Responder uma questão, mas o jogo não está no estado de resposta (está esperando os jogadores dizerem que estão prontos).
+    -  Responder uma questão, mas ele já respondeu anteriormente.
+    -  Avançar para a próxima questão, mas o jogo está no estado de resposta (ou seja, está com o tempo contando, etc).
+    -  Afirmar sua prontidão, mas o jogo está no estado de resposta.
 
     Modelo de dados recebidos do erro:
     ```json
@@ -145,7 +160,9 @@ Segue a lista dos erros possíveis para essa etapa:
 
 
 - ### **Quiz não existe:**
-    Ocorre quando o jogador principal tenta escolher um quiz que não existe para uma partida.
+    Ocorre quando o quiz não foi escolhido, mas o jogador principal tenta:
+    - Escolher um quiz com um id inválido.
+    - Começar o jogo sem escolher o quiz.
 
     Modelo de dados recebidos do erro:
     ```json
@@ -157,8 +174,10 @@ Segue a lista dos erros possíveis para essa etapa:
     ```
 
 - ### **O jogador já está em jogo:**
-    Ocorre quando um jogador tenta criar um jogo (começar o jogo, não uma sala), mas já está no meio de outro jogo.
-
+    Ocorre quando o jogador ainda está em jogo e tenta:
+    - Criar um novo jogo;
+    - Escolher um quiz;
+    
     Modelo de dados recebidos do erro:
     ```json
     {
@@ -169,7 +188,8 @@ Segue a lista dos erros possíveis para essa etapa:
     ```
 
 - ### **Sala incompleta:**
-    Ocorre quando o jogador principal tenta começar o jogo, mas a sala está incompleta.
+    Ocorre quando a sala está incompleta (menos de 2 jogadores) e o jogador principal tenta:
+    - Começar o jogo
 
     Modelo de dados recebidos do erro:
     ```json
@@ -177,5 +197,34 @@ Segue a lista dos erros possíveis para essa etapa:
         "code": 10,
         "name": "room-incomplete",
         "message": "A sala não está completa"
+    }
+    ```
+
+
+- ### **Nem todos estão prontos:**
+    Ocorre quando nem todos os players estão prontos, mas o usuário principal tenta:
+        - Começar uma partida;
+        - Avançar para a próxima questão
+
+    Modelo de dados recebidos do erro:
+    ```json
+    {
+        "code": 11,
+        "name": "not-all-ready",
+        "message": "Ainda há usuários que não estão prontos"
+    }
+    ```
+
+- ### **O jogo não existe:**
+    Ocorre quando:
+    - O usuário tenta responder uma questão, mas não está em jogo;
+    - O usuário tenta avançar para a próxima questão, mas não está em jogo;
+
+    Modelo de dados recebidos do erro:
+    ```json
+    {
+        "code": 12,
+        "name": "game-does-not-exist",
+        "message": "O jogo não existe"
     }
     ```

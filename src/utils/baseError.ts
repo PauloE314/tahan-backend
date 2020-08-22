@@ -1,5 +1,7 @@
 import { SocketEvents } from "@config/socket";
 import { APISocket } from "src/@types/socket";
+import { Server } from "socket.io";
+import { SocketClient } from "src/socket/helpers/clients";
 /**
  * Erro base da aplicação que permite a utilização de vários dados, não apenas strings
  */
@@ -36,5 +38,10 @@ export class GameError {
     // Envia o erro ao cliente
     sendToClient(client: APISocket) {
         client.emit(SocketEvents.GameError, this.gameError);
+    }
+
+    // Ativa o erro
+    raise() {
+        throw this.error;
     }
 }
