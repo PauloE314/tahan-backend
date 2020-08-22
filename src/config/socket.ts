@@ -10,9 +10,10 @@ export const SocketEvents = {
     SetQuiz: "set-quiz",
     Ready: "ready",
     StartGame: "start-game",
-
-
     Answer: "answer",
+    NextQuestion: "next-question",
+
+
     ClientDisconnected: "disconnecting",
 
 
@@ -35,6 +36,9 @@ export const SocketEvents = {
     RightAnswer: "right-answer",
     WrongAnswer: "wrong-answer",
     PlayerAnswered: "player-answered",
+    QuestionData: "question-data",  
+    EveryBodyAnswered: "every-body-answered",
+    EndGame: "end-game",
 
     
 
@@ -42,9 +46,6 @@ export const SocketEvents = {
     SecondaryPlayerOut: "secondary-player-out",
 
     // Cíclo
-    NextQuestion: "next-question",  
-    BothAnswered: "both-answered",
-    EndGame: "end-game",
     OponentOut: "oponent-out",
 };
 
@@ -72,6 +73,7 @@ export const GameExceptions = {
     RoomIncomplete: { name: "room-incomplete", code: 10, message: "A sala não está completa" },
     UserNotInGame: { name: "user-not-in-game", code: 13, message: "O usuário não está participando do jogo"},
     QuestionAlreadyAnswered: { name: 'question-already-answered', code: 12, message: "O usuário já respondeu essa questão" },
+    NotAllReady: { name: 'not-all-ready', code: 14, message: "Ainda há usuários que não estão prontos"},
 
 
     GameDoesNotExist: { name: "game-does-not-exist", code: 3, message: "O Jogo não existe" },

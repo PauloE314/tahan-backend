@@ -12,6 +12,10 @@ export function answer(io: Server, client: SocketClient, data: any) {
         // Certifica que o usuário está em sala e em jogo
         const room = clientIsInRoom(client, true);
         const game = clientIsInGame(client, true);
+
+        // Certifica que há uma questão pra responder
+        if (game.state !== 'onQuestion')
+            return client.emitError(GameExceptions.InvalidAction);
         
         // Certifica que o jogador ainda não respondeu a questão
         if(game.currentQuestion.playerAnswers[client.user.id].state)
@@ -24,19 +28,34 @@ export function answer(io: Server, client: SocketClient, data: any) {
         const answerState = game.answerQuestion(client, answer);
 
         // Notifica resposta do usuário
-        const answerEvent = answerState == 'right' ? SocketEvents.RightAnswer : SocketEvents.WrongAnswer;
-        client.emit(answerEvent);
         client.emitToRoom(SocketEvents.PlayerAnswered, client.user);
 
         messagePrint(`[USUÁRIO RESPONDEU]: username: ${client.user.username}, gameId: ${client.roomId}, answer: ${answerState}`);
 
         // Checa se todos responderam
         if (game.allAnswered()) {
+            // Restaura estado inicial de jogo
+            game.state = 'onInterval';
+            game.room.setAllNotReady();
 
             // Limpa temporizador
             game.timer.stopTimer();
 
-            console.log('GERAL RESPONDEU');
+            // Dados dos jogadores
+            const turnScore = {
+                playerAnswers: game.currentQuestion.playerAnswers,
+                rightAnswer: game.currentQuestion.question.rightAnswer
+            };
+
+            // Avisa que todos responderam
+            game.room.sendToAll(io, SocketEvents.EveryBodyAnswered, turnScore);   
+            
+            // Avança para próxima questão
+            const nextQuestion = game.nextQuestion();
+
+            // Caso não hajam mais questões, termina o jogo
+            if (!nextQuestion)
+                return game.endGame(io);
         }
         
         return;

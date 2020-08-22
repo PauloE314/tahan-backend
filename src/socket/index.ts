@@ -17,6 +17,7 @@ import { setQuiz } from './actions/setQuiz';
 import { ready } from './actions/ready';
 import { startGame } from './actions/startGame';
 import { answer } from './actions/answer';
+import { nextQuestion } from './actions/nextQuestion';
 
 
 /**
@@ -47,14 +48,17 @@ export function useSocket(io: Server) {
         // Escolhe o quiz
         socket.on(SocketEvents.SetQuiz, (data) => setQuiz(io, client, data));
 
-        // // Afirma estar pronto
+        // Afirma estar pronto
         socket.on(SocketEvents.Ready, (data) => ready(io, client, data));
 
-        // // Começa o jogo
+        // Começa o jogo
         socket.on(SocketEvents.StartGame, (data) => startGame(io, client, data));
 
-        // // Lida com as respostas do jogador
+        // Lida com as respostas do jogador
         socket.on(SocketEvents.Answer, (data) => answer(io, client, data));
+
+        // Avança para a próxima questão
+        socket.on(SocketEvents.NextQuestion, (data) => nextQuestion(io, client, data));
 
         // Quando o jogador for desconectado
         socket.on(SocketEvents.ClientDisconnected, (data) => clientDisconnect(io, client, data));

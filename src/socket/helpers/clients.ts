@@ -19,6 +19,7 @@ export class SocketClient {
     // Propriedades do cliente
     public socket: APISocket;
     public user: Users;
+    public isReady: boolean;
 
     // Sala a qual o usuário pertence
     public roomId?: string;
@@ -28,6 +29,7 @@ export class SocketClient {
     constructor(socket: APISocket, user: Users) { 
         this.socket = socket;
         this.user = user;
+        this.isReady = false;
         
         // Salva o cliente na lista de clientes
         SocketClient.clients[this.user.id] = this;

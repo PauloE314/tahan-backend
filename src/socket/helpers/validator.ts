@@ -7,7 +7,7 @@ type TConditionalOutput<MainType, T> = T extends true? MainType : (T extends fal
 
 
 /**
- * Certifica se o usuário está em uma sala. Obriga o estado do usuário (se ele está em uma sala ou não) a ser o valor passado como parâmetro. Caso não seja, ocorre um erro. É possível especificar se se quer que o erro ocorre ou não, por padrão ele ocorre.
+ * Certifica se o usuário está em uma sala. Obriga o estado do usuário (se ele está em uma sala ou não) a ser o valor passado como parâmetro.
  */
 export function clientIsInRoom<T extends boolean>(client: SocketClient, itIs: T, raiseError = true): TConditionalOutput<Room, T> {
     const { inRoom } = client;

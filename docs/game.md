@@ -227,7 +227,11 @@ socket.on("player-ready", (data) => {
 <br>
 
 ## **Começando o jogo**
-Para iniciar o jogo, o jogador principal precisa enviar uma mensagem chamada ```start-game``` (não é necessário nenhum dado). Todos os jogadores (incluindo o principal) receberão uma mensagem de confirmação com o nome ```game-start``` que contém os dados da primeira questão. Essa ação é muito importante porque dará início ao loop do jogo.
+Para iniciar o jogo, o jogador principal precisa enviar uma mensagem chamada ```start-game``` (não é necessário nenhum dado). Essa ação é muito importante pois iniciará todo o loop do jogo.
+
+Após o envio dessa mensagem, todos os jogadores receberão uma mensagem contendo os dados da primeira questão com o nome ```question-data```. Esse mesmo evento será disparado para todas as outras questões até o fim do quiz.
+
+É importante notar que depois do início do jogo (e durante as questões depois da primeira) os jogadores terão 30 segundos para responder a questão. Um evento chamado ```game-timer``` será disparado a cada segundo contando o tempo. Ao fim dos 30 segundos, o evento ```time-out``` será disparado contendo os dados de resposta de cada usuário (veja a seção [Respondendo questões do jogo](#respondendo-questões-do-jogo) para mais informações).
 
 Modelo de mensagem enviada:
 ```js
@@ -239,62 +243,6 @@ const startGame = () => {
 
 Modelo de mensagem recebida:
 ```js
-socket.on("start-game", (data) => {
-/*
-    data: { 
-        id: Number,
-        question: String,
-        alternatives: Array<{
-            id: Number,
-            text: String
-        }>
-    }
-*/
-})
-```
-<br>
-
-## **Respondendo questões do jogo**
-
-Para responder uma questão do jogo, basta enviar uma mensagem ```answer``` contendo os dados da resposta escolhida. Logo em seguida, os demais jogadores receberão uma mensagem com o nome ```player-answered``` contendo os dados do usuário que respondeu a questão. Após o tempo acabar ou todos os jogadores responderem, uma mensagem ```question-answers``` será enviada contendo todos os dados dos usuários naquela questão.
-
-Após esse ciclo de ações o jogador principal será responsável por ativar a próxima questão com a mensagem ```next-question```, então uma mensagem com o nome ```question-data``` será enviada para todos os usuários com os dados dessa próxima questão.
-
-Modelo de mensagem enviada (resposta de questão):
-```js
-// Answer the current question
-const answerQuestion = () => {
-    const answerId = 1;
-
-    socket.emit("answer", { id: answerId });
-}
-```
-
-Modelo de mensagem recebida pelos demais jogadores:
-```js
-// Handles other players answers
-socket.on("player-answered", (data) => {
-/*
-    data: {
-        id: Number,
-        username: String,
-        email: String,
-        occupation: "student" | "teacher",
-        created_at: <Date | string>
-    }
-*/
-})
-```
-
-Modelo de mensagem enviada para a próxima questão:
-```js
-const nextQuestion = () => {
-    socket.emit("next-question");
-}
-```
-Modelo de mensagem recebida para a próxima questão:
-```js
-// Handles next question data
 socket.on("question-data", (data) => {
 /*
     data: { 
@@ -306,161 +254,131 @@ socket.on("question-data", (data) => {
         }>
     }
 */
+});
+```
+
+Modelo de mensagem recebida no contador:
+```js
+socket.on("game-timer", (data) => {
+/*
+    data: { 
+        count: Number
+    }
+*/
+});
+```
+
+Modelo de mensagem recebida quando o tempo acabar:
+```js
+socket.on("time-out", (data) => {
+/*
+    data: {
+        playerAnswers: {
+            [userId: number]: {
+                answerId: Number,
+                state: "right" | "wrong" | null
+            }
+        },
+        rightAnswer: {
+            id: Number,
+            text: String
+        }
+    }
+*/
+});
+```
+No ultimo modelo, o estado de resposta do usuário ```null``` representa o caso de ele não ter respondido a tempo.
+
+<br>
+
+## **Respondendo questões do jogo**
+
+Para responder uma questão do jogo, basta enviar uma mensagem ```answer``` contendo os dados da resposta escolhida. Logo em seguida, os demais jogadores receberão uma mensagem com o nome ```player-answered``` contendo os dados do usuário que respondeu a questão. Caso o tempo acabe o evento ```time-out``` será disparado (veja a seção [Começando o jogo](#começando-o-jogo) para mas informações). Quando todos os jogadores responderem, o evento ```every-body-answered``` será disparado enviando os dados de resposta de todos os usuários.
+
+Modelo de mensagem enviada:
+```js
+const answer = () => {
+    const answerId = 1;
+
+    socket.emit("answer", { id: answerId });
+}
+```
+
+Modelo de mensagem recebida pelos demais usuários:
+```js
+socket.on("player-answered", (data) => {
+/*
+    data: {
+        id: Number,
+        username: String,
+        email: Email,
+        occupation: "student" | "teacher",
+        created_at: Date | String
+    }
+*/
 })
+```
+
+Modelo de resposta caso todos respondam:
+```js
+socket.on("every-body-answered", (data) => {
+/*
+    data: {
+        playerAnswers: {
+            [userId: number]: {
+                answerId: Number,
+                state: "right" | "wrong" 
+            }
+        },
+        rightAnswer: {
+            id: Number,
+            text: String
+        }
+    }
+*/
+});
+```
+
+Após o ciclo de resposta de todos os usuários, será identificado se ainda há questões a serem respondidas. Caso não hajam questões, então o jogo é encerrado (veja a seção [Fim de jogo](#fim-de-jogo) para mais detalhes).
+
+<br>
+
+## **Solicitando próxima questão**
+
+Para conseguir os dados da próxima questão, é necessário que todos os jogadores estejam prontos (veja a seção [Avisando estado do jogador](#avisando-estado-do-jogador) para mais detalhes). Depois que todos estiverem prontos, o usuário principal vai poder solicitar a próxima questão através da mensagem ```next-question```. Essa ação vai reiniciar o loop de jogo ativando o contador e o evento ```question-data``` que contém os dados da questão (veja a seção [Começando o jogo](#começando-o-jogo) para mais detalhes).
+
+Modelo de mensagem enviada (resposta de questão):
+```js
+// Answer the current question
+const nextQuestion = () => {
+    socket.emit("next-question");
+}
 ```
 
 <br>
 
-<hr>
+## **Fim de jogo**
+Quando todas as questões forem esgotadas o evento de fim de jogo será ativado com o nome ```end-game```. Alguns dos dados da partida serão salvos no banco de dados e um evento contendo alguns desses dados são enviados para os usuário através do evento de fim de jogo.
 
-## **Mensagens (client -> server)**:
-
-
-### **StartGame**
-- **Nome da mensagem:** ```start-game```
-- **Dados de envio:** 
-    ```json
-    {
-        "quiz_id": "<number>"
-    }
-    ```
-- **Detalhes:** Inicia o jogo. Apenas jogos públicos estão disponíveis. Esse evento só pode ser chamado pelo usuário que criou a sala de jogo. Esse evento irá iniciar a contagem para início de jogo.
-
-### **Answer**
-- **Nome da mensagem:** ```answer```
-- **Dados de envio:** 
-    ```json
-    {
-        "answer_id": "<number> "
-    }
-    ```
-- **Detalhes:** Responde a questão. Esse evento só é válido quando o usuário está em jogo e o jogo já começou. A resposta só será armazenada no primeiro envio, ou seja, não vale enviar uma resposta mais de uma vez.
-
-<hr>
-
-
-## **Eventos (server -> client)**:
-
-### **GameStartCounter**:
-- **Nome do evento:** ```game-start-counter```
-- **Dados recebidos:** 
-    ```json
-    {
-        "count": "<number>"
-    }
-    ```
-- **Detalhes:** Envia a contagem para inicio de jogo.
-
-
-### **NextQuestion**:
-- **Nome do evento:** ```next-question```
-- **Dados recebidos:**
-    ```json
-    {
-        "id": "<Number>",
-        "question": "<String>",
-        "alternatives": [
-            {"id": "<Number>", "text": "<String>"},
-            {"id": "<Number>", "text": "<String>"},
-            {"id": "<Number>", "text": "<String>"}
-        ]
-    }
-    ```
-- **Detalhes:** Envia os dados da próxima questão. Esse evento é enviado quando o jogo começa mesmo, quando o tempo de resposta acabar ou quando ambos responderem a questão anterior.
-
-
-### **AnswerCounter**:
-- **Nome do evento:** ```answer-counter```
-- **Dados recebidos:** 
-    ```json
-    {
-        "count": <number>
-    }
-    ```
-- **Detalhes:** Envia a contagem para responder a questão, caso o usuário não responda a questão durante esse tempo, a questão será tida como errada.
-
-### **OponentAnswered**:
-- **Nome do evento:** ```oponent-answered```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa que o oponente respondeu.
-
-### **RightAnswer**:
-- **Nome do evento:** ```right-answer```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa que a resposta estava correta. Esse evento é logo após o envio do evento de ```answer``` e, claro, caso a resposta esteja correta.
-
-### **WrongAnswer**:
-- **Nome do evento:** ```wrong-answer```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa que a resposta estava incorreta. Esse evento é logo após o envio do evento de ```answer``` e, claro, caso a resposta esteja incorreta.
-### **WrongAnswer**:
-- **Nome do evento:** ```wrong-answer```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa que a resposta estava incorreta. Esse evento é logo após o envio do evento de ```answer``` e, claro, caso a resposta esteja incorreta.
-
-### **BothAnswered**:
-- **Nome do evento:** ```both-answered```
-- **Dados recebidos:**
-    ```json
-    {
-        "player1_answer": "right | wrong |no-answer",
-        "player2_answer": "right | wrong | no-answer"
-    }
-    ```
-- **Detalhes:** Avisa a ambos os status de suas respostas.
-
-### **TimeOut**:
-- **Nome do evento:** ```time-out```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa que o tempo acabou. Esse evento é disparado quando a contagem chegar a 0. Logo após isso ocorrer, será enviada a ```next-question```.
-
-### **EndGame**:
-- **Nome do evento:** ```end-game```
-- **Dados recebidos:**
-    ```json
-    {
-        "draw": "<boolean>",
-        "winner": {
-            "created_at": "<Date | string>",
-            "username": "<string>",
-            "email": "<string>", 
-            "occupation": "<string>"
+Modelo de mensagem recebida pelos usuários
+```js
+socket.on("end-game", (data) => {
+/*
+    data: {
+        draw: Boolean,
+        winner: {
+            id: Number,
+            username: String,
+            email: Email,
+            occupation: "student" | "teacher",
+            created_at: Date | String
+        },
+        scores: {
+            [userId: number]: Number
         }
     }
-    ```
-- **Detalhes:** Avisa que o jogo acabou. Caso o jogo tenha acabado antes de seu começo efetivo, ou seja, antes da contagem inicial começar (isso pode ocorrer caso um dos jogadores se desconecte), os dados recebidos serão ```null```. Caso o jogo tenha terminado no meio da partida (novamente, por desconexão), o vencedor automaticamente será o usuário que não foi desconectado.
-
-
-### **OponentOut**:
-- **Nome do evento:** ```oponent-out```
-- **Dados recebidos:** ```any```
-- **Detalhes:** Avisa que o oponente saiu do jogo. Caso o jogo já tenha começado efetivamente, o outro usuário é dado como vencedor. Caso o player 1 tenha saído, termina não só o jogo mas também a sala de jogo. Caso o player 2 tenha saído, apenas termina o jogo.
-
-
-
-## **Errors (server -> client)**:
-
-Os erros de autenticação na conexão com os webSocket são enviados para o evento padrão do Socket.IO de erros, ou seja, ```'error' ```; já os demais erros da aplicação são enviados por um evento personalizado, o ```'game-error'```. Para manter o padrão, os erros de autenticação serão enviados de forma bem parecida com os demais erros da aplicação:
-
-### **Erro de autenticação:**
-```json
-{
-    "name": "game-error",
-    "data": {
-        "name": "<string>",
-        "code": "<number>",
-        "message": "<string>"
-    }
-}
+*/
+})
 ```
 
-### **Demais erros da aplicação:**
-```json
-{
-    "name": "<string>",
-    "code": "<number>",
-    "message": "<string>"
-}
-```
-
-A listagem de erros e eventos da aplicação está [nesse](../src/config/socket.ts) arquivo
+O jogo será apagado depois disso. Para jogar novamente, é necessário criar um novo jogo.

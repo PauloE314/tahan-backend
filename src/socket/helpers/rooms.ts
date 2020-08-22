@@ -6,6 +6,10 @@ import { Err } from "src/utils/baseError";
 import { SocketEvents } from "@config/socket";
 import { Quizzes } from "@models/quiz/Quizzes";
 
+interface IClientList {
+    [userId: number]: SocketClient
+}
+
 /**
  * Classe base para as salas que precedem os jogos da aplicação.
  */
@@ -18,7 +22,8 @@ export class Room {
     public size: number;
 
     // Jogadores
-    public clients: Array<SocketClient> = [];
+    // public clients: IClientList = {};
+    public clients: Array<SocketClient>
     public mainClient: SocketClient;
 
     // Jogo
@@ -60,6 +65,22 @@ export class Room {
         client.socket.join(this.id);
         
         this.clients.push(client);
+    }
+
+    /**
+     * Checa se todos estão prontos 
+     */
+    allReady() {
+        const allReady = !(this.clients.find(client => client.isReady === false));
+        
+        return allReady;
+    }
+
+    /**
+     * Seta todos como não prontos 
+     */
+    setAllNotReady() {
+        this.clients.forEach(client => client.isReady = false);
     }
 
 

@@ -1,11 +1,16 @@
 import { Room } from "./rooms";
 import { SocketClient } from "./clients";
-import { Quizzes } from "@models/quiz/Quizzes";
 import { Server } from "socket.io";
 import { Questions } from "@models/quiz/Questions";
-import { randomizeArray } from "src/utils/index"
+import { randomizeArray, messagePrint } from "src/utils/index"
+import { SocketEvents } from "@config/socket";
+import { GameHistoric } from "@models/games/GameHistoric";
+import { PlayerScore } from "@models/games/PlayerScore";
+import { getRepository } from "typeorm";
+import { Users } from "@models/User";
 
 type TAnswers = 'right' | 'wrong' | null;
+type TGameStates = 'onQuestion' | 'onInterval';
 
 interface IQuestionState {
     question: Questions,
@@ -15,6 +20,16 @@ interface IQuestionState {
             state: TAnswers
         }
     }
+}
+
+interface IPlayerScore {
+    [userId: number]: number
+}
+
+interface IEndGameData {
+    winner?: Users,
+    draw: boolean,
+    scores: IPlayerScore
 }
 
 /**
@@ -31,8 +46,9 @@ export class Game {
     // Quiz
     get quiz() { return this.room.quiz }
 
-    // Estados das questões
+    // Estados
     public questionsStates: Array<IQuestionState> = [];
+    public state: TGameStates;
 
     // Questão atual
     private currentQuestionIndex: number = 0;
@@ -79,9 +95,74 @@ export class Game {
      * Lida com a saída de um dos jogadores
      */
     async clientLeave(io: Server, player: SocketClient) {
+        // Mensagem
+        messagePrint(`[JOGO APAGADO]: id: ${this.roomId}, total de jogos: ${Object.keys(Game.games).length}`);
+
         // Para o temporizador
         this.timer.stopTimer();
 
+        Game.removeGame(this.roomId);
+    }
+
+    /**
+     * Lida com o fim do jogo
+     */
+    async endGame(io: Server) {
+        const questionsAmount = this.quiz.questions.length;
+
+        // // Cria o score do jogador 1
+        // const player1Score = new PlayerScore();
+        // player1Score.player = player1.user;
+        // player1Score.score = player1Points;
+        
+
+        // // Cria o score do jogador 2
+        // const player2Score = new PlayerScore();
+        // player2Score.player = player2.user;
+        // player2Score.score = (player1Points / questionsAmount) * 10;
+
+        // // Cria o histórico de partida
+        // const gameHistoric = new GameHistoric();
+        // gameHistoric.is_multiplayer = true;
+        // gameHistoric.player_1_score = player1Score;
+        // gameHistoric.player_2_score = player1Score;
+
+        // // Salva o histórico de partida
+        // await getRepository(GameHistoric).save(gameHistoric);
+        const player1 = this.room.clients[0];
+        const player2 = this.room.clients[1];
+
+
+        // Calcula scores dos jogadores
+        const playerScores: IPlayerScore = {};
+        
+        this.room.clients.forEach(client => {
+            // Calcula score do jogador
+            const playerScore = (this.questionsStates.filter(state => (
+                state.playerAnswers[client.user.id].state == 'right'
+            )).length / questionsAmount) * 10;
+
+            playerScores[client.user.id] = playerScore;
+        })
+
+        // Cria dados de fim de jogo
+        const endGameData: IEndGameData = { draw: false, winner: null, scores: playerScores };
+
+        // Checa se deu empate
+        if (playerScores[player1.user.id] === playerScores[player2.user.id])
+            endGameData.draw = true;
+            
+        // Escolher vencedor
+        else
+            endGameData.winner = playerScores[player1.user.id] > playerScores[player2.user.id] ?
+                player1.user:
+                player2.user;
+          
+        // Avisa que o jogo acabou
+        this.room.sendToAll(io, SocketEvents.EndGame, endGameData);
+
+        // Apaga o jogo
+        this.timer.stopTimer();
         Game.removeGame(this.roomId);
     }
 
@@ -165,10 +246,11 @@ export class Game {
 }
 
 
+
 interface ICountRunnerInput {
     times: number,
     execute?: (game: Game, counter: number, stopTimer: () => void) => any,
-    onTimeOver?: (game: Game) => any
+    onTimeOver?: (game: Game) => any | Promise<any>
 }
 /**
  * Classe base para os temporizadores dos jogos. Esses temporizadores servem para auxiliar nas tarefas de rotina do jogo (como contagem de segundos, etc).
