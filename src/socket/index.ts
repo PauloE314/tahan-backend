@@ -8,16 +8,15 @@ import { socketAuth } from './middlewares/auth';
 import { socketUserValidation } from './middlewares/validateUser';
 import { SocketClient } from './helpers/clients';
 import { clientDisconnect } from './actions/disconnect';
-import { createRoom } from './actions/createRoom';
-import { leaveRoom } from './actions/leaveRoom';
+import { createRoom } from './actions/games/createRoom';
+import { leaveRoom } from './actions/games/leaveRoom';
 import { messagePrint } from 'src/utils';
-import { joinRoom } from './actions/joinRoom';
-import { Room } from './helpers/rooms';
-import { setQuiz } from './actions/setQuiz';
-import { ready } from './actions/ready';
-import { startGame } from './actions/startGame';
-import { answer } from './actions/answer';
-import { nextQuestion } from './actions/nextQuestion';
+import { joinRoom } from './actions/games/joinRoom';
+import { setQuiz } from './actions/games/setQuiz';
+import { ready } from './actions/games/ready';
+import { startGame } from './actions/games/startGame';
+import { answer } from './actions/games/answer';
+import { nextQuestion } from './actions/games/nextQuestion';
 
 
 /**

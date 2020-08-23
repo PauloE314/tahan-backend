@@ -8,6 +8,7 @@ import { FriendsRepository } from './friendsRepository';
 import { FriendsValidator } from './friendsValidator';
 
 import { codes } from '@config/index';
+import { SocketClient } from 'src/socket/helpers/clients';
 
 
 /**
@@ -165,5 +166,37 @@ export class FriendsController {
         await this.repo.deleteFriendship(friendship);
 
         return response.send({ message: 'Amizade desfeita com sucesso' });
+    }
+
+    /**
+     * **web: /friends/online - GET**
+     * 
+     * Retorna a lista de amigos online do usuário
+     */
+    @APIRoute
+    async onlineFriends(request: APIRequest, response: Response) {
+        const user = request.user.info;
+
+        // Carrega lista de amigos
+        const userFriends = await this.repo.findRawFriendships(user);
+
+        // Carrega amigos online
+        const onlineFriends = Object.values(SocketClient.clients)
+            .filter(client => {
+                const clientId = client.user.id;
+
+                // Checa se não se trata do usuário
+                if (clientId === user.id)
+                    return false;
+
+                // Checa se o cliente é amigo do usuário
+                return userFriends.find(friendship => (
+                    (friendship.user_1.id === clientId || friendship.user_2.id === clientId)
+                ));
+            })
+            // Serializa o cliente
+            .map(client => client.user);
+
+        return response.send(onlineFriends);
     }
 }

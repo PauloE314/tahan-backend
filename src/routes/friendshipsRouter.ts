@@ -27,7 +27,10 @@ router.delete('/solicitations/:solicitationId([0-9]+)', auth_require, getSolicit
 router.get('/', auth_require, controller.listFriends);
 
 // Delete de amizade
-router.delete('/:friendshipId([0-9]+)', auth_require, getFriendship, controller.deleteFriendship)
+router.delete('/:friendshipId([0-9]+)', auth_require, getFriendship, controller.deleteFriendship);
+
+// Lista amigos online
+router.get('/online', auth_require, controller.onlineFriends);
 
 
 export default router;

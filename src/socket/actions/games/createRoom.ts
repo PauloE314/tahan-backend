@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
-import { SocketClient } from "../helpers/clients";
-import { Room } from "../helpers/rooms";
+import { SocketClient } from "../../helpers/clients";
+import { Room } from "../../helpers/rooms";
 import { GameExceptions, SocketEvents } from "@config/socket";
 import { messagePrint } from "src/utils";
 

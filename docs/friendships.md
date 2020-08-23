@@ -276,3 +276,37 @@ Content-Type: application/json
   message: "Amizade desfeita com sucesso"
 }
 ```
+<br>
+
+### **Amigos e jogos**
+
+- **Autenticação**:  necessária
+- **Grupo de usuários**:  todos
+- **Rota**: ```/friends/online```
+
+Há uma relação entre o sistema de amizades e os jogo multiplayers; essa visa adicionar uma dinamicidade no processo de jogo. É possível, através de requisições HTTP, ver a listagem dos amigos online. Para isso, basta enviar uma requisição **GET** para a rota ```/friends/online```; será retornada uma lista não paginada e não ordenada dos clientes online que possuem alguma relação de amizade com o usuário.
+
+Modelo de requisição:
+```HTTP
+GET /friends/online HTTP/1.1
+Host: tahan_api.com
+Authorization: Bearer <string>
+```
+
+Modelo de resposta:
+```HTTP
+HTTP/1.1 200
+Content-Type: application/json
+
+[
+  {
+    "id": "<number>",
+    "username": "<string>",
+    "email": "<string>",
+    "image_url": "<string>",
+    "occupation": "student | teacher",
+    "created_at": "<Date | string>"
+  },
+  "..."
+]
+```

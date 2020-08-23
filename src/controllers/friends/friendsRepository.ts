@@ -87,7 +87,7 @@ export class FriendsRepository extends BaseRepository<Friendships> {
 
 
     /**
-     * Retorna todas as amizades do usuário passado como parâmetro
+     * Retorna todas as amizades do usuário passado como parâmetro com paginação e filtro
      */
     async findFriendships (user: Users, params: any) {
         const { id } = user;
@@ -115,8 +115,8 @@ export class FriendsRepository extends BaseRepository<Friendships> {
         }  
         else {
             queryBuilder
-                .where('user1.id = :id', { id, username: `%${username}%` })
-                .orWhere('user2.id = :id', { id, username: `%${username}%` })
+                .where('user1.id = :id', { id })
+                .orWhere('user2.id = :id', { id })
         }
 
         const friendPaginated = await this.paginate(queryBuilder, {
@@ -125,6 +125,27 @@ export class FriendsRepository extends BaseRepository<Friendships> {
         });
 
         return friendPaginated;
+    }
+
+    /**
+     * Retorna as amizades cruas do usuário
+     */
+    async findRawFriendships(user: Users) {
+        const { id } = user;
+
+        const friendList = this.createQueryBuilder('friendship')
+            .leftJoin('friendship.user_1', 'user1')
+            .leftJoin('friendship.user_2', 'user2')
+            .select([
+                'friendship',
+                'user1.id', 'user1.username', 'user1.image_url',
+                'user2.id', 'user2.username', 'user2.image_url',
+            ])
+            .where('user1.id = :id', { id })
+            .orWhere('user2.id = :id', { id })
+            .getMany();
+
+        return friendList;
     }
 
     /**

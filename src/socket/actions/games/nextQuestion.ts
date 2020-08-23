@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { SocketClient } from "../helpers/clients";
+import { SocketClient } from "../../helpers/clients";
 import { SocketEvents, GameExceptions } from "@config/socket";
 
 /**
