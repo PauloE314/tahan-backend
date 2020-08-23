@@ -66,11 +66,12 @@ async function setQuizValidation(io: Server, client: SocketClient, data?: any) {
 
     // Certifica que o quiz existe
     const quiz = await getRepository(Quizzes).findOne({
-        where: { id: quizId },
+        where: { id: quizId, mode: 'public'},
         relations: ['author', 'questions', 'questions.alternatives', 'questions.rightAnswer']
     });
     if (!quiz)
         client.emitError(GameExceptions.QuizDoesNotExist).raise();
+
 
     return { room, quiz, quizId };
 }

@@ -6,7 +6,7 @@ import { Err } from "src/utils/baseError";
 import { SocketEvents } from "@config/socket";
 import { Quizzes } from "@models/quiz/Quizzes";
 
-interface IClientList {
+interface IRoomClients {
     [userId: number]: SocketClient
 }
 
@@ -22,7 +22,7 @@ export class Room {
     public size: number;
 
     // Jogadores
-    public clients: IClientList = {};
+    public clients: IRoomClients = {};
     get clientList (): Array<SocketClient> { return Object.values(this.clients); }
     public mainClient: SocketClient;
 
