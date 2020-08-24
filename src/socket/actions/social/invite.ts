@@ -39,6 +39,10 @@ async function inviteValidation(io: Server, client: SocketClient, data?: any) {
     if (room.mainClient.user.id !== client.user.id)
         client.emitError(GameExceptions.PermissionDenied).raise();
 
+    // Certifica que a sala não está cheia
+    if (room.clientList.length > 1)
+        client.emitError(GameExceptions.RoomIsFull).raise();
+
     // Certifica que ainda não estão em jogo
     if (client.inGame)
         client.emitError(GameExceptions.InvalidAction).raise();

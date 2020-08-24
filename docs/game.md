@@ -1,6 +1,6 @@
-# **Game**
+# **Sistemas multiplayer**
 
-Esse arquivo se destina à documentação do sistema de jogos multiplayer da aplicação.
+Esse arquivo se destina à documentação do sistema multiplayer da aplicação.
 
 Tahan é um projeto que promete permitir que os professores criem jogos (quizzes) para avaliação e divertimento dos alunos públicos / privados. Tais jogos podem ser multiplayer ou singleplayer. Os jogos singleplayer podem ser renderizados diretamente no dispositivo dos alunos, entretanto, os jogos multiplayer, para manter a sincronia e segurança, devem ser monitorados por um sistema externo; essa tarefa fica a cargo da parte do servidor (a qual essa documentação se destina) que utiliza WebSockets para a comunicação jogador-servidor.
 
@@ -25,17 +25,25 @@ const socket = io('tahan_api.com', {
 
 Uma sala de jogo é uma entidade volátil da aplicação que permite o monitoramento das ações anteriores ao jogo (como na sala de espera do League of Legends). Nela serão realizadas comunicações simples entre os jogadores e a seleção do quiz também ocorrerá nessa etapa.
 
+Todas as salas de jogo possuem um ```id``` (utilizado para entrar na sala) aleatório, uma lista de clientes e um cliente principal. Por padrão, o cliente principal é o usuário que cria a sala; mas quando ele se desconecta dela, o jogador que entrou logo em seguida será o próximo jogador principal. Muitas das principais ações da sala só podem ser realizadas pelo jogador principal, como compartilhar o id da sala de jogo, escolher o quiz, começar o jogo e habilitar a próxima questão (todas essas funcionalidades serão explicadas e exemplificadas mais a frente).
+
 ### **Criando salas de jogo**
-Para criar uma sala de jogo é necessário enviar uma mensagem com o nome ```create-room```. Caso tudo ocorra bem, uma mensagem com o nome ```room-created``` será enviada ao cliente contendo o id da sala que foi criada.
+Para criar uma sala de jogo é necessário enviar uma mensagem com o nome ```create-room```. Caso tudo ocorra bem, uma mensagem de mesmo nome será enviada ao cliente contendo o id da sala que foi criada.
+
+Para realizar essa ação, é necessário cumprir os requisitos:
+- O usuário não pode estar em outra sala de jogo.
 
 Modelo de mensagem enviada:
 ```js
-socket.emit("create-room");
+// Creates a new room
+const createRoom = () => {
+    socket.emit("create-room");
+}
 ```
 
 Modelo de mensagem recebida:
 ```js
-socket.on("room-created", (data) => {
+socket.on("create-room", (data) => {
 /*
     data: {
         room_id: Number
@@ -43,14 +51,22 @@ socket.on("room-created", (data) => {
 */
 })
 ```
-O usuário que cria a sala de jogo se torna o jogador principal. Ele é que possui a responsabilidade de escolher o quiz e de habilitar a iniciação da partida.
+O usuário que cria a sala de jogo se torna o jogador principal. 
 
 ### **Sair de salas de jogo**
-Para sair de uma sala de jogo é necessário enviar uma mensagem com o nome ```leave-room```. Não é necessário enviar nenhum dado adicional. Quando o usuário sair da sala, serão enviadas duas mensagens, uma para o usuário que saiu com o nome ```room-leaved``` notificando que o processo ocorreu com sucesso e outra para os demais jogadores da sala com o nome ```player-leave-room``` para notificar que um dos jogadores saiu da sala (será enviado também os dados do jogador que saiu).
+Para sair de uma sala de jogo é necessário enviar uma mensagem com o nome ```leave-room```. Não é necessário enviar nenhum dado adicional. Quando o usuário sair da sala, serão enviadas duas mensagens, uma para o usuário que saiu com o nome ```leave-room``` notificando que o processo ocorreu com sucesso e outra para os demais jogadores da sala com o nome ```player-leave``` para notificar que um dos jogadores saiu da sala (será enviado também os dados do jogador que saiu).
+
+Para realizar essa ação, é necessário cumprir os seguintes requisitos:
+- Estar em uma sala de jogo.
+
+Caso o jogador que saiu seja o jogador principal, o jogador que entrou na sala logo depois dele se tornará o jogador principal. Nesse caso, os dados do jogador principal serão enviados na mensagem ```player-leave```.
 
 Modelo de mensagem enviada:
 ```js
-socket.emit("leave-room");
+// Leaves from current game room
+const leave = () => {
+    socket.emit("leave-room");
+}
 ```
 
 Modelo de mensagem recebida pelo usuário:
@@ -64,38 +80,35 @@ socket.on("leave-room", (data) => {
 
 Modelo de mensagem recebida pelos demais jogadores:
 ```js
-socket.on("player-leave-room", (data) => {
+socket.on("player-leave", (data) => {
 /*
     data: {
-        id: Number,
-        username: String,
-        image_url: String,
-        email: String
+        user: {
+            id: Number,
+            username: String,
+            image_url: String,
+            email: String
+        },
+        main?: {  <--Dados do novo jogador principal 
+            id: Number,
+            username: String,
+            image_url: String,
+            email: String
+        }
     }
 */
 })
 ```
 Caso o cliente se desconecte do socket, automaticamente será retirado da sala de jogo. Caso uma sala fique sem nenhum jogador, ela é destruída.
 
-Caso o cliente que se desconectou seja o cliente principal, o cliente que entrou na sala logo depois dele será considerado o jogador principal. Uma mensagem é enviada em seguida com o nome ```new-main-player``` com as informações do novo jogador principal.
-
-Modelo de mensagem recebida:
-```js
-socket.on("new-main-player", (data) => {
-/*
-    {
-        id: Number,
-        username: String,
-        image_url: String,
-        email: String
-    }
-*/
-})
-```
-
 
 ### **Entrar em outras salas de jogo**
-Para entrar em outras salas de jogo, é necessário enviar uma mensagem com nome ```join-room``` e id da sala que se deseja entrar. Caso não ocorra nenhum erro na entrada, os dados do usuário serão enviados para todos os outros clientes da sala (com o nome ```player-join```) e uma mensagem diferente será enviada para o usuário que entrou notificando o sucesso (com o nome ```room-joined```). A mensagem de sucesso do usuário conterá os dados dos usuários que já estão na sala e os dados do quiz, caso ele já tenha sido escolhido.
+Para entrar em outras salas de jogo, é necessário enviar uma mensagem com nome ```join-room``` e id da sala que se deseja entrar. Caso não ocorra nenhum erro na entrada, os dados do usuário serão enviados para todos os outros clientes da sala (com o nome ```player-join```) e uma mensagem diferente será enviada para o usuário que entrou notificando o sucesso (com o nome ```join-room```). A mensagem de sucesso do usuário conterá os dados dos usuários que já estão na sala e os dados do quiz, caso ele já tenha sido escolhido.
+
+Para realizar essa ação, é necessário cumprir os seguintes critérios:
+- Não pode estar em outra sala de jogo;
+- O campo ```room_id``` deve remeter a um ```id``` válido de uma sala;
+- A sala não pode estar cheia (o limite é 2).
 
 
 
@@ -111,7 +124,7 @@ const joinRoom = () => {
 
 Modelo de mensagem recebida pelo usuário:
 ```js
-socket.on("room-joined", (data) => {
+socket.on("join-room", (data) => {
 /*
     data: {
         users: Array<{
@@ -158,7 +171,13 @@ socket.on("player-join", (data) => {
 <br>
 
 ## **Escolhendo o quiz**
-Para escolher o quiz que se deseja jogar, basta enviar uma mensagem com o nome ```set-quiz``` e o ```id``` do quiz requerido. Apenas o jogador principal pode escolher o quiz. Caso o id seja válido, uma mensagem com o nome ```quiz-data``` contendo os dados do quiz será enviada para todos os jogadores.
+Para escolher o quiz que se deseja jogar, basta enviar uma mensagem com o nome ```set-quiz``` e o ```id``` do quiz requerido. Apenas o jogador principal pode escolher o quiz. Caso o id seja válido, uma mensagem de mesmo nome contendo os dados do quiz será enviada para todos os jogadores.
+
+Para realizar essa ação, é necessário cumprir os seguintes critérios:
+- Estar em uma sala de jogo;
+- Não estar em jogo;
+- Ser o jogador principal da sala;
+- Enviar um campo ```quiz_id``` que remeta a um ```id``` numérico válido de um quiz.
 
 Modelo de mensagem enviada:
 ```js
@@ -172,7 +191,7 @@ const setQuiz = () => {
 
 Modelo de mensagem recebida:
 ```js
-socket.on("quiz-data", (data) => {
+socket.on("set-quiz", (data) => {
 /*
     data: {
         id: Number,
@@ -199,7 +218,11 @@ socket.on("quiz-data", (data) => {
 
 ## **Avisando estado do jogador**
 
-É possível para os jogadores avisarem um ao outro se estão prontos. Isso visa permitir a interatividade entre os usuários (embora não interfira ativamente nas regras de negócio da aplicação). Basta enviar uma mensagem com o nome ```ready``` que os demais jogadores receberão uma mensagem com o nome ```player-ready``` e os dados do jogador.
+É possível para os jogadores avisarem um ao outro se estão prontos. O estado de prontidão do jogador será armazenado e servirá para permitir o começo do jogo / continuidade do jogo. Para realizar essa ação, basta enviar uma mensagem com o nome ```ready``` que os demais jogadores receberão uma mensagem de mesmo nome contendo os dados do jogador.
+
+Para realizar essa ação é necessário cumprir alguns critérios:
+- Estar em uma sala de jogo;
+- Se estiver em um jogo, não pode estar respondendo questões.
 
 Modelo de mensagem enviada:
 ```js
@@ -211,7 +234,7 @@ const ready = () => {
 
 Modelo de mensagem recebida:
 ```js
-socket.on("player-ready", (data) => {
+socket.on("ready", (data) => {
 /*
     data: { 
         id: Number,
@@ -232,6 +255,14 @@ Para iniciar o jogo, o jogador principal precisa enviar uma mensagem chamada ```
 Após o envio dessa mensagem, todos os jogadores receberão uma mensagem contendo os dados da primeira questão com o nome ```question-data```. Esse mesmo evento será disparado para todas as outras questões até o fim do quiz.
 
 É importante notar que depois do início do jogo (e durante as questões depois da primeira) os jogadores terão 30 segundos para responder a questão. Um evento chamado ```game-timer``` será disparado a cada segundo contando o tempo. Ao fim dos 30 segundos, o evento ```time-out``` será disparado contendo os dados de resposta de cada usuário (veja a seção [Respondendo questões do jogo](#respondendo-questões-do-jogo) para mais informações).
+
+Para realizar essa ação, é necessário cumprir alguns critérios:
+- Estar em uma sala de jogo;
+- Não estar em jogo;
+- Ser o jogador principal;
+- Ter escolhido um quiz;
+- A sala deve ter a quantidade mínima de jogadores (no caso, 2);
+- Todos os jogadores devem estar prontos.
 
 Modelo de mensagem enviada:
 ```js
@@ -293,7 +324,13 @@ No ultimo modelo, o estado de resposta do usuário ```null``` representa o caso 
 
 ## **Respondendo questões do jogo**
 
-Para responder uma questão do jogo, basta enviar uma mensagem ```answer``` contendo os dados da resposta escolhida. Logo em seguida, os demais jogadores receberão uma mensagem com o nome ```player-answered``` contendo os dados do usuário que respondeu a questão. Caso o tempo acabe o evento ```time-out``` será disparado (veja a seção [Começando o jogo](#começando-o-jogo) para mas informações). Quando todos os jogadores responderem, o evento ```every-body-answered``` será disparado enviando os dados de resposta de todos os usuários.
+Para responder uma questão do jogo, basta enviar uma mensagem ```answer``` contendo os dados da resposta escolhida. Logo em seguida, os demais jogadores receberão uma mensagem com o nome ```player-answered``` contendo os dados do usuário que respondeu a questão. Caso o tempo acabe, o evento ```time-out``` será disparado (veja a seção [Começando o jogo](#começando-o-jogo) para mas informações). Quando todos os jogadores responderem, o evento ```every-body-answered``` será disparado enviando os dados de resposta de todos os usuários.
+
+Para realizar essa ação, é necessário cumprir alguns critérios:
+- Estar em uma sala de jogo
+- Estar em jogo;
+- O jogo deve estar no estado apto para responder questão (deve estar no meio de uma questão);
+- Não deve ter respondido a questão atual ainda.
 
 Modelo de mensagem enviada:
 ```js
@@ -382,3 +419,96 @@ socket.on("end-game", (data) => {
 ```
 
 O jogo será apagado depois disso. Para jogar novamente, é necessário criar um novo jogo.
+
+<br>
+
+## **Jogos e amigos**
+
+### **Convidando amigos**
+
+É possível convidar seus amigos para entrar em uma sala de jogo caso o cliente o jogador principal.  Para convidar um amigo basta enviar uma mensagem com o nome ```room-invite``` com o id do cliente (do amigo do usuário).
+
+Para realizar essa ação é necessário cumprir alguns critérios:
+- Estar em uma sala;
+- Ser o cliente principal;
+- A sala não pode estar cheia;
+- Não pode estar em jogo;
+- O campo ```friend_id``` deve se referir ao id numérico de um usuário válido e que esteja online.
+- O remetente e o destinatário devem ser amigos.
+
+Modelo de mensagem enviada:
+```js
+const inviteFriend = () => {
+    const friend_id = 1;
+
+    socket.emit("room-invite", { friend_id });
+}
+```
+Caso o convite seja válido, será enviada uma mensagem para o destinatário com o nome ```room-invite``` contendo o ```id``` da sala.
+
+
+Modelo de mensagem recebida pelo convidado:
+```js
+socket.on('room-invite', (data) => {
+/*
+    data: {
+        room_id: String,
+        user: {
+            id: Number,
+            username: String,
+            email: String,
+            created_at: Date | String,
+            image_url: String
+        }
+    }
+*/
+})
+```
+
+### **Aceitando convite**
+O destinatário de um convite receberá o ```id``` sala. Embora seja possível simplesmente entrar na sala através de uma mensagem ```join-room```, é aconselhável utilizar uma mensagem específica para a resposta de um convite. No caso, o nome dessa mensagem é ```invite-accept``` e deve ser passado o ```id``` da sala e do remetente nela. O benefício de utilizar essa mensagem, além de manter as coisas mais separadas, é que o remetente receberá uma mensagem de confirmação com o nome ```invite-accept``` contendo os dados do cliente que aceitou o convite.
+
+A aceitação de convites apenas valida alguns dados e avisa ao destinatário que o cliente aceitou, mas por baixo dos panos, é utilizado exatamente a mesma função de ```join-room```, isto é, da entrada normal na sala de jogo.
+
+PAra realizar essa ação, é necessário cumprir os seguintes critérios:
+- O campo ```sender_id``` deve ser referir a um id numérico válido de um cliente que esteja logado;
+- O campo ```room_id``` deve ser referir a um id válido de uma sala;
+- O remetente ainda deve estar em uma sala de jogo;
+- O usuário não pode estar em sala;
+- A sala não pode estar em jogo;
+- A sala não pode estar cheia;
+
+
+Modelo de resposta do convidado:
+```js
+const acceptInvite = () => {
+    const { room_id, sender_id } = myAwesomeDataStructure;
+
+    socket.emit("invite-accept", { room_id, sender_id });
+}
+```
+
+Modelo de mensagem recebida pelo remetente do convite:
+```js
+socket.on('invite-accept', (data) => {
+/*
+    data: {
+        user: {
+            id: Number,
+            username: String,
+            email: String,
+            created_at: Date | String,
+            image_url: String
+        }
+    }
+*/
+})
+```
+
+### **Negando convite**
+
+Para negar o convite, basta enviar uma mensagem igual à enviada na aceitação, mas com o nome ```invite-deny```. O remetente do convite receberá uma mensagem de mesmo nome contendo os dados do usuário, na mesma forma que na aceitação.
+
+Para realizar essa ação, é necessário cumprir os seguintes critérios:
+- O campo ```sender_id``` deve ser referir a um id numérico válido de um cliente que esteja logado;
+- O campo ```room_id``` deve ser referir a um id válido de uma sala;

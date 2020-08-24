@@ -41,6 +41,10 @@ function acceptInviteValidation(io: Server, client: SocketClient, data?: any) {
     if (sender.roomId !== roomId || !sender.room)
         client.emitError(GameExceptions.RoomDoesNotExist).raise();
 
+    // Certifica que a sala ainda não está cheia
+    if (sender.room.clientList.length > 1)
+        client.emitError(GameExceptions.RoomIsFull).raise();
+
 
     return { sender, room: sender.room }
 }

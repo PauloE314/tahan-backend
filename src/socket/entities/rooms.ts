@@ -117,11 +117,6 @@ export class Room {
             this.mainClient = this.clientList[0];
             const newMainClientId = this.mainClient.user.id;
 
-            console.log({
-                user: client.user,
-                main: newMainClientId !== oldMainClientId ? this.mainClient.user: undefined
-            });
-
             // Avisa que o usuário saiu
             this.sendToAll(io, SocketEvents.PlayerLeave, {
                 user: client.user,

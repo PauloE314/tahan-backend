@@ -11,5 +11,5 @@ Tahan é um projeto que promete tornar o aprendizado divertido e produtivo ao me
 
 O sistema de quizzes multiplayer do projeto não utiliza requisições HTTP (mas sim TCP com WebSockets). Ele está dividindo nas seções:
 
-- [Games](./docs/game.md)
+- [Sistemas multiplayer](./docs/game.md)
 - [Erros dos Games](./docs/game.md)
