@@ -55,7 +55,9 @@ Atualmente, existem três erros que podem ocorrer nessa etapa:
     ```
 
 - ### **Usuário inexistente:**
-    Ocorre quando a autenticação é efetuada com sucesso, mas o usuário não se encontra mais no banco de dados.
+    Ocorre quando um usuário não é encontrado. Pode ocorrer nas seguintes situações:
+    - a autenticação é efetuada com sucesso, mas o usuário não se encontra mais no banco de dados.
+    - o destinatário de uma mensagem não existe
 
     Modelo de dados recebidos do erro:
     ```json
@@ -148,6 +150,7 @@ Segue a lista dos erros possíveis para essa etapa:
     -  Responder uma questão, mas ele já respondeu anteriormente.
     -  Avançar para a próxima questão, mas o jogo está no estado de resposta (ou seja, está com o tempo contando, etc).
     -  Afirmar sua prontidão, mas o jogo está no estado de resposta.
+    - Convidar outro usuário para a sala, mas ele já está em jogo.
 
     Modelo de dados recebidos do erro:
     ```json

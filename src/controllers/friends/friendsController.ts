@@ -8,7 +8,8 @@ import { FriendsRepository } from './friendsRepository';
 import { FriendsValidator } from './friendsValidator';
 
 import { codes } from '@config/index';
-import { SocketClient } from 'src/socket/helpers/clients';
+import { SocketClient } from 'src/socket/entities/clients';
+import { SolicitationsRepository } from './solicitationsRepository';
 
 
 /**
@@ -20,6 +21,7 @@ export class FriendsController {
     validator = new FriendsValidator();
     
     get repo() { return getCustomRepository(FriendsRepository) }
+    get solicitationRepo() { return getCustomRepository(SolicitationsRepository) }
 
     /**
      * **web: /friends/<sended | received | all> - GET**
@@ -36,7 +38,7 @@ export class FriendsController {
 
         params.answer = params.answer === 'null' ? null: params.answer;
         // Pega lista de solicitações
-        const solicitations = await this.repo.findSolicitations(user, params);
+        const solicitations = await this.solicitationRepo.findSolicitations(user, params);
         
         return response.send(solicitations);
     }
@@ -58,7 +60,7 @@ export class FriendsController {
         await this.validator.sendSolicitationValidator(sender, receiver);
 
         // Envia a solicitação
-        const newSolicitation = await this.repo.createSolicitation(sender, receiver);
+        const newSolicitation = await this.solicitationRepo.createSolicitation(sender, receiver);
 
         // Retorna os dados da amizade
         return response.status(codes.CREATED).send(newSolicitation);
@@ -81,7 +83,7 @@ export class FriendsController {
         // Aceita a amizade
         if (action === 'accept') {
             // Aceita a solicitação
-            await this.repo.answerSolicitation({ solicitation, answer: 'accept'});
+            await this.solicitationRepo.answerSolicitation({ solicitation, answer: 'accept'});
 
             // Cria nova amizade
             const friendship = await this.repo.createFriendship(
@@ -98,7 +100,7 @@ export class FriendsController {
         }
         // Nega solicitação
         else {
-            await this.repo.answerSolicitation({ solicitation, answer: 'deny'});
+            await this.solicitationRepo.answerSolicitation({ solicitation, answer: 'deny'});
 
             return response.send({ message: "Solicitação negada com sucesso" });
         }
@@ -118,7 +120,7 @@ export class FriendsController {
         await this.validator.deleteSolicitationValidator({ user, solicitation });
 
         // Deleta a solicitação
-        await this.repo.deleteSolicitation(solicitation);
+        await this.solicitationRepo.deleteSolicitation(solicitation);
 
         return response.send({ message: 'Solicitação deletada com sucesso' });
     }

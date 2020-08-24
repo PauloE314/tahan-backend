@@ -48,6 +48,7 @@ export class Room {
      * Envia mensagem para todos os usuários da sala
      */
     sendToAll(io: Server, event: string, data?: any) {
+        console.log('ENVIANDO!')
         io.to(this.id).emit(event, data);
     }
 
@@ -65,6 +66,8 @@ export class Room {
         client.socket.join(this.id);
         
         this.clients[client.user.id] = client;
+
+        this.sendToAll(io, SocketEvents.GameError, 'Testando');
     }
 
     /**
@@ -97,23 +100,33 @@ export class Room {
         if (this.game)
             await this.game.clientLeave(io, client);
 
-        // Avisa aos demais jogadores que ele saiu da sala
-        client.emitToRoom(SocketEvents.PlayerLeaveRoom, client.user);
-
         // Remove o jogador da lista de jogadores
         delete this.clients[client.user.id];
 
         // Sai da sala do socket
-        client.socket.leave(client.roomId);    
-        client.roomId = undefined;
+        client.leaveRoom();
 
         // Avisa ao jogador que a saída da sala ocorreu bem
-        client.emit(SocketEvents.RoomLeaved);
+        client.emit(SocketEvents.LeaveRoom);
 
         // Caso a sala ainda tenha clientes
-        if (Object.keys(this.clients).length !== 0)  {
+        if (this.clientList.length) {
+            const oldMainClientId = this.mainClient.user.id;
+
             // Seta um novo cliente principal
-            this.mainClient = this.clients[0];
+            this.mainClient = this.clientList[0];
+            const newMainClientId = this.mainClient.user.id;
+
+            console.log({
+                user: client.user,
+                main: newMainClientId !== oldMainClientId ? this.mainClient.user: undefined
+            });
+
+            // Avisa que o usuário saiu
+            this.sendToAll(io, SocketEvents.PlayerLeave, {
+                user: client.user,
+                main: newMainClientId !== oldMainClientId ? this.mainClient.user: undefined
+            });
 
             // Mensagem
             messagePrint(`[USUÁRIO SAINDO DE SALA]: username: ${client.user.username} id: ${this.id}, total de usuários da sala: ${Object.keys(this.clients).length}, total de salas: ${Object.keys(Room.rooms).length}`);

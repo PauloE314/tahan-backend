@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { SocketClient } from "../helpers/clients";
+import { SocketClient } from "src/socket/entities/clients";
 import { GameExceptions, SocketEvents } from "@config/socket";
 import { getRepository } from "typeorm";
 import { Quizzes } from "@models/quiz/Quizzes";
@@ -20,7 +20,7 @@ export async function setQuiz(io: Server, client: SocketClient, data?: any) {
             room.quiz = undefined;
     
             // Envia dados do quiz para todos
-            return room.sendToAll(io, SocketEvents.QuizData, null);
+            return room.sendToAll(io, SocketEvents.SetQuiz, null);
         }
 
         // Armazena o quiz
@@ -32,7 +32,7 @@ export async function setQuiz(io: Server, client: SocketClient, data?: any) {
         const { questions, ...serializedData } = quiz;
     
         // Envia dados do quiz para todos
-        return room.sendToAll(io, SocketEvents.QuizData, serializedData);
+        return room.sendToAll(io, SocketEvents.SetQuiz, serializedData);
         
     // Lida com possíveis erros
     } catch (error) {

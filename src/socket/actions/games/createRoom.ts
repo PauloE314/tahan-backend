@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
-import { SocketClient } from "../../helpers/clients";
-import { Room } from "../../helpers/rooms";
+import { SocketClient } from "src/socket/entities/clients";
+import { Room } from "src/socket/entities/rooms";
 import { GameExceptions, SocketEvents } from "@config/socket";
 import { messagePrint } from "src/utils";
 
@@ -20,7 +20,7 @@ export function createRoom(io: Server, client: SocketClient, data?: any) {
         room.mainClient = client;
 
         // Envia dados da sala
-        client.emit(SocketEvents.RoomCreated, { room_id: room.id });
+        client.emit(SocketEvents.CreateRoom, { room_id: room.id });
 
         // Mensagem
         messagePrint(`[NOVA SALA]: id: ${room.id}, total de salas: ${Object.keys(Room.rooms).length}`, 'blue');

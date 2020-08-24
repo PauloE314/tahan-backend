@@ -2,7 +2,7 @@ import { APISocket } from "src/@types/socket";
 import { authUser } from "src/utils";
 import { GameError, Err } from "src/utils/baseError";
 import { GameExceptions } from "@config/socket";
-import { SocketClient } from "../helpers/clients";
+import { SocketClient } from "src/socket/entities/clients";
 
 
 /**

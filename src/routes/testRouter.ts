@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { Room } from 'src/socket/helpers/rooms';
-import { SocketClient } from 'src/socket/helpers/clients';
-import { Game } from 'src/socket/helpers/games';
+import { Room } from 'src/socket/entities/rooms';
+import { SocketClient } from 'src/socket/entities/clients';
+import { Game } from 'src/socket/entities/games';
 
 const routes = Router({ mergeParams: true });
 

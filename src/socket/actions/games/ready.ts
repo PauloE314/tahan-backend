@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { SocketClient } from "../../helpers/clients";
+import { SocketClient } from "src/socket/entities/clients";
 import { SocketEvents, GameExceptions } from "@config/socket";
 import { messagePrint } from "src/utils";
 
@@ -18,7 +18,7 @@ export function ready(io: Server, client: SocketClient, data?: any) {
         client.isReady = true;
         
         // Avisa a todos da sala
-        return client.emitToRoom(SocketEvents.PlayerReady, client.user);
+        return client.emitToRoom(SocketEvents.Ready, client.user);
 
     // Lida com erros
     } catch(error) {

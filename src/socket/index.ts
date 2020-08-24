@@ -5,18 +5,20 @@ import { useMiddlewares } from './middlewares';
 
 import { SocketEvents } from '@config/socket';
 import { socketAuth } from './middlewares/auth';
-import { socketUserValidation } from './middlewares/validateUser';
-import { SocketClient } from './helpers/clients';
-import { clientDisconnect } from './actions/disconnect';
-import { createRoom } from './actions/games/createRoom';
-import { leaveRoom } from './actions/games/leaveRoom';
+import { SocketClient } from 'src/socket/entities/clients';
+import { clientDisconnect } from './actions/general/disconnect';
+import { createRoom } from 'src/socket/actions/games/createRoom';
+import { leaveRoom } from 'src/socket/actions/games/leaveRoom';
 import { messagePrint } from 'src/utils';
-import { joinRoom } from './actions/games/joinRoom';
-import { setQuiz } from './actions/games/setQuiz';
-import { ready } from './actions/games/ready';
-import { startGame } from './actions/games/startGame';
-import { answer } from './actions/games/answer';
-import { nextQuestion } from './actions/games/nextQuestion';
+import { joinRoom } from 'src/socket/actions/games/joinRoom';
+import { setQuiz } from 'src/socket/actions/games/setQuiz';
+import { ready } from 'src/socket/actions/games/ready';
+import { startGame } from 'src/socket/actions/games/startGame';
+import { answer } from 'src/socket/actions/games/answer';
+import { nextQuestion } from 'src/socket/actions/games/nextQuestion';
+import { invite } from './actions/social/invite';
+import { denyInvite } from './actions/social/denyInvite';
+import { acceptInvite } from './actions/social/acceptInvite';
 
 
 /**
@@ -24,7 +26,7 @@ import { nextQuestion } from './actions/games/nextQuestion';
  */
 export function useSocket(io: Server) {
     // Aplica middlewares
-    useMiddlewares(io, [socketAuth, socketUserValidation]);
+    useMiddlewares(io, [socketAuth]);
 
     // Inicia a conexão
     try {
@@ -34,6 +36,16 @@ export function useSocket(io: Server) {
         
         // Mensagem
         messagePrint(`[NOVO USUÁRIO]: username: ${client.user.username}, total de usuários: ${Object.keys(SocketClient.clients).length}`, 'green');
+
+        // Convida amigo
+        socket.on(SocketEvents.RoomInvite, (data) => invite(io, client, data));
+
+        // Aceitar entrar na sala
+        socket.on(SocketEvents.InviteAccept, (data) => acceptInvite(io, client, data));
+
+        // Nega entrar na sala
+        socket.on(SocketEvents.InviteDeny, (data) => denyInvite(io, client, data));
+
 
         // Cria sala de jogo
         socket.on(SocketEvents.CreateRoom, (data) => createRoom(io, client, data));

@@ -1,7 +1,7 @@
 import { SocketEvents } from "@config/socket";
 import { APISocket } from "src/@types/socket";
 import { Server } from "socket.io";
-import { SocketClient } from "src/socket/helpers/clients";
+import { SocketClient } from "src/socket/general/clients";
 /**
  * Erro base da aplicação que permite a utilização de vários dados, não apenas strings
  */

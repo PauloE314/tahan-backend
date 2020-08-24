@@ -1,40 +1,33 @@
 /* Listagem de eventos do jogo */
 export const SocketEvents = {
-    ///------------- Eventos do cliente -------------//
     ClientConnect: "connect",
     ClientDisconnected: "disconnecting",
+    GameError: "game-error",
 
-    // Ações com a sala
+    // Sala
     CreateRoom: "create-room",
-    LeaveRoom: "leave-room",
     JoinRoom: "join-room",
+    PlayerJoin: "player-join",
+    LeaveRoom: "leave-room",
+    PlayerLeave: 'player-leave',
     SetQuiz: "set-quiz",
+    
+    // Convites    
+    RoomInvite: 'room-invite',
+    InviteDeny: 'invite-deny',
+    InviteAccept: 'invite-accept',    
+    
+    // Ciclo de jogo
     Ready: "ready",
     StartGame: "start-game",
-    Answer: "answer",
-    NextQuestion: "next-question",
-
-    //------------- Eventos do server -------------//
-    GameError: "game-error",
-    
-    // Respostas da sala
-    RoomCreated: "room-created",
-    RoomLeaved: "room-leaved",
-    RoomJoined: "room-joined",
-    PlayerJoin: "player-join",
-    PlayerLeaveRoom: "player-leave-room",
-    QuizData: "quiz-data",
-    PlayerReady: "player-ready",
-    GameStart: "game-start",
-
-    // Ciclo de jogo
     GameTimer: "game-timer",
-    TimeOut: "time-out",
-    RightAnswer: "right-answer",
-    WrongAnswer: "wrong-answer",
+    Answer: "answer",
     PlayerAnswered: "player-answered",
-    QuestionData: "question-data",  
     EveryBodyAnswered: "every-body-answered",
+    TimeOut: "time-out",
+    NextQuestion: "next-question",
+    QuestionData: "question-data",
+
     EndGame: "end-game",
 };
 
@@ -51,7 +44,7 @@ export const GameExceptions = {
     QuizDoesNotExist: { name: "quiz-does-not-exist", code: 8, message: "O Quiz não existe" },
     UserAlreadyInGame: { name: "user-in-game", code: 9, message: "O usuário ainda está em jogo" },
     RoomIncomplete: { name: "room-incomplete", code: 10, message: "A sala não está completa" },
-
     NotAllReady: { name: 'not-all-ready', code: 11, message: "Ainda há usuários que não estão prontos"},
     GameDoesNotExist: { name: "game-does-not-exist", code: 12, message: "O jogo não existe" },
+    NotFriends: { name: 'not-friends', code: 13, message: "O usuário não é amigo do destinatário" }
 }

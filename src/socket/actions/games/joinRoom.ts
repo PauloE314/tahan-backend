@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
-import { SocketClient } from "../../helpers/clients";
+import { SocketClient } from "src/socket/entities/clients";
 import { GameExceptions, SocketEvents } from "@config/socket";
-import { Room } from "../../helpers/rooms";
+import { Room } from "src/socket/entities/rooms";
 import { messagePrint } from "src/utils";
 
 /**
@@ -14,7 +14,8 @@ export async function joinRoom(io: Server, client: SocketClient, data?: any) {
 
         // Dados da sala
         const roomData: any = {
-            users: room.clientList.map(player => player.user)
+            users: room.clientList.map(player => player.user),
+            main: room.mainClient.user
         };
     
         // Adiciona o jogador à sala
@@ -32,7 +33,7 @@ export async function joinRoom(io: Server, client: SocketClient, data?: any) {
         }
 
         // Envia os dados da sala para o usuário
-        client.emit(SocketEvents.RoomJoined, roomData);
+        client.emit(SocketEvents.JoinRoom, roomData);
 
         // Mensagem
         messagePrint(`[USUÁRIO ENTROU EM SALA]: username: ${client.user.username}, roomId: ${room.id}, total de clientes na sala: ${room.clientList.length}`);

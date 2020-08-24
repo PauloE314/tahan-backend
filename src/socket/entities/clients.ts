@@ -5,8 +5,6 @@ import { Users } from "@models/User";
 
 import { Room } from "./rooms";
 import { GameError, IGameException, Err } from "src/utils/baseError";
-import { GameExceptions, SocketEvents } from "@config/socket";
-import { Game } from "./games";
 import { messagePrint } from "src/utils";
 
 /**
@@ -62,7 +60,15 @@ export class SocketClient {
         messagePrint(`[ERRO DO USUÁRIO]: username: ${this.user.username}, errorName: ${gameError.name}`, 'red');
 
         return exception;
-}
+    }
+
+    /**
+     * Sai de uma sala
+     */
+    leaveRoom() {
+        this.socket.leave(this.roomId);
+        this.roomId = undefined;
+    }
 
     /**
      * Checa se o usuário está em jogo
