@@ -9,3 +9,5 @@ test.*
 test
 database.sqlite
 __ignore*
+yarn-error.log
+yarn.lock
